@@ -48,7 +48,7 @@ class AdminMiddleware
         if (Auth::check() && Auth::user()->role_as == User::ROLE_ADMIN) {
             return $next($request);
         } else {
-            return redirect('/login')->with('status', 'Welcome To One JAF');
+            return redirect('/')->with('status', 'Welcome To One JAF');
         }
     }
 }

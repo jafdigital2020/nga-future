@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Models\EmployeeAttendance;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\Attendance;
 use Illuminate\Support\Facades\Auth;
 
 class HRAttendanceController extends Controller
@@ -160,6 +161,77 @@ class HRAttendanceController extends Controller
     //     return view('hr.attendance.index', compact('filteredData', 'totalTime', 'totalLate'));
     // }
 
+    // public function updateTable(Request $request)
+    // {
+    //     if($request->ajax())
+    // 	{
+    // 		if($request->action == 'edit')
+    // 		{
+    // 			$data = array(
+    // 				'timeIn'	=>	$request->timeIn,
+    // 				'breakIn'		=>	$request->breakIn,
+    // 				'breakOut'		=>	$request->breakOut,
+    //                 'timeOut'		=>	$request->timeOut
+    // 			);
+    // 			DB::table('attendance')
+    // 				->where('id', $request->id)
+    // 				->update($data);
+    // 		}
+    // 		if($request->action == 'delete')
+    // 		{
+    // 			DB::table('attendance')
+    // 				->where('id', $request->id)
+    // 				->delete();
+    // 		}
+    // 		return response()->json($request);
+    // 	}
+    // }
+
+    public function updateTable(Request $request)
+    {
+        if($request->ajax()) {
+            if($request->action == 'edit') {
+                $data = array(
+                    'timeIn'    => $request->timeIn,
+                    'breakIn'   => $request->breakIn,
+                    'breakOut'  => $request->breakOut,
+                    'timeOut'   => $request->timeOut
+                );
+
+                // Retrieve current data
+                $currentData = DB::table('attendance')->where('id', $request->id)->first();
+
+                // Compute timeTotal
+                $currentTotalSeconds = strtotime($currentData->timeTotal);
+                $newTimeTotalSeconds = (strtotime($data['timeOut']) - strtotime($data['timeIn'])) - (strtotime($data['breakOut']) - strtotime($data['breakIn']));
+                $timeTotalDiffSeconds = $newTimeTotalSeconds - $currentTotalSeconds;
+
+                // Update timeTotal
+                $data['timeTotal'] = gmdate("H:i:s", strtotime($currentData->timeTotal) + $timeTotalDiffSeconds);
+
+                // Calculate totalLate difference
+                $referenceTime = strtotime('10:00:00 AM');
+                $newTimeIn = strtotime($data['timeIn']);
+                $totalLateDiffSeconds = max(0, $newTimeIn - $referenceTime);
+
+                // Update totalLate
+                $data['totalLate'] = gmdate("H:i:s", $totalLateDiffSeconds);
+
+                // Update database
+                DB::table('attendance')
+                    ->where('id', $request->id)
+                    ->update($data);
+            }
+
+            if($request->action == 'delete') {
+                DB::table('attendance')
+                    ->where('id', $request->id)
+                    ->delete();
+            }
+
+            return response()->json($request);
+        }
+    }
 
 
     public function empreport(Request $request)

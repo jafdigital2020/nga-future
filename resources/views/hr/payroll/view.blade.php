@@ -100,6 +100,7 @@
     .card-body {
         padding: 20px;
     }
+
 </style>
 
 @section('content')
@@ -132,11 +133,7 @@
                     </h4>
                     <div class="row">
                         <div class="col-sm-6 m-b-20">
-                            <img
-                                src="../assets/img/jaflogo.png"
-                                class="inv-logo"
-                                alt=""
-                            />
+                            <img src="../assets/img/jaflogo.png" class="inv-logo" alt="" />
                             <h3>JAF Digital</h3>
                             <ul class="list-unstyled mb-0">
                                 <li>Unit 1112, 11th Flr, Cityland</li>
@@ -152,9 +149,7 @@
                                 <ul class="list-unstyled">
                                     <li>
                                         Salary Month:
-                                        <span
-                                            >{{ $viewsalary->payroll_date }}</span
-                                        >
+                                        <span>{{ $viewsalary->payroll_date }}</span>
                                     </li>
                                 </ul>
                             </div>
@@ -165,15 +160,11 @@
                             <ul class="list-unstyled">
                                 <li>
                                     <h5 class="mb-0">
-                                        <strong
-                                            >{{ $viewsalary->employee_name }}</strong
-                                        >
+                                        <strong>{{ $viewsalary->employee_name }}</strong>
                                     </h5>
                                 </li>
                                 <li>
-                                    <span
-                                        >{{ $viewsalary->user->position }}</span
-                                    >
+                                    <span>{{ $viewsalary->user->position }}</span>
                                 </li>
                                 <li>
                                     Employee ID:
@@ -197,9 +188,7 @@
                                         <tr>
                                             <td>
                                                 <strong>Basic Income</strong>
-                                                <span class="float-end"
-                                                    >₱{{ $viewsalary->earnings }}</span
-                                                >
+                                                <span class="float-end">₱{{ $viewsalary->earnings }}</span>
                                             </td>
                                         </tr>
                                         <tr>
@@ -221,35 +210,25 @@
                                         <tr>
                                             <td>
                                                 <strong>Regular Holiday</strong>
-                                                <span class="float-end"
-                                                    >₱{{ $viewsalary->regular_holiday }}</span
-                                                >
+                                                <span class="float-end">₱{{ $viewsalary->regular_holiday }}</span>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>
                                                 <strong>Special Holiday</strong>
-                                                <span class="float-end"
-                                                    >₱{{ $viewsalary->special_holiday }}</span
-                                                >
+                                                <span class="float-end">₱{{ $viewsalary->special_holiday }}</span>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>
-                                                <strong
-                                                    >Birthday PTO Leave</strong
-                                                >
-                                                <span class="float-end"
-                                                    >₱{{ $viewsalary->regular_holiday }}</span
-                                                >
+                                                <strong>Birthday PTO Leave</strong>
+                                                <span class="float-end">₱{{ $viewsalary->regular_holiday }}</span>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>
                                                 <strong>Overtime</strong>
-                                                <span class="float-end"
-                                                    >₱{{ $viewsalary->overtime }}</span
-                                                >
+                                                <span class="float-end">₱{{ $viewsalary->overtime }}</span>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -267,35 +246,25 @@
                                         <tr>
                                             <td>
                                                 <strong>Allowance</strong>
-                                                <span class="float-end"
-                                                    >₱{{ $viewsalary->food_allowance }}</span
-                                                >
+                                                <span class="float-end">₱{{ $viewsalary->food_allowance }}</span>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>
                                                 <strong>13th Month</strong>
-                                                <span class="float-end"
-                                                    >₱{{ $viewsalary->thirteenth_month }}</span
-                                                >
+                                                <span class="float-end">₱{{ $viewsalary->thirteenth_month }}</span>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>
                                                 <strong>Others</strong>
-                                                <span class="float-end"
-                                                    >₱{{ $viewsalary->others }}</span
-                                                >
+                                                <span class="float-end">₱{{ $viewsalary->others }}</span>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>
-                                                <strong
-                                                    >Performance Bonus</strong
-                                                >
-                                                <span class="float-end"
-                                                    >₱{{ $viewsalary->performance_bonus }}</span
-                                                >
+                                                <strong>Performance Bonus</strong>
+                                                <span class="float-end">₱{{ $viewsalary->performance_bonus }}</span>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -313,41 +282,31 @@
                                         <tr>
                                             <td>
                                                 <strong>Late</strong>
-                                                <span class="float-end"
-                                                    >₱{{ $viewsalary->late_deduction }}</span
-                                                >
+                                                <span class="float-end">₱{{ $viewsalary->late_deduction }}</span>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>
                                                 <strong>Withholding Tax</strong>
-                                                <span class="float-end"
-                                                    >₱{{ $viewsalary->withholding_tax }}</span
-                                                >
+                                                <span class="float-end">₱{{ $viewsalary->withholding_tax }}</span>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>
                                                 <strong>SSS</strong>
-                                                <span class="float-end"
-                                                    >₱{{ $viewsalary->sss }}</span
-                                                >
+                                                <span class="float-end">₱{{ $viewsalary->sss }}</span>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>
                                                 <strong>PHIC</strong>
-                                                <span class="float-end"
-                                                    >₱{{ $viewsalary->phil_health }}</span
-                                                >
+                                                <span class="float-end">₱{{ $viewsalary->phil_health }}</span>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>
                                                 <strong>HDMF</strong>
-                                                <span class="float-end"
-                                                    >₱{{ $viewsalary->pag_ibig }}</span
-                                                >
+                                                <span class="float-end">₱{{ $viewsalary->pag_ibig }}</span>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -364,52 +323,34 @@
                                     <tbody>
                                         <tr>
                                             <td>
-                                                <strong style="color: red"
-                                                    >NET PAY</strong
-                                                >
-                                                <span
-                                                    class="float-end"
-                                                    style="color: red"
-                                                    >₱{{ $viewsalary->salary }}</span
-                                                >
+                                                <strong style="color: red">NET PAY</strong>
+                                                <span class="float-end"
+                                                    style="color: red">₱{{ $viewsalary->salary }}</span>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>
-                                                <strong
-                                                    >Total Deductions</strong
-                                                >
-                                                <span class="float-end"
-                                                    >₱{{ $viewsalary->total_deduct }}</span
-                                                >
+                                                <strong>Total Deductions</strong>
+                                                <span class="float-end">₱{{ $viewsalary->total_deduct }}</span>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>
                                                 <strong>Total Hours</strong>
-                                                <span
-                                                    class="float-end"
-                                                    >{{ $viewsalary->total_hours }}</span
-                                                >
+                                                <span class="float-end">{{ $viewsalary->total_hours }}</span>
                                             </td>
                                         </tr>
 
                                         <tr>
                                             <td>
-                                                <strong
-                                                    >Gross Monthly Pay</strong
-                                                >
-                                                <span class="float-end"
-                                                    >₱{{ $viewsalary->gross_monthly }}</span
-                                                >
+                                                <strong>Gross Monthly Pay</strong>
+                                                <span class="float-end">₱{{ $viewsalary->gross_monthly }}</span>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>
                                                 <strong>Gross Basic Pay</strong>
-                                                <span class="float-end"
-                                                    >₱{{ $viewsalary->gross_basic }}</span
-                                                >
+                                                <span class="float-end">₱{{ $viewsalary->gross_basic }}</span>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -503,6 +444,7 @@
         // Save the PDF file
         doc.save("payslip.pdf");
     }
+
 </script>
 
 @endsection

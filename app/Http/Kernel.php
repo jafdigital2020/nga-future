@@ -37,6 +37,8 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \Illuminate\Session\Middleware\AuthenticateSession::class,
+            
         ],
 
         'api' => [
@@ -66,5 +68,7 @@ class Kernel extends HttpKernel
         'isAdmin' => \App\Http\Middleware\AdminMiddleware::class,
         'isHr' => \App\Http\Middleware\HrMiddleware::class,
         'isEmployee' => \App\Http\Middleware\EmployeeMiddleware::class,
+        'isManager' => \App\Http\Middleware\ManagerMiddleware::class,
+        'sessionTimeout' => \App\Http\Middleware\SessionTimeout::class,
     ];
 }

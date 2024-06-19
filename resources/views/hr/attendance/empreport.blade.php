@@ -24,12 +24,8 @@
             <div class="col-sm-2">
                 <div class="form-group form-focus">
                     <div class="cal-icon">
-                        <input
-                            type="text"
-                            class="form-control floating datetimepicker"
-                            id="start_date"
-                            name="start_date"
-                        />
+                        <input type="text" class="form-control floating datetimepicker" id="start_date"
+                            name="start_date" />
                     </div>
                     <label class="focus-label">From</label>
                 </div>
@@ -37,12 +33,7 @@
             <div class="col-sm-2">
                 <div class="form-group form-focus">
                     <div class="cal-icon">
-                        <input
-                            type="text"
-                            class="form-control floating datetimepicker"
-                            id="end_date"
-                            name="end_date"
-                        />
+                        <input type="text" class="form-control floating datetimepicker" id="end_date" name="end_date" />
                     </div>
                     <label class="focus-label">To</label>
                 </div>
@@ -82,10 +73,11 @@
                 <div class="form-group form-focus select-focus">
                     <select class="form-control" id="user_id" name="user_id">
                         <option value="">-</option>
-                        <option value="">-- All Employees --</option>
+                        <option value="">All Employees</option>
                         @foreach($users as $user)
-                        <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
-                    @endforeach
+                        <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
+                            {{ $user->name }}</option>
+                        @endforeach
                     </select>
                     <label class="focus-label">Select Employee</label>
                 </div>
@@ -102,9 +94,11 @@
     <div class="row">
         <div class="col-lg-12">
             <div class="table-responsive">
-                <table class="table table-striped table-nowrap custom-table mb-0 datatable">
+                @csrf
+                <table class="table datatable" id="edittable">
                     <thead>
                         <tr>
+                            <th>ID</th>
                             <th>Name</th>
                             <th>Date</th>
                             <th>Time In</th>
@@ -119,6 +113,7 @@
                     <tbody>
                         @foreach($filteredData as $item)
                         <tr>
+                            <td>{{ $item->id }}</td>
                             <td>{{ $item->name }}</td>
                             <td>{{ $item->date }}</td>
                             <td>{{ $item->timeIn }}</td>
@@ -126,16 +121,14 @@
                             <td>{{ $item->breakOut }}</td>
                             <td>{{ $item->timeOut }}</td>
                             <td>
-                                <span
-                                    class="{{ $item->status == 'Late' ? 'bg-inverse-danger' : 'bg-inverse-success' }}"
+                                <span class="{{ $item->status == 'Late' ? 'bg-inverse-danger' : 'bg-inverse-success' }}"
                                     style="
                                         padding: 5px 10px 5px 10px;
                                         border-radius: 5px;
                                         font-size: 12px;
                                         font-weight: bold;
                                         color: white;
-                                    "
-                                >
+                                    ">
                                     {{ $item->status }}
                                 </span>
                             </td>
@@ -149,16 +142,54 @@
                     <tfoot>
                         <tr>
                             <th colspan="7">Total</th>
+                            <th></th>
                             <th>{{ $totalLate }}</th>
                             <th id="total_hours">
                                 {{ $total }}
                             </th>
+
                         </tr>
                     </tfoot>
                 </table>
             </div>
-         </div>
-    </div
+        </div>
+    </div>
 </div>
+@endsection
 
+@section('scripts')
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-Token': $("input[name=_token]").val()
+            }
+        });
+
+        $('#edittable').Tabledit({
+            url: '{{ route("update.table") }}',
+            dataType: "json",
+            columns: {
+                identifier: [0, 'id'],
+                editable: [
+                    [3, 'timeIn'],
+                    [4, 'breakIn'],
+                    [5, 'breakOut'],
+                    [6, 'timeOut']
+                ]
+            },
+            restoreButton: false,
+            onSuccess: function (data, textStatus, jqXHR) {
+                if (data.action == 'delete') {
+                    $('#' + data.id).remove();
+                }
+                location.reload(); // Refresh the browser
+            }
+        });
+
+    });
+
+</script>
 @endsection

@@ -2,9 +2,10 @@
 
 <div class="content container-fluid">
     <!-- Page Header -->
+
     <div class="page-header">
-        <div class="row">
-            <div class="col-sm-12">
+        <div class="row align-items-center">
+            <div class="col">
                 <h3 class="page-title">Attendance</h3>
                 <ul class="breadcrumb">
                     <li class="breadcrumb-item">
@@ -13,8 +14,13 @@
                     <li class="breadcrumb-item active">Time In & Time Out</li>
                 </ul>
             </div>
+            <div class="col-auto float-right ml-auto">
+                <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_employee"><i
+                        class="fa fa-plus"></i> Request Overtime </a>
+            </div>
         </div>
     </div>
+
     <!-- /Page Header -->
 
     <div class="row">
@@ -23,10 +29,7 @@
                 <div class="card-body">
                     <h5 class="card-title">
                         Timesheet
-                        <small
-                            class="text-muted"
-                            >{{ \Carbon\Carbon::now()->format('d M Y') }}</small
-                        >
+                        <small class="text-muted">{{ \Carbon\Carbon::now()->format('d M Y') }}</small>
                     </h5>
                     <div class="punch-det">
                         @if (session('success'))
@@ -38,7 +41,7 @@
                             {{ session("error") }}
                         </div>
                         @else
-                        <h6>Hello</h6>
+                        <h6>Hello {{ Auth::user()->name }}</h6>
                         <p>Welcome to One JAF!</p>
                         @endif
                     </div>
@@ -60,40 +63,60 @@
                         <form action="{{ url('hr/attendance') }}" method="POST">
                             @csrf
                             <div class="punch-btn-section">
-                                <button
-                                    type="submit"
-                                    class="btn btn-primary punch-btn"
-                                >
+                                <button type="submit" class="btn btn-primary punch-btn">
                                     Time In
                                 </button>
                             </div>
                         </form>
                         <!-- Time Out -->
-                        <form
-                            action="{{ url('hr/attendance/') }}"
-                            method="POST"
-                        >
-                            @csrf @method('PUT')
-                            <div class="punch-btn-section">
-                                <button
-                                    type="submit"
-                                    class="btn btn-primary punch-btn"
-                                >
-                                    Time Out
-                                </button>
-                            </div>
-                        </form>
+
+                        <div class="punch-btn-section">
+                            <button type="submit" class="btn btn-primary punch-btn" data-toggle="modal"
+                                data-target="#exampleModal">
+                                Time Out
+                            </button>
+                        </div>
                     </div>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
+                        aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">
+                                        Warning!
+                                    </h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to time out?
+                                </div>
+                                <div class="modal-footer">
+                                    <form action="{{ url('hr/attendance/') }}" method="POST">
+                                        @csrf @method('PUT')
+                                        <button type="submit" class="btn btn-primary">
+                                            Yes
+                                        </button>
+                                    </form>
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                        No
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal -->
 
                     <!-- Break Buttons -->
 
                     <div class="statistics">
                         <div class="row">
                             <div class="col-md-6 col-6 text-center">
-                                <form
-                                    action="{{ url('hr/attendance/breakin') }}"
-                                    method="POST"
-                                >
+                                <form action="{{ url('hr/attendance/breakin') }}" method="POST">
                                     @csrf @method('PUT')
                                     <div class="stats-box">
                                         <button class="breakOut">
@@ -103,13 +126,10 @@
                                 </form>
                             </div>
                             <div class="col-md-6 col-6 text-center">
-                                <form
-                                    action="{{ url('hr/attendance/breakout') }}"
-                                    method="POST"
-                                >
+                                <form action="{{ url('hr/attendance/breakout') }}" method="POST">
                                     @csrf @method('PUT')
                                     <div class="stats-box">
-                                        <button class="breakOut">
+                                        <button class="breakOut" data-toggle="modal" data-target="#exampleModalCenter">
                                             Break In
                                         </button>
                                     </div>
@@ -152,9 +172,7 @@
                         <div class="stats-info">
                             <p>
                                 Address
-                                <strong
-                                    >{{ Auth::user()->completeAddress }}</strong
-                                >
+                                <strong>{{ Auth::user()->completeAddress }}</strong>
                             </p>
                         </div>
                     </div>
@@ -164,7 +182,7 @@
         <div class="col-md-4">
             <div class="card recent-activity">
                 <div class="card-body">
-                    <h5 class="card-title">Today Activity</h5>
+                    <h5 class="card-title">Today's Activity</h5>
                     <ul class="res-activity-list">
                         @if($latest && $latest->date === now()->format('Y-m-d'))
                         @if($latest->timeIn)
@@ -213,12 +231,8 @@
             <div class="col-sm-3">
                 <div class="form-group form-focus">
                     <div class="cal-icon">
-                        <input
-                            type="text"
-                            class="form-control floating datetimepicker"
-                            id="start_date"
-                            name="start_date"
-                        />
+                        <input type="text" class="form-control floating datetimepicker" id="start_date"
+                            name="start_date" />
                     </div>
                     <label class="focus-label">From</label>
                 </div>
@@ -226,12 +240,7 @@
             <div class="col-sm-3">
                 <div class="form-group form-focus">
                     <div class="cal-icon">
-                        <input
-                            type="text"
-                            class="form-control floating datetimepicker"
-                            id="end_date"
-                            name="end_date"
-                        />
+                        <input type="text" class="form-control floating datetimepicker" id="end_date" name="end_date" />
                     </div>
                     <label class="focus-label">To</label>
                 </div>
@@ -259,9 +268,7 @@
     <div class="row">
         <div class="col-lg-12">
             <div class="table-responsive">
-                <table
-                    class="table table-striped table-nowrap custom-table mb-0 datatable"
-                >
+                <table class="table table-striped table-nowrap custom-table mb-0 datatable">
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -281,16 +288,14 @@
                             <td>{{ $item->timeIn }}</td>
                             <td>{{ $item->timeOut }}</td>
                             <td>
-                                <span
-                                    class="{{ $item->status == 'Late' ? 'bg-inverse-danger' : 'bg-inverse-success' }}"
+                                <span class="{{ $item->status == 'Late' ? 'bg-inverse-danger' : 'bg-inverse-success' }}"
                                     style="
                                         padding: 5px 10px 5px 10px;
                                         border-radius: 5px;
                                         font-size: 12px;
                                         font-weight: bold;
                                         color: white;
-                                    "
-                                >
+                                    ">
                                     {{ $item->status }}
                                 </span>
                             </td>

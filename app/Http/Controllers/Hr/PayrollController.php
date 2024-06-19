@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Hr;
 
 use Carbon\Carbon;
 use App\Models\User;
+use App\Models\Salary;
 use Illuminate\Http\Request;
 use App\Models\EmployeeSalary;
 use App\Models\EmployeeAttendance;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Response;
 
 class PayrollController extends Controller
 {
@@ -25,9 +27,24 @@ class PayrollController extends Controller
             $endDate = $request->input('end_date');
             $userId = $request->input('user_id');
 
+            // Initialize user details
+            $hourlyRate = 0;
+            $position = 'Unknown';
+            $name = 'Unknown';
+
+            if ($userId) {
+                // Fetch user details directly
+                $user = DB::table('users')->where('id', $userId)->first();
+                if ($user) {
+                    $hourlyRate = $user->hourlyRate;
+                    $position = $user->position;
+                    $name = $user->name;
+                }
+            }
+
             $data = DB::table('attendance')
-            ->join('users', 'attendance.users_id', '=', 'users.id')
-            ->select('attendance.*', 'users.hourlyRate');
+                ->join('users', 'attendance.users_id', '=', 'users.id')
+                ->select('attendance.*', 'users.hourlyRate', 'users.name', 'users.position');
 
             if ($startDate && $endDate) {
                 $data->whereBetween('date', [$startDate, $endDate]);
@@ -38,68 +55,66 @@ class PayrollController extends Controller
             }
 
             $filteredData = $data->get();
-            // $totalSeconds = 0;
-            // $totalLateSeconds = 0;
-
-            // foreach ($filteredData as $row) {
-            //     $timeTotal = strtotime($row->timeTotal);
-            //     $totalSeconds += $timeTotal;
-            // }
-            // foreach ($filteredData as $row) {
-            //     $totalLate = strtotime($row->totalLate);
-            //     $totalLateSeconds += $totalLate;
-            // }
-
-            // $total = gmdate("H:i:s", $totalSeconds);
-            // $totalLate = gmdate("H:i:s", $totalLateSeconds);
             $totalSeconds = 0;
             $totalLateSeconds = 0;
 
             foreach ($filteredData as $row) {
                 $timeTotal = explode(':', $row->timeTotal);
-                $seconds = ($timeTotal[0] * 3600) + ($timeTotal[1] * 60) + $timeTotal[2];
-                $totalSeconds += $seconds;
+                if (count($timeTotal) === 3) {
+                    $seconds = ($timeTotal[0] * 3600) + ($timeTotal[1] * 60) + $timeTotal[2];
+                    $totalSeconds += $seconds;
+                }
             }
 
             foreach ($filteredData as $row) {
                 $totalLate = explode(':', $row->totalLate);
-                $seconds = ($totalLate[0] * 3600) + ($totalLate[1] * 60) + $totalLate[2];
-                $totalLateSeconds += $seconds;
+                if (count($totalLate) === 3) {
+                    $seconds = ($totalLate[0] * 3600) + ($totalLate[1] * 60) + $totalLate[2];
+                    $totalLateSeconds += $seconds;
+                }
             }
 
-            $totalHours = floor($totalSeconds / 3600);
-            $totalMinutes = floor(($totalSeconds % 3600) / 60);
-            $totalSeconds = $totalSeconds % 60;
+            // Initialize total and totalLate
+            $total = '00:00:00';
+            $totalLate = '00:00:00';
 
-            $total = sprintf("%02d:%02d:%02d", $totalHours, $totalMinutes, $totalSeconds);
+            if ($totalSeconds > 0 || $totalLateSeconds > 0) {
+                $totalHours = floor($totalSeconds / 3600);
+                $totalMinutes = floor(($totalSeconds % 3600) / 60);
+                $remainingSeconds = $totalSeconds % 60;
 
-            $totalLateHours = floor($totalLateSeconds / 3600);
-            $totalLateMinutes = floor(($totalLateSeconds % 3600) / 60);
-            $totalLateSeconds = $totalLateSeconds % 60;
+                $total = sprintf("%02d:%02d:%02d", $totalHours, $totalMinutes, $remainingSeconds);
 
-            $totalLate = sprintf("%02d:%02d:%02d", $totalLateHours, $totalLateMinutes, $totalLateSeconds);
+                $totalLateHours = floor($totalLateSeconds / 3600);
+                $totalLateMinutes = floor(($totalLateSeconds % 3600) / 60);
+                $remainingLateSeconds = $totalLateSeconds % 60;
 
+                $totalLate = sprintf("%02d:%02d:%02d", $totalLateHours, $totalLateMinutes, $remainingLateSeconds);
+            }
 
             $users = User::all();
+            $salaries = EmployeeSalary::all();
 
-            // $users = User::select('id', 'name', 'hourlyRate')->get();
-
-
-            if (!empty($filteredData)) {
-                $name = $filteredData[0]->name;
-                $hourlyRate = $filteredData[0]->hourlyRate;
-            } else {
-                $name = 'Unknown';
-                $hourlyRate = 0; // or any default value you want
+            if ($request->ajax()) {
+                return response()->json([
+                    'filteredData' => $filteredData,
+                    'total' => $total,
+                    'totalLate' => $totalLate,
+                    'name' => $name,
+                    'hourlyRate' => $hourlyRate,
+                    'position' => $position,
+                    'salaries' => $salaries,
+                ]);
             }
 
-            $salaries = EmployeeSalary::all();
-            return view('hr.payroll.index', compact('filteredData', 'total', 'users', 'totalLate', 'startDate', 'endDate', 'name', 'salaries', 'hourlyRate'));
+            return view('hr.payroll.index', compact('filteredData', 'total', 'users', 'totalLate', 'startDate', 'endDate', 'name', 'salaries', 'hourlyRate', 'position'));
 
         } catch (\Exception $e) {
             return back()->with('error', 'An error occurred: ' . $e->getMessage());
         }
     }
+
+
 
     // INSERT TO DATABASE
 
@@ -117,16 +132,16 @@ class PayrollController extends Controller
         $endDate = $request->end_date;
 
         // Check if there is an existing record with the same name and date range
-        $existingSalary = EmployeeSalary::where('employee_name', $name)
-            ->where('payroll_start', $startDate)
-            ->where('payroll_end', $endDate)
+        $existingSalary = Salary::where('fullName', $name)
+            ->where('start_date', $startDate)
+            ->where('end_date', $endDate)
             ->first();
 
         if ($existingSalary) {
             return response()->json(['success' => false, 'message' => 'A record with the same name and date range already exists.']);
         }
 
-        $salary = new EmployeeSalary;
+        $salary = new Salary;
 
         $salary->users_id = $request->user_id;
         $salary->employee_name = $name;

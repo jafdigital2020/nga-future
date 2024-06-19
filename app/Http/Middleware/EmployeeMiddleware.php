@@ -21,7 +21,7 @@ class EmployeeMiddleware
         if (Auth::check() && Auth::user()->role_as == User::ROLE_EMPLOYEE) {
             return $next($request);
         } else {
-            return redirect('/home')->with('status', 'Welcome To One JAF');
+            return redirect('/')->with('status', 'Welcome To One JAF');
         }
     }
 }
