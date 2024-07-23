@@ -4,188 +4,63 @@ namespace App\Http\Controllers\Hr;
 
 use Carbon\Carbon;
 use App\Models\User;
+use App\Models\Attendance;
 use Carbon\CarbonInterval;
 use Illuminate\Http\Request;
 use App\Models\EmployeeAttendance;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use App\Models\Attendance;
 use Illuminate\Support\Facades\Auth;
 
 class HRAttendanceController extends Controller
 {
-    public function index (Request $request)
+    public function index(Request $request)
     {
-        $EmployeeAttendance = EmployeeAttendance::latest()->first();
-        $att = Auth::user()->id;
-        $total = EmployeeAttendance::sum('timeTotal');
-        $all = DB::table('attendance')->get();
-        $empatt = DB::table('attendance')->where('users_id', auth()->user()->id)->get();
-        $latest = EmployeeAttendance::where('users_id', Auth::user()->id)->latest()->first();
-        $data = EmployeeAttendance::where('users_id', Auth::user()->id)->get();
-
-        $authUserId = auth()->user()->id;
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
-        
-        $data = EmployeeAttendance::where('users_id', $authUserId);
-        
-        if ($startDate && $endDate) {
-            $data->whereBetween('date', [$startDate, $endDate]);
-        } elseif ($request->input('filter') == 'last_30_days') {
-            $data->where('date', '>=', Carbon::now()->subDays(30)->toDateString());
-        } elseif ($request->input('filter') == 'last_15_days') {
-            $data->where('date', '>=', Carbon::now()->subDays(15)->toDateString());
-        } elseif ($request->input('filter') == 'last_year') {
-            $data->where('date', '>=', Carbon::now()->subYear()->toDateString());
+        $employeeName = $request->get('employee_name');
+        $month = $request->get('month', date('m'));
+        $year = $request->get('year', date('Y'));
+        $department = $request->get('department');
+    
+        // Query users with their attendance records filtered by month, year, and optionally department
+        $usersQuery = User::query()
+            ->with(['employeeAttendance' => function ($query) use ($month, $year, $department) {
+                $query->whereMonth('date', $month)->whereYear('date', $year);
+                if ($department) {
+                    $query->whereHas('user', function ($query) use ($department) {
+                        $query->where('department', $department);
+                    });
+                }
+            }])
+            ->when($employeeName, function ($query) use ($employeeName) {
+                $query->where('name', 'like', '%' . $employeeName . '%');
+            });
+    
+        // Apply department filter directly on the users query
+        if ($department) {
+            $usersQuery->where('department', $department);
         }
-        
-        $filteredData = $data->get();
-       
-        $totalSeconds = 0;
-        $totalLateSeconds = 0;
-
-        foreach ($filteredData as $row) {
-            $timeTotal = explode(':', $row->timeTotal);
-            if (count($timeTotal) === 3 && is_numeric($timeTotal[0]) && is_numeric($timeTotal[1]) && is_numeric($timeTotal[2])) {
-                $seconds = ($timeTotal[0] * 3600) + ($timeTotal[1] * 60) + $timeTotal[2];
-                $totalSeconds += $seconds;
-            }
-        }
-
-        foreach ($filteredData as $row) {
-            $totalLate = explode(':', $row->totalLate);
-            if (count($totalLate) === 3 && is_numeric($totalLate[0]) && is_numeric($totalLate[1]) && is_numeric($totalLate[2])) {
-                $seconds = ($totalLate[0] * 3600) + ($totalLate[1] * 60) + $totalLate[2];
-                $totalLateSeconds += $seconds;
-            }
-        }
-        
-        $totalHours = floor($totalSeconds / 3600);
-        $totalMinutes = floor(($totalSeconds % 3600) / 60);
-        $totalSeconds = $totalSeconds % 60;
-        
-        $totalTime = sprintf("%02d:%02d:%02d", $totalHours, $totalMinutes, $totalSeconds);
-        
-        $totalLateHours = floor($totalLateSeconds / 3600);
-        $totalLateMinutes = floor(($totalLateSeconds % 3600) / 60);
-        $totalLateSeconds = $totalLateSeconds % 60;
-        
-        $totalLate = sprintf("%02d:%02d:%02d", $totalLateHours, $totalLateMinutes, $totalLateSeconds);
-        return view('hr.attendance.index', compact('att', 'empatt', 'all', 'total', 'latest', 'data', 'filteredData', 'totalTime', 'totalLate'));
+    
+        $users = $usersQuery->get();
+    
+        // Fetch distinct departments for the dropdown filter
+        $departments = User::select('department')->distinct()->get();
+    
+        return view('hr.attendance.index', [
+            'users' => $users,
+            'month' => $month,
+            'year' => $year,
+            'departments' => $departments,
+            'selectedEmployeeName' => $employeeName,
+            'selectedDepartment' => $department,
+        ]);
     }
 
-    public function store(Request $request)
+    public function tableview()
     {
-        $request->user()->checkIn();
-
-        return redirect('/hr/attendance');
+        $users = EmployeeAttendance::all();
+        return view('hr.attendance.table', compact('users'));
     }
-
-    public function breakIn(Request $request)
-    {
-        $request->user()->breakIn();
-
-        return redirect('/hr/attendance');
-
-    }
-
-    public function breakOut(Request $request)
-    {
-        $request->user()->breakOut();
-
-
-        return redirect('/hr/attendance');
-    }
-
-    public function update(Request $request)
-    {
-        $request->user()->checkOut();
-
-        return redirect('/hr/attendance');
-    }
-
-
-    // public function report(Request $request)
-    // {
-    //     $authUserId = auth()->user()->id;
-    //     $startDate = $request->input('start_date');
-    //     $endDate = $request->input('end_date');
-
-    //     $data = EmployeeAttendance::where('users_id', $authUserId);
-
-    //     if ($startDate && $endDate) {
-    //         $data->whereBetween('date', [$startDate, $endDate]);
-    //     } elseif ($request->input('filter') == 'last_30_days') {
-    //         $data->where('date', '>=', Carbon::now()->subDays(30)->toDateString());
-    //     } elseif ($request->input('filter') == 'last_15_days') {
-    //         $data->where('date', '>=', Carbon::now()->subDays(15)->toDateString());
-    //     } elseif ($request->input('filter') == 'last_year') {
-    //         $data->where('date', '>=', Carbon::now()->subYear()->toDateString());
-    //     }
-
-    //     $filteredData = $data->get();
-       
-    //     $totalSeconds = 0;
-    //     $totalLateSeconds = 0;
-
-    //     foreach ($filteredData as $row) {
-    //         $timeTotal = explode(':', $row->timeTotal);
-    //         if (count($timeTotal) === 3 && is_numeric($timeTotal[0]) && is_numeric($timeTotal[1]) && is_numeric($timeTotal[2])) {
-    //             $seconds = ($timeTotal[0] * 3600) + ($timeTotal[1] * 60) + $timeTotal[2];
-    //             $totalSeconds += $seconds;
-    //         }
-    //     }
-
-    //     foreach ($filteredData as $row) {
-    //         $totalLate = explode(':', $row->totalLate);
-    //         if (count($totalLate) === 3 && is_numeric($totalLate[0]) && is_numeric($totalLate[1]) && is_numeric($totalLate[2])) {
-    //             $seconds = ($totalLate[0] * 3600) + ($totalLate[1] * 60) + $totalLate[2];
-    //             $totalLateSeconds += $seconds;
-    //         }
-    //     }
-        
-    //     $totalHours = floor($totalSeconds / 3600);
-    //     $totalMinutes = floor(($totalSeconds % 3600) / 60);
-    //     $totalSeconds = $totalSeconds % 60;
-        
-    //     $totalTime = sprintf("%02d:%02d:%02d", $totalHours, $totalMinutes, $totalSeconds);
-        
-    //     $totalLateHours = floor($totalLateSeconds / 3600);
-    //     $totalLateMinutes = floor(($totalLateSeconds % 3600) / 60);
-    //     $totalLateSeconds = $totalLateSeconds % 60;
-        
-    //     $totalLate = sprintf("%02d:%02d:%02d", $totalLateHours, $totalLateMinutes, $totalLateSeconds);
-        
-
-    //     return view('hr.attendance.index', compact('filteredData', 'totalTime', 'totalLate'));
-    // }
-
-    // public function updateTable(Request $request)
-    // {
-    //     if($request->ajax())
-    // 	{
-    // 		if($request->action == 'edit')
-    // 		{
-    // 			$data = array(
-    // 				'timeIn'	=>	$request->timeIn,
-    // 				'breakIn'		=>	$request->breakIn,
-    // 				'breakOut'		=>	$request->breakOut,
-    //                 'timeOut'		=>	$request->timeOut
-    // 			);
-    // 			DB::table('attendance')
-    // 				->where('id', $request->id)
-    // 				->update($data);
-    // 		}
-    // 		if($request->action == 'delete')
-    // 		{
-    // 			DB::table('attendance')
-    // 				->where('id', $request->id)
-    // 				->delete();
-    // 		}
-    // 		return response()->json($request);
-    // 	}
-    // }
 
     public function updateTable(Request $request)
     {
@@ -233,78 +108,83 @@ class HRAttendanceController extends Controller
         }
     }
 
-
     public function empreport(Request $request)
     {
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
-        $userId = $request->input('user_id');
-        $selectedMonth = $request->input('month');
+        $employeeName = $request->get('employee_name');
+        $month = $request->get('month', date('m'));
+        $year = $request->get('year', date('Y'));
+        $department = $request->get('department');
     
-        $data = DB::table('attendance');
+        // Query users with their attendance records filtered by month, year, and optionally department
+        $usersQuery = User::query()
+            ->with(['employeeAttendance' => function ($query) use ($month, $year, $department) {
+                $query->whereMonth('date', $month)->whereYear('date', $year);
+                if ($department) {
+                    $query->whereHas('user', function ($query) use ($department) {
+                        $query->where('department', $department);
+                    });
+                }
+            }])
+            ->when($employeeName, function ($query) use ($employeeName) {
+                $query->where('name', 'like', '%' . $employeeName . '%');
+            });
     
-        if ($startDate && $endDate) {
-            $data->whereBetween('date', [$startDate, $endDate]);
-        } elseif ($request->input('filter') == 'last_30_days') {
-            $data->where('date', '>=', Carbon::now()->subDays(30)->toDateString());
-        } elseif ($request->input('filter') == 'last_15_days') {
-            $data->where('date', '>=', Carbon::now()->subDays(15)->toDateString());
-        } elseif ($request->input('filter') == 'last_year') {
-            $data->where('date', '>=', Carbon::now()->subYear()->toDateString());
+        // Apply department filter directly on the users query
+        if ($department) {
+            $usersQuery->where('department', $department);
         }
     
-        if ($selectedMonth && $selectedMonth != '-') {
-            $year = date('Y');
-            $monthNumber = $this->getMonthNumber($selectedMonth);
-            $data->whereRaw('MONTH(date) = ?', [$monthNumber]);
-            $data->whereRaw('YEAR(date) = ?', [$year]);
-        }
+        $users = $usersQuery->get();
     
-        if ($userId) {
-            $data->where('users_id', '=', $userId);
-        }
-    
-        $filteredData = $data->get();
-
-        $totalSeconds = 0;
+        // Calculate totals for filtered data
         $totalLateSeconds = 0;
-
-        foreach ($filteredData as $row) {
-            $timeTotal = explode(':', $row->timeTotal);
-            if (count($timeTotal) === 3 && is_numeric($timeTotal[0]) && is_numeric($timeTotal[1]) && is_numeric($timeTotal[2])) {
-                $seconds = ($timeTotal[0] * 3600) + ($timeTotal[1] * 60) + $timeTotal[2];
-                $totalSeconds += $seconds;
+        $totalSeconds = 0;
+    
+        foreach ($users as $user) {
+            foreach ($user->employeeAttendance as $attendance) {
+                $timeTotal = explode(':', $attendance->timeTotal);
+                if (count($timeTotal) === 3 && is_numeric($timeTotal[0]) && is_numeric($timeTotal[1]) && is_numeric($timeTotal[2])) {
+                    $seconds = ($timeTotal[0] * 3600) + ($timeTotal[1] * 60) + $timeTotal[2];
+                    $totalSeconds += $seconds;
+                }
+    
+                $totalLate = explode(':', $attendance->totalLate);
+                if (count($totalLate) === 3 && is_numeric($totalLate[0]) && is_numeric($totalLate[1]) && is_numeric($totalLate[2])) {
+                    $seconds = ($totalLate[0] * 3600) + ($totalLate[1] * 60) + $totalLate[2];
+                    $totalLateSeconds += $seconds;
+                }
             }
         }
-
-        foreach ($filteredData as $row) {
-            $totalLate = explode(':', $row->totalLate);
-            if (count($totalLate) === 3 && is_numeric($totalLate[0]) && is_numeric($totalLate[1]) && is_numeric($totalLate[2])) {
-                $seconds = ($totalLate[0] * 3600) + ($totalLate[1] * 60) + $totalLate[2];
-                $totalLateSeconds += $seconds;
-            }
-        }
+    
+        // Convert total seconds to hours:minutes:seconds format
         $totalHours = floor($totalSeconds / 3600);
         $totalMinutes = floor(($totalSeconds % 3600) / 60);
         $totalSeconds = $totalSeconds % 60;
-
-        $total = sprintf("%02d:%02d:%02d", $totalHours, $totalMinutes, $totalSeconds);
-
+        $totalTime = sprintf("%02d:%02d:%02d", $totalHours, $totalMinutes, $totalSeconds);
+    
         $totalLateHours = floor($totalLateSeconds / 3600);
         $totalLateMinutes = floor(($totalLateSeconds % 3600) / 60);
         $totalLateSeconds = $totalLateSeconds % 60;
-
         $totalLate = sprintf("%02d:%02d:%02d", $totalLateHours, $totalLateMinutes, $totalLateSeconds);
-
-        $users = User::all();
-        $months = ['-', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        return view('hr.attendance.empreport', compact('filteredData', 'total', 'users', 'totalLate', 'months'));
+    
+        // Fetch distinct departments for the dropdown filter
+        $departments = User::select('department')->distinct()->get();
+    
+        return view('hr.attendance.attendancetable', [
+            'filteredData' => $users, // Assuming your Blade template expects 'filteredData'
+            'month' => $month,
+            'year' => $year,
+            'departments' => $departments,
+            'selectedEmployeeName' => $employeeName,
+            'selectedDepartment' => $department,
+            'totalLate' => $totalLate,
+            'total' => $totalTime, // Assuming 'total' represents total time worked
+        ]);
     }
-
+    
     private function getMonthNumber($monthName)
     {
         $monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         return array_search($monthName, $monthNames) + 1;
     }
-    
 }

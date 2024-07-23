@@ -1,183 +1,263 @@
 @extends('layouts.master') @section('title', 'Attendance') @section('content')
 
-<div class="datetime">
-    <div class="date">
-        <span id="dayname">Day</span>,
-        <span id="month">Month</span>
-        <span id="daynum">00</span>,
-        <span id="year">Year</span>
+<div class="content container-fluid">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="page-title">Attendance</h3>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url('admin/dashboard') }}">Dashboard</a>
+                    </li>
+                    <li class="breadcrumb-item active">Attendance</li>
+                </ul>
+            </div>
+            <div class="col-auto float-right ml-auto">
+                <div class="view-icons">
+                    <a href="{{ url('admin/attendance') }}" class="grid-view btn btn-link"><i class="fa fa-th"></i></a>
+                    <a href="{{ url('admin/attendance/tableview') }}" class="list-view btn btn-link active"><i
+                            class="fa fa-bars"></i></a>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="time">
-        <span id="hour">00</span>: <span id="minutes">00</span>:
-        <span id="seconds">00</span>
-        <span id="period">AM</span>
-    </div>
-</div>
+    <!-- /Page Header -->
 
-<div class="report">
-    <h1>Employee Attendance Report</h1>
+    @php
+    $currentMonth = date('n'); // Current month as a number (1-12)
+    $currentYear = date('Y'); // Current year
+    $selectedMonth = old('month', request('month', $currentMonth));
+    $selectedYear = old('year', request('year', $currentYear));
+    @endphp
 
-    <form action="{{ route('admin.empreport') }}" method="GET">
-        <div class="date">
-            <div class="cold-md-4">
-                <label for="start_date">Start Date:</label>
-                <input type="date" id="start_date" name="start_date" />
+    <!-- Search Filter -->
+    <form method="GET" action="{{ route('attendance.admin') }}">
+        <div class="row filter-row">
+            <div class="col-sm-6 col-md-2">
+                <div class="form-group form-focus">
+                    <input type="text" class="form-control floating" name="employee_name">
+                    <label class="focus-label">Employee Name</label>
+                </div>
             </div>
-            <span style="margin: 0 10px"> </span>
-            <div class="cold-md-4">
-                <label for="end_date">End Date:</label>
-                <input type="date" id="end_date" name="end_date" />
+            <div class="col-sm-6 col-md-2">
+                <div class="form-group form-focus select-focus">
+                    <select class="select floating" name="department">
+                        <option value="">- </option>
+                        @foreach($departments as $dept)
+                        <option value="{{ $dept->department }}"
+                            {{ $dept->department == $departments ? 'selected' : '' }}>
+                            {{ $dept->department }}
+                        </option>
+                        @endforeach
+                    </select>
+                    <label class="focus-label">Select Department</label>
+                </div>
             </div>
-            <div class="col-md-4">
-                <label for="filter">Filter</label>
-                <select name="filter" id="filter" class="form-control">
-                    <option value="">-- Select a filter --</option>
-                    <option value="last_15_days">Last 15 Days</option>
-                    <option value="last_30_days">Last 30 Days</option>
-                    <option value="last_year">Last Year</option>
-                </select>
+            <div class="col-sm-6 col-md-2">
+                <div class="form-group form-focus select-focus">
+                    <select class="select floating" name="month">
+                        <option value="">-</option>
+                        @for($i = 1; $i <= 12; $i++) <option value="{{ $i }}"
+                            {{ $i == $selectedMonth ? 'selected' : '' }}>
+                            {{ date('F', mktime(0, 0, 0, $i, 1)) }}
+                            </option>
+                            @endfor
+                    </select>
+                    <label class="focus-label">Select Month</label>
+                </div>
             </div>
-            <div class="col-md-3">
-                <label for="user_id">Employee:</label>
-                <select class="form-control" id="user_id" name="user_id">
-                    <option value="">All Employee</option>
-                    @foreach($users as $user)
-                        <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
-                    @endforeach
-                </select>
+            <div class="col-sm-6 col-md-2">
+                <div class="form-group form-focus select-focus">
+                    <select class="select floating" name="year">
+                        <option value="">-</option>
+                        @for($i = date('Y'); $i >= date('Y') - 5; $i--)
+                        <option value="{{ $i }}" {{ $i == $selectedYear ? 'selected' : '' }}>{{ $i }}</option>
+                        @endfor
+                    </select> <label class="focus-label">Select Year</label>
+                </div>
             </div>
-
-            <button type="submit" class="button-50">Filter</button>
+            <div class="col-sm-6 col-md-4">
+                <button type="submit" class="btn btn-primary btn-block"> Search </button>
+            </div>
         </div>
     </form>
+    <!-- /Search Filter -->
 
-    <table class="table" id="example" style="width: 100%">
-        <thead class="thead-dark">
-            <tr>
-                <th>Name</th>
-                <th>Date</th>
-                <th>Time In</th>
-                <th>Break In</th>
-                <th>Break Out</th>
-                <th>Time Out</th>
-                <th>Status</th>
-                <th>Total Late</th>
-                <th>Total Hours</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($filteredData as $item)
-            <tr>
-                <td>{{ $item->name }}</td>
-                <td>{{ $item->date }}</td>
-                <td>{{ $item->timeIn }}</td>
-                <td>{{ $item->breakIn }}</td>
-                <td>{{ $item->breakOut }}</td>
-                <td>{{ $item->timeOut }}</td>
-                <td>
-                    <span
-                        style="background-color:
-                    {{ $item->status == 'Late' ? 'red' : 'green' }};
-                    color:white; padding: 10px 20px 10px 20px;
-                    border-radius:20px; font-size: 14px; font-weight: bold;"
-                    >
-                        {{ $item->status }}</span
-                    >
-                </td>
-                <td>{{ $item->totalLate }}</td>
-                <td>
-                    {{ $item->timeTotal }}
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-        <tfoot>
-            <tr>
-                <th colspan="7">Total</th>
-                <th>{{ $totalLate }}</th>
-                <th id="total_hours">
-                    {{ $total }}
-                </th>
-            </tr>
-        </tfoot>
-    </table>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="table-responsive">
+                <!-- Display Attendance Table -->
+                <table class="table table-striped custom-table table-nowrap mb-0">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            @for($i = 1; $i <= 31; $i++) <th>{{ $i }}</th>
+                                @endfor
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($users as $user)
+                        <tr>
+                            <td>
+                                <h2 class="table-avatar">
+                                    <a href="#" class="avatar">
+                                        @if ($user->image)
+                                        <img src="{{ asset('images/' . $user->image) }}" alt="Profile Image" />
+                                        @else
+                                        <img src="{{
+                                                asset('images/default.png')
+                                            }}" alt="Profile Image" />
+                                        @endif</a>
+                                    <a href="#">{{ $user->name }}
+                                        <span>{{ $user->department }}</span></a>
+                                </h2>
+                            </td>
+                            @for($i = 1; $i <= 31; $i++) @php $attendance=$user->employeeAttendance->firstWhere('date',
+                                $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT) . '-' . str_pad($i, 2, '0',
+                                STR_PAD_LEFT));
+                                @endphp
+                                <td>
+                                    @if($attendance)
+                                    <a href="javascript:void(0);" data-toggle="modal" data-target="#attendance_info"
+                                        data-employee="{{ $user->name }}" data-date="{{ $attendance->date }}"
+                                        data-timein="{{ $attendance->timeIn }}"
+                                        data-timeout="{{ $attendance->timeOut }}"
+                                        data-breakin="{{ $attendance->breakIn }}"
+                                        data-breakend="{{ $attendance->breakEnd }}"
+                                        data-breakout="{{ $attendance->breakOut }}"
+                                        data-timetotal="{{ $attendance->timeTotal }}">
+                                        <i class="fa fa-check text-success"></i>
+                                    </a>
+                                    @else
+                                    <i class="fa fa-close text-danger"></i>
+                                    @endif
+                                </td>
+                                @endfor
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+
+                <!-- /Display Attendance Table -->
+            </div>
+        </div>
+    </div>
 </div>
+<!-- /Page Content -->
 
-<script type="text/javascript">
-    function updateClock() {
-        var now = new Date();
-        var dname = now.getDay(),
-            mo = now.getMonth(),
-            dnum = now.getDate(),
-            yr = now.getFullYear(),
-            hou = now.getHours(),
-            min = now.getMinutes(),
-            sec = now.getSeconds(),
-            pe = "AM";
+<!-- Attendance Modal -->
+<div class="modal custom-modal fade" id="attendance_info" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Attendance Info</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card punch-status">
+                            <div class="card-body">
+                                <h5 class="card-title">Timesheet <small class="text-muted"></small></h5>
+                                <div class="punch-det">
+                                    <h6>Punch In at</h6>
+                                    <p></p>
+                                </div>
+                                <div class="punch-info">
+                                    <div class="punch-hours">
+                                        <span id="time-total"></span>
+                                    </div>
+                                </div>
+                                <div class="punch-det">
+                                    <h6>Punch Out at</h6>
+                                    <p></p>
+                                </div>
 
-        if (hou == 0) {
-            hou = 12;
-        }
-        if (hou > 12) {
-            hou = hou - 12;
-            pe = "PM";
-        }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card recent-activity">
+                            <div class="card-body">
+                                <h5 class="card-title">Activity</h5>
+                                <ul class="res-activity-list">
+                                    <!-- Activities will be dynamically inserted here -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Attendance Modal -->
 
-        Number.prototype.pad = function (digits) {
-            for (var n = this.toString(); n.length < digits; n = 0 + n);
-            return n;
-        };
+@endsection
 
-        var months = [
-            "January",
-            "February",
-            "March",
-            "April",
-            "May",
-            "June",
-            "July",
-            "August",
-            "September",
-            "October",
-            "November",
-            "December",
-        ];
-        var week = [
-            "Sunday",
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday",
-        ];
-        var ids = [
-            "dayname",
-            "month",
-            "daynum",
-            "year",
-            "hour",
-            "minutes",
-            "seconds",
-            "period",
-        ];
-        var values = [
-            week[dname],
-            months[mo],
-            dnum.pad(2),
-            yr.pad(2),
-            hou.pad(2),
-            min.pad(2),
-            sec.pad(2),
-            pe,
-        ];
-        for (var i = 0; i < ids.length; i++)
-            document.getElementById(ids[i]).firstChild.nodeValue = values[i];
-    }
-    function initClock() {
-        updateClock();
-        window.setInterval("updateClock()", 1);
-    }
+@section('scripts')
+
+<script>
+    $(document).ready(function () {
+        $('#attendance_info').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget); // Button that triggered the modal
+            var employee = button.data('employee');
+            var date = button.data('date');
+            var timeIn = button.data('timein');
+            var timeOut = button.data('timeout');
+            var breakIn = button.data('breakin');
+            var breakEnd = button.data('breakend');
+            var breakOut = button.data('breakout');
+            var timeTotal = button.data('timetotal');
+            // Update the modal's content
+            var modal = $(this);
+            modal.find('.modal-title').text('Attendance Info for ' + employee);
+            modal.find('.card-title small').text(date);
+            modal.find('.punch-det:first p').text(timeIn);
+            modal.find('.punch-det:last p').text(timeOut);
+            modal.find('.statistics .stats-box:first h6').text(breakEnd);
+            modal.find('#time-total').text(timeTotal);
+
+            // Populate activities list
+            var activities = `
+                <li>
+                    <p class="mb-0">Punch In at</p>
+                    <p class="res-activity-time">
+                        <i class="fa fa-clock-o"></i>
+                        ${timeIn}
+                    </p>
+                </li>
+                
+                <li>
+                    <p class="mb-0">Break In at</p>
+                    <p class="res-activity-time">
+                        <i class="fa fa-clock-o"></i>
+                        ${breakIn}
+                    </p>
+                </li>
+                <li>
+                    <p class="mb-0">Break Out at</p>
+                    <p class="res-activity-time">
+                        <i class="fa fa-clock-o"></i>
+                        ${breakOut}
+                    </p>
+                </li>
+                <li>
+                    <p class="mb-0">Punch Out at</p>
+                    <p class="res-activity-time">
+                        <i class="fa fa-clock-o"></i>
+                        ${timeOut}
+                    </p>
+                </li>
+            `;
+            modal.find('.res-activity-list').html(activities);
+        });
+    });
+
 </script>
 
 @endsection

@@ -11,8 +11,10 @@ use App\Models\BankInformation;
 use App\Models\EmploymentRecord;
 use App\Models\EmployementSalary;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\ApprovedAttendance;
 use App\Models\EmployeeAttendance;
 use Illuminate\Support\Facades\DB;
+use App\Models\PersonalInformation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -89,31 +91,6 @@ class User extends Authenticatable
         return $this->role_as == self::ROLE_HR;
     }
 
-    // public static function getSupervisorForDepartment($department, $loggedInUser)
-    // {
-    //     if ($loggedInUser->isSupervisor()) {
-    //         return 'Management';
-    //     }
-
-    //     switch ($department) {
-    //         case 'IT':
-    //         case 'Website Development':
-    //             $supervisorRole = self::ROLE_IT_MANAGER;
-    //             break;
-    //         case 'Marketing':
-    //             $supervisorRole = self::ROLE_MARKETING_MANAGER;
-    //             break;
-    //         case 'SEO':
-    //         case 'Content':
-    //             $supervisorRole = self::ROLE_OPERATIONS_MANAGER;
-    //             break;
-    //         default:
-    //             return null;
-    //     }
-
-    //     return self::where('role_as', $supervisorRole)->first();
-    // }
-
     public static function getSupervisorForDepartment($department, $loggedInUser)
     {
         if ($loggedInUser->isSupervisor() || $loggedInUser->isHr()) {
@@ -136,7 +113,7 @@ class User extends Authenticatable
 
         return null;
     }
-    
+
     public static function getUsersByDepartments(array $departments)
     {
         $supervisorRoles = [
@@ -185,6 +162,11 @@ class User extends Authenticatable
         return $this->hasMany(ContactEmergency::class, 'users_id', 'id');
     }
 
+    public function personalInformation(): HasMany
+    {
+        return $this->hasMany(PersonalInformation::class, 'users_id', 'id');
+    }
+
     public function bankInfo(): HasMany
     {
         return $this->hasMany(BankInformation::class, 'users_id', 'id');
@@ -210,6 +192,15 @@ class User extends Authenticatable
         return $this->hasMany(LeaveRequest::class, 'approved_by');
     }
 
+    public function attendanceRequest()
+    {
+        return $this->hasMany(ApprovedAttendance::class, 'users_id', 'id');
+    }
+
+    public function approvedAttendanceRequest()
+    {
+        return $this->hasMany(ApprovedAttendance::class, 'approved_by');
+    }
 
     public function checkIn()
     {
@@ -224,23 +215,27 @@ class User extends Authenticatable
         }
         else
         {
-            $shiftStart = Carbon::parse('10:00:00', 'Asia/Manila');
-            $shiftEnd = Carbon::parse('19:00:00', 'Asia/Manila');
+            $shiftStart = Carbon::parse('09:00:00', 'Asia/Manila');
+            $lateThreshold = Carbon::parse('11:00:00', 'Asia/Manila');
+            $shiftEnd = Carbon::parse('20:00:00', 'Asia/Manila');
             $timeIn = Carbon::now('Asia/Manila');
 
             if ($timeIn->lt($shiftStart)) {
                 $status = 'On Time';
                 $totalLate = '00:00:00';
-            } elseif ($timeIn->gt($shiftEnd)) {
-                $status = 'Early Bird';
+            } elseif ($timeIn->between($shiftStart, $lateThreshold)) {
+                $status = 'On Time';
                 $totalLate = '00:00:00';
-            } else {
+            } elseif ($timeIn->gt($lateThreshold)) {
                 $status = 'Late';
-                $totalLateInSeconds = $timeIn->diffInSeconds($shiftStart);
+                $totalLateInSeconds = $timeIn->diffInSeconds($lateThreshold);
                 $hours = floor($totalLateInSeconds / 3600);
                 $minutes = floor(($totalLateInSeconds % 3600) / 60);
                 $seconds = $totalLateInSeconds % 60;
                 $totalLate = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+            } else {
+                $status = 'On Time';
+                $totalLate = '00:00:00';
             }
 
             $this->employeeAttendance()->create([
@@ -258,40 +253,36 @@ class User extends Authenticatable
     public function breakIn()
     {
         $now = $this->freshTimestamp();
-
         $breakin = $this->employeeAttendance()
             ->where('date', Carbon::now('Asia/Manila')->toDateString())
             ->whereNull('breakIn')
             ->first();
-
+    
         if (!$breakin) {
-            return back()->with('error', 'You have already taken a break or have not timed in yet');
-        } else {
-            // Check if the user has already timed out
-            $timeout = $this->employeeAttendance()
-                ->where('date', Carbon::now('Asia/Manila')->toDateString())
-                ->whereNotNull('timeOut')
-                ->first();
-
-            if ($timeout) {
-                return back()->with('error', 'You have already timed out.');
-            }
-
-            $breakInTime = Carbon::now('Asia/Manila');
-            $breakEndTime = $breakInTime->copy()->addHour(); // Add 1 hour to the break in time to calculate break end time
-
-            $breakin->update([
-                'breakIn' => $breakInTime->format('h:i:s A'),
-                'breakInTime' => $breakInTime,
-                'breakEnd' => $breakEndTime->format('h:i:s A'),
-            ]);
-
-            return back()->with('success', 'You have successfully started your break');
+            return back()->with('error', 'You have already taken a break or have not timed in yet.');
         }
+    
+        // Check if the user has already timed out
+        $timeout = $this->employeeAttendance()
+            ->where('date', Carbon::now('Asia/Manila')->toDateString())
+            ->whereNotNull('timeOut')
+            ->first();
+    
+        if ($timeout) {
+            return back()->with('error', 'You have already timed out.');
+        }
+    
+        $breakInTime = Carbon::now('Asia/Manila');
+        $breakEndTime = $breakInTime->copy()->addHour(); // Add 1 hour to the break in time to calculate break end time
+    
+        $breakin->update([
+            'breakIn' => $breakInTime->format('h:i:s A'),
+            'breakEnd' => $breakEndTime->format('h:i:s A'),
+        ]);
+    
+        return back()->with('success', 'You have successfully started your break.');
     }
-
-
-
+    
     public function breakOut()
     {
         $now = $this->freshTimestamp();
@@ -344,55 +335,62 @@ class User extends Authenticatable
             'breakOut' => Carbon::now('Asia/Manila')->format('h:i:s A'),
         ]);
     
-        return back()->with('success', 'You have successfully break out.');
+        return back()->with('success', 'Welcome Back!');
     }
-
     
     public function checkOut()
     {
         $now = $this->freshTimestamp();
-
+    
         $timeout = $this->employeeAttendance()
             ->where('date', Carbon::now('Asia/Manila')->toDateString())
-            ->whereNotNull('timeOut') // Check for a time-out record first
+            ->whereNotNull('timeOut')
             ->first();
-
+    
         if ($timeout) {
-            return back()->with('error', "You have already timed out for the day.");
+            return back()->with('error', 'You have already timed out for the day.');
         }
-
+    
         $timeIn = $this->employeeAttendance()
             ->where('date', Carbon::now('Asia/Manila')->toDateString())
             ->whereNull('timeOut')
             ->first();
-
+    
         if (!$timeIn) {
-            return back()->with('error', "You don't have time in record. Please time in first.");
+            return back()->with('error', "You don't have a time-in record. Please time in first.");
         }
-
+    
         $breakOut = $this->employeeAttendance()
-             ->where('date', Carbon::now('Asia/Manila')->toDateString())
-             ->whereNotNull('breakIn')
-             ->whereNull('breakOut')
-             ->first();
-
-        if($breakOut) {
-            return back()->with('error', "Please Break out first. Thank you!");
+            ->where('date', Carbon::now('Asia/Manila')->toDateString())
+            ->whereNotNull('breakIn')
+            ->whereNull('breakOut')
+            ->first();
+    
+        if ($breakOut) {
+            return back()->with('error', 'Please break in first. Thank you!');
         }
-
+    
         $timeOut = Carbon::now('Asia/Manila')->format('h:i:s A');
-
-        if (Carbon::now('Asia/Manila') >= Carbon::parse('19:00:00')) {
-            $timeOut = '07:00:00 PM';
+    
+        // Calculate the timeEnd based on timeIn
+        $timeInParsed = Carbon::parse($timeIn->timeIn);
+        $shiftStart = Carbon::parse('09:00:00');
+        $shiftEnd = Carbon::parse('20:00:00'); // Fixed shift end time if checked in after 11:00 AM
+    
+        if ($timeInParsed->gt(Carbon::parse('11:00:00'))) {
+            // If checked in after 11:00 AM, timeEnd is fixed at 8:00 PM
+            $timeEnd = $shiftEnd->format('h:i:s A');
+        } else {
+            // Otherwise, timeEnd is 9 hours after timeIn
+            $timeEnd = $timeInParsed->copy()->addHours(9)->format('h:i:s A');
         }
-
+    
         $timeIn->update([
             'timeOut' => $timeOut,
-            'timeEnd' => '07:00:00 PM',
+            'timeEnd' => $timeEnd,
         ]);
-
+    
         return back()->with('success', 'You have successfully timed out. Thank you for your hard work!');
-    }
-
+    } 
 
 }

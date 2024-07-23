@@ -19,7 +19,7 @@ class EmployeeController extends Controller
 {
     public function index ()
     {
-        $emp = User::all();
+        $emp = User::where('role_as', '!=', 1)->get();
         return view ('hr.employee.index', compact('emp'));
     }
 
@@ -94,6 +94,9 @@ class EmployeeController extends Controller
                 'image' => $imageName,
                 'department' => $request->input('department'),
                 'bdayLeave' => '1',
+                'vacLeave' => $request->input('vacLeave'),
+                'sickLeave' => $request->input('sickLeave'),
+
             ]);
 
             Alert::success('Employee Added Successfully', 'Employee Added');
@@ -117,7 +120,7 @@ class EmployeeController extends Controller
 
     public function edit($user_id)
     {
-        $user = User::with('contactEmergency', 'bankInfo')->findOrFail($user_id);
+        $user = User::with('contactEmergency', 'bankInfo', 'personalInformation')->findOrFail($user_id);
 
         switch ($user->role_as) {
             case 1:
@@ -148,6 +151,9 @@ class EmployeeController extends Controller
         $user->position = $request->input('position');
         $user->email = $request->input('email');
         $user->hourlyRate = $request->input('hourlyRate');
+        $user->vacLeave = $request->input('vacLeave');
+        $user->sickLeave = $request->input('sickLeave');
+        $user->department = $request->input('department');
 
         if ($request->filled('password')) {
             $user->password = Hash::make($request->input('password'));
@@ -163,7 +169,7 @@ class EmployeeController extends Controller
     
         $user->save();
 
-        Alert::success('Changes Save Successfully', 'Employee Updated');
+        Alert::success('Employee Updated');
         return redirect()->back();
     }
 
@@ -177,7 +183,7 @@ class EmployeeController extends Controller
 
         $user->save();
 
-        Alert::success('Changes Save Successfully', 'Government Mandates Updated');
+        Alert::success('Government Mandates Updated');
         return redirect()->back();
     }
 
@@ -247,6 +253,44 @@ class EmployeeController extends Controller
         return redirect()->back();
     } 
 
+    public function personalInfo (Request $request, $user_id)
+    {
+        $user = User::with('personalInformation')->findOrfail($user_id);
+
+        $info = PersonalInformation::where('users_id', $user->id)->first();
+
+        if($info)
+        {
+            $info->religion = $request->input('religion');
+            $info->age = $request->input('age');
+            $info->education = $request->input('education');
+            $info->nationality = $request->input('nationality');
+            $info->mStatus = $request->input('mStatus');
+            $info->numChildren = $request->input('numChildren');
+
+            $info->save();
+
+            Alert::success('Personal Information Updated');
+        } else {
+            
+            $info = new PersonalInformation();
+            $info->users_id = $user->id;
+            $info->name = $user->name;
+            $info->religion = $request->input('religion');
+            $info->age = $request->input('age');
+            $info->education = $request->input('education');
+            $info->nationality = $request->input('nationality');
+            $info->mStatus = $request->input('mStatus');
+            $info->numChildren = $request->input('numChildren');
+
+            $info->save();
+
+            Alert::success('Personal Infromation Added');
+        }
+
+        return redirect()->back();
+    }
+
     public function changePassword(Request $request, $user_id)
     {
         $user = User::findOrFail($user_id);
@@ -276,6 +320,5 @@ class EmployeeController extends Controller
             'password' => Hash::make($newPassword),
         ]);
     }
-
 
 }

@@ -52,15 +52,35 @@
                                 @csrf
                                 <div class="mb-3">
                                     <label>Current Password</label>
-                                    <input type="password" name="current_password" class="form-control" />
+                                    <div class="position-relative">
+                                        <input type="password" name="current_password" class="form-control"
+                                            id="current_password" />
+                                        <span class="position-absolute" id="toggle-current-password"
+                                            style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;">
+                                            <i class="la la-eye"></i>
+                                        </span>
+                                    </div>
                                 </div>
                                 <div class="mb-3">
                                     <label>New Password</label>
-                                    <input type="password" name="password" class="form-control" />
+                                    <div class="position-relative">
+                                        <input type="password" name="password" class="form-control" id="new_password" />
+                                        <span class="position-absolute" id="toggle-new-password"
+                                            style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;">
+                                            <i class="la la-eye"></i>
+                                        </span>
+                                    </div>
                                 </div>
                                 <div class="mb-3">
                                     <label>Confirm Password</label>
-                                    <input type="password" name="password_confirmation" class="form-control" />
+                                    <div class="position-relative">
+                                        <input type="password" name="password_confirmation" class="form-control"
+                                            id="confirm_password" />
+                                        <span class="position-absolute" id="toggle-confirm-password"
+                                            style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;">
+                                            <i class="la la-eye"></i>
+                                        </span>
+                                    </div>
                                 </div>
                                 <button type="submit" class="btn btn-primary">
                                     Update Password
@@ -75,4 +95,48 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+
+<script>
+    document.getElementById('toggle-current-password').addEventListener('click', function () {
+        var passwordField = document.getElementById('current_password');
+        var passwordFieldType = passwordField.getAttribute('type');
+        if (passwordFieldType === 'password') {
+            passwordField.setAttribute('type', 'text');
+            this.innerHTML = '<i class="la la-eye-slash"></i>';
+        } else {
+            passwordField.setAttribute('type', 'password');
+            this.innerHTML = '<i class="la la-eye"></i>';
+        }
+    });
+
+    document.getElementById('toggle-new-password').addEventListener('click', function () {
+        var passwordField = document.getElementById('new_password');
+        var passwordFieldType = passwordField.getAttribute('type');
+        if (passwordFieldType === 'password') {
+            passwordField.setAttribute('type', 'text');
+            this.innerHTML = '<i class="la la-eye-slash"></i>';
+        } else {
+            passwordField.setAttribute('type', 'password');
+            this.innerHTML = '<i class="la la-eye"></i>';
+        }
+    });
+
+    document.getElementById('toggle-confirm-password').addEventListener('click', function () {
+        var passwordField = document.getElementById('confirm_password');
+        var passwordFieldType = passwordField.getAttribute('type');
+        if (passwordFieldType === 'password') {
+            passwordField.setAttribute('type', 'text');
+            this.innerHTML = '<i class="la la-eye-slash"></i>';
+        } else {
+            passwordField.setAttribute('type', 'password');
+            this.innerHTML = '<i class="la la-eye"></i>';
+        }
+    });
+
+</script>
+
+
 @endsection

@@ -114,40 +114,38 @@
                             <h3 class="card-title">Personal Informations <a href="#" class="edit-icon"
                                     data-toggle="modal" data-target="#personal_info_modal"><i
                                         class="fa fa-pencil"></i></a></h3>
+                            @if($user->personalInformation->isNotEmpty())
+                            @foreach($user->personalInformation as $info)
                             <ul class="personal-info">
                                 <li>
-                                    <div class="title">Passport No.</div>
-                                    <div class="text">9876543210</div>
+                                    <div class="title">Religion</div>
+                                    <div class="text">{{ $info->religion }}</div>
                                 </li>
                                 <li>
-                                    <div class="title">Passport Exp Date.</div>
-                                    <div class="text">9876543210</div>
+                                    <div class="title">Age</div>
+                                    <div class="text">{{ $info->age }}</div>
                                 </li>
                                 <li>
-                                    <div class="title">Tel</div>
-                                    <div class="text"><a href="">9876543210</a></div>
+                                    <div class="title">Education</div>
+                                    <div class="text">{{ $info->education }}</div>
                                 </li>
                                 <li>
                                     <div class="title">Nationality</div>
-                                    <div class="text">Indian</div>
-                                </li>
-                                <li>
-                                    <div class="title">Religion</div>
-                                    <div class="text">Christian</div>
+                                    <div class="text">{{ $info->nationality }}</div>
                                 </li>
                                 <li>
                                     <div class="title">Marital status</div>
-                                    <div class="text">Married</div>
-                                </li>
-                                <li>
-                                    <div class="title">Employment of spouse</div>
-                                    <div class="text">No</div>
+                                    <div class="text">{{ $info->mStatus }}</div>
                                 </li>
                                 <li>
                                     <div class="title">No. of children</div>
-                                    <div class="text">2</div>
+                                    <div class="text">{{ $info->numChildren }}</div>
                                 </li>
                             </ul>
+                            @endforeach
+                            @else
+                            <p>No Personal Info available.</p>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -156,26 +154,21 @@
                         <div class="card-body">
                             <h3 class="card-title">Emergency Contact <a href="#" class="edit-icon" data-toggle="modal"
                                     data-target="#emergency_contact_modal"><i class="fa fa-pencil"></i></a></h3>
+                            @if($user->contactEmergency->isNotEmpty())
                             <h5 class="section-title">Primary</h5>
+                            @foreach($user->contactEmergency as $contact)
                             <ul class="personal-info">
                                 <li>
-                                    @foreach ($contacts as $contact)
                                     <div class="title">Name</div>
-                                    @if(isset($contact->primaryName))
-                                    <div class="text">{{ $contact->primaryName }} @else No Data</div>
-                                    @endif
+                                    <div class="text">{{ $contact->primaryName }}</div>
                                 </li>
                                 <li>
                                     <div class="title">Relationship</div>
-                                    @if(isset($contact->primaryRelation))
-                                    <div class="text">{{ $contact->primaryRelation }} @else No Data</div>
-                                    @endif
+                                    <div class="text">{{ $contact->primaryRelation }}</div>
                                 </li>
                                 <li>
                                     <div class="title">Phone </div>
-                                    @if(isset($contact->primaryPhone))
-                                    <div class="text">{{ $contact->primaryPhone }} @else No Data</div>
-                                    @endif
+                                    <div class="text">{{ $contact->primaryPhone }}</div>
                                 </li>
                             </ul>
                             <hr>
@@ -183,24 +176,21 @@
                             <ul class="personal-info">
                                 <li>
                                     <div class="title">Name</div>
-                                    @if(isset($contact->secondName))
-                                    <div class="text">{{ $contact->secondName }} @else No Data</div>
-                                    @endif
+                                    <div class="text">{{ $contact->secondName }}</div>
                                 </li>
                                 <li>
                                     <div class="title">Relationship</div>
-                                    @if(isset($contact->secondRelation))
-                                    <div class="text">{{ $contact->secondRelation }} @else No Data</div>
-                                    @endif
+                                    <div class="text">{{ $contact->secondRelation }}</div>
                                 </li>
                                 <li>
                                     <div class="title">Phone </div>
-                                    @if(isset($contact->secondPhone))
-                                    <div class="text">{{ $contact->secondPhone }} @else No Data</div>
-                                    @endif
+                                    <div class="text">{{ $contact->secondPhone }}</div>
                                 </li>
-                                @endforeach
                             </ul>
+                            @endforeach
+                            @else
+                            <p>No emergency contacts available.</p>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -210,7 +200,8 @@
                 <div class="col-md-6 d-flex">
                     <div class="card profile-box flex-fill">
                         <div class="card-body">
-                            <h3 class="card-title">Goverment Mandates </h3>
+                            <h3 class="card-title">Goverment Mandates <a href="#" class="edit-icon" data-toggle="modal"
+                                    data-target="#family_info_modal"><i class="fa fa-pencil"></i></a></h3>
                             <ul class="personal-info">
                                 <li>
                                     <div class="title">SSS</div>
@@ -232,9 +223,11 @@
                 <div class="col-md-6 d-flex">
                     <div class="card profile-box flex-fill">
                         <div class="card-body">
-                            <h3 class="card-title">Bank Information</h3>
-                            @if($bankinfo->isNotEmpty())
-                            @foreach ($bankinfo as $bank)
+
+                            <h3 class="card-title">Bank Information<a href="#" class="edit-icon" data-toggle="modal"
+                                    data-target="#bank_info"><i class="fa fa-pencil"></i></a></h3>
+                            @if($user->bankInfo->isNotEmpty())
+                            @foreach ($user->bankInfo as $bank)
                             <ul class="personal-info">
                                 <li>
                                     <div class="title">Bank name</div>
@@ -881,67 +874,60 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form>
+                <form action="{{ url('emp/profile/personal-info/') }}" method="POST">
+                    @csrf
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Passport No</label>
-                                <input type="text" class="form-control">
+                                <label>Religion</label>
+                                <input type="text" class="form-control" name="religion" id="religion"
+                                    value="{{ $info->religion ?? ''}}">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Passport Expiry Date</label>
-                                <div class="cal-icon">
-                                    <input class="form-control datetimepicker" type="text">
-                                </div>
+                                <label>Age</label>
+                                <input class="form-control" type="text" name="age" id="age"
+                                    value="{{ $info->age ?? '' }}">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Tel</label>
-                                <input class="form-control" type="text">
+                                <label>Education</label>
+                                <input class="form-control" type="text" name="education" id="education"
+                                    value="{{ $info->education ?? '' }}">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Nationality <span class="text-danger">*</span></label>
-                                <input class="form-control" type="text">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Religion</label>
-                                <div class="cal-icon">
-                                    <input class="form-control" type="text">
-                                </div>
+                                <input class="form-control" type="text" name="nationality" id="nationality"
+                                    value="{{ $info->nationality ?? '' }}">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Marital status <span class="text-danger">*</span></label>
-                                <select class="select form-control">
+                                <select class="form-control" name="mStatus" id="mStatus">
                                     <option>-</option>
-                                    <option>Single</option>
-                                    <option>Married</option>
+                                    <option value="Single" {{ $info->mStatus ?? '' == 'Single' ? 'selected' : '' }}>
+                                        Single</option>
+                                    <option value="Married" {{ $info->mStatus ?? '' == 'Married' ? 'selected' : '' }}>
+                                        Married</option>
+
                                 </select>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Employment of spouse</label>
-                                <input class="form-control" type="text">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
                                 <label>No. of children </label>
-                                <input class="form-control" type="text">
+                                <input class="form-control" type="text" name="numChildren" id="numChildren"
+                                    value="{{ $info->numChildren ?? ''}}">
                             </div>
                         </div>
                     </div>
                     <div class="submit-section">
-                        <button class="btn btn-primary submit-btn">Submit</button>
+                        <button class="btn btn-primary submit-btn">Save</button>
                     </div>
                 </form>
             </div>

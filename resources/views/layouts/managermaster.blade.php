@@ -29,7 +29,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" />
 
     <!----FAVICON---->
-    <link rel="icon" href="{{ url('assets/img/jaflogo.png') }}" />
+    <link rel="icon" href="{{ url('assets/img/jaffavicon.png') }}" />
 
     <link rel="stylesheet" href="{{
                 asset('assets/fontawesome-free-6.4.0-web/css/all.min.css')
@@ -61,7 +61,7 @@
             <!-- Logo -->
             <div class="header-left">
                 <a href="index.html" class="logo">
-                    <img src="{{ asset('assets/img/jaflogo.png') }}" alt="JAF Logo" width="70" height="50" />
+                    <img src="{{ asset('assets/img/jaflogo.png') }}" alt="OneJAF Logo" width="100%" />
                 </a>
             </div>
             <!-- /Logo -->
@@ -461,6 +461,10 @@
                         <li class="{{ Request::is('manager/leave') ? 'active':'' }}">
                             <a href="{{ url('manager/leave') }}"><i class="la la-rocket"></i>
                                 <span>Leave</span></a>
+                        </li>
+                        <li class="{{ Request::is('manager/attendance') ? 'active':'' }}">
+                            <a href="{{ url('manager/attendance') }}"><i class="la la-calendar"></i>
+                                <span>Attendance</span></a>
                         </li>
                         <!-- <li>
                             <a href="tickets.html"><i class="la la-ticket"></i>

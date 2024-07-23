@@ -10,7 +10,7 @@
                 <h3 class="page-title">Employee</h3>
                 <ul class="breadcrumb">
                     <li class="breadcrumb-item">
-                        <a href="index.html">Dashboard</a>
+                        <a href="{{ url('hr/dashboard') }}">Dashboard</a>
                     </li>
                     <li class="breadcrumb-item active">Employee</li>
                 </ul>
@@ -85,7 +85,7 @@
                         <tr>
                             <td>
                                 <h2 class="table-avatar">
-                                    <a href="profile.html" class="avatar">
+                                    <a href="#" class="avatar">
                                         @if ($employee->image)
                                         <img src="{{ asset('images/' . $employee->image) }}" alt="Profile Image" />
                                         @else
@@ -93,7 +93,7 @@
                                                 asset('images/default.png')
                                             }}" alt="Profile Image" />
                                         @endif</a>
-                                    <a href="profile.html">{{ $employee->name }}
+                                    <a href="#">{{ $employee->name }}
                                         <span>{{ $employee->position }}</span></a>
                                 </h2>
                             </td>
@@ -179,13 +179,15 @@
                                 <select name="typeOfContract" class="form-control" required>
                                     <option value="">-- Select --</option>
                                     <option value="Regular">Regular</option>
-                                    <option value="Freelancer">Freelancer</option>
+                                    <option value="Contractual">Contractual</option>
+                                    <option value="Intern">Intern</option>
                                 </select>
                                 <span style="color: red">@error('typeOfContract'){{
                                         $message
                                     }}@enderror</span>
                             </div>
                         </div>
+
                         <!-- Position -->
                         <div class="col-sm-6">
                             <div class="form-group">
@@ -233,6 +235,9 @@
                                     <option value="Event Coordinator">
                                         Event Coordinator
                                     </option>
+                                    <option value="HR Generalist">
+                                        HR Generalist
+                                    </option>
                                     <option value="Admin Staff">
                                         Admin Staff
                                     </option>
@@ -242,6 +247,25 @@
                                     }}@enderror</span>
                             </div>
                         </div>
+
+                        <!-- Vacation Leave -->
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="">Vacation Leave <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="vacLeave" required>
+                            </div>
+                        </div>
+                        <!-- /Vacation Leave -->
+
+                        <!-- /Sick leave -->
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="">Sick Leave <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="sickcLeave" required>
+                            </div>
+                        </div>
+                        <!-- /Sick leave -->
+
 
                         <!-- Date Hired -->
                         <div class="col-sm-6">
@@ -298,13 +322,19 @@
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label for="exampleInputPassword1">Password<span class="text-danger">*</span></label>
-                                <input type="password" name="password" class="form-control" id="exampleInputPassword1"
-                                    maxlength="10" />
-                                <span style="color: red">@error('password'){{
-                                        $message
-                                    }}@enderror</span>
+                                <div class="input-group">
+                                    <input type="password" name="password" class="form-control"
+                                        id="exampleInputPassword1" maxlength="10" />
+                                    <div class="input-group-append">
+                                        <span class="input-group-text" id="toggle-password">
+                                            <i class="la la-eye"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                <span style="color: red">@error('password'){{ $message }}@enderror</span>
                             </div>
                         </div>
+
                         <!-- Phone Number -->
                         <div class="col-sm-6">
                             <div class="form-group">
@@ -478,5 +508,21 @@
     })
 
 </script>
+
+<script>
+    document.getElementById('toggle-password').addEventListener('click', function () {
+        var passwordField = document.getElementById('exampleInputPassword1');
+        var passwordFieldType = passwordField.getAttribute('type');
+        if (passwordFieldType === 'password') {
+            passwordField.setAttribute('type', 'text');
+            this.innerHTML = '<i class="la la-eye-slash"></i>';
+        } else {
+            passwordField.setAttribute('type', 'password');
+            this.innerHTML = '<i class="la la-eye"></i>';
+        }
+    });
+
+</script>
+
 
 @endsection

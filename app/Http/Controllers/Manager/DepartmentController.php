@@ -114,4 +114,43 @@ class DepartmentController extends Controller
         return redirect()->back();
     }
 
+    public function personalInfo (Request $request, $user_id)
+    {
+        $user = User::with('personalInformation')->findOrfail($user_id);
+
+        $info = PersonalInformation::where('users_id', $user->id)->first();
+
+        if($info)
+        {
+            $info->religion = $request->input('religion');
+            $info->age = $request->input('age');
+            $info->education = $request->input('education');
+            $info->nationality = $request->input('nationality');
+            $info->mStatus = $request->input('mStatus');
+            $info->numChildren = $request->input('numChildren');
+
+            $info->save();
+
+            Alert::success('Personal Information Updated');
+        } else {
+            
+            $info = new PersonalInformation();
+            $info->users_id = $user->id;
+            $info->name = $user->name;
+            $info->religion = $request->input('religion');
+            $info->age = $request->input('age');
+            $info->education = $request->input('education');
+            $info->nationality = $request->input('nationality');
+            $info->mStatus = $request->input('mStatus');
+            $info->numChildren = $request->input('numChildren');
+
+            $info->save();
+
+            Alert::success('Personal Infromation Added');
+        }
+
+        return redirect()->back();
+    }
+
+
 }

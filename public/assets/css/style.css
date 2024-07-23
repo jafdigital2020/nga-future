@@ -10222,7 +10222,7 @@ ul.comment-list li ul.children {
 
 .day-header-att,
 .day-att {
-    height: 150px;
+    height: 180px;
     padding: 10px;
     border: 1px solid #ddd;
     text-align: center;
@@ -10270,5 +10270,23 @@ ul.comment-list li ul.children {
     font-weight: bold;
     text-align: center;
     font-size: 14px;
-    padding-top: 30px;
+    padding-top: 20px;
+}
+
+.leave-type-button {
+    display: inline-block;
+    padding: 8px 16px;
+    margin: 4px;
+    font-size: 14px;
+    color: white;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.leave-type-button:hover {
+    background-color: #0056b3;
 }

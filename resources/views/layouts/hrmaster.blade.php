@@ -28,7 +28,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" />
 
     <!----FAVICON---->
-    <link rel="icon" href="{{ url('assets/img/jaflogo.png') }}" />
+    <link rel="icon" href="{{ url('assets/img/jaffavicon.png') }}" />
 
     <link rel="stylesheet" href="{{
                 asset('assets/fontawesome-free-6.4.0-web/css/all.min.css')
@@ -60,7 +60,7 @@
             <!-- Logo -->
             <div class="header-left">
                 <a href="index.html" class="logo">
-                    <img src="{{ asset('assets/img/jaflogo.png') }}" alt="JAF Logo" width="70" height="50" />
+                    <img src="{{ asset('assets/img/Long.png') }}" alt="OneJAF Logo" width="100%" />
                 </a>
             </div>
             <!-- /Logo -->
@@ -73,7 +73,7 @@
             </a>
             <!-- Header Title -->
             <div class="page-title-box">
-                <h3>JAF Digital Marketing & IT Services</h3>
+                <!-- <h3>JAF Digital Marketing & IT Services</h3> -->
             </div>
             <!-- /Header Title -->
             <a id="mobile_btn" class="mobile_btn" href="#sidebar"><i class="fa fa-bars"></i></a>
@@ -362,8 +362,8 @@
                         <span>{{ $user->name }}</span>
                     </a>
                     <div class="dropdown-menu">
-                        <a class="dropdown-item" href="profile.html">My Profile</a>
-                        <a class="dropdown-item" href="settings.html">Settings</a>
+                        <a class="dropdown-item" href="{{ url('hr/profile') }}">My Profile</a>
+                        <!-- <a class="dropdown-item" href="settings.html">Settings</a> -->
                         <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">
                             {{ __("Logout") }}
@@ -416,7 +416,15 @@
                             <a href="{{ url('hr/leave') }}"><i class="la la-rocket"></i>
                                 <span>Leave</span></a>
                         </li>
-                        <li class="submenu">
+                        <li class="{{ Request::is('hr/attendance') ? 'active':'' }}">
+                            <a href="{{ url('hr/attendance') }}"><i class="la la-calendar"></i>
+                                <span>Attendance</span></a>
+                        </li>
+
+                        <li class="menu-title">
+                            <span>Payroll</span>
+                        </li>
+                        <!-- <li class="submenu">
                             <a href="#"><i class="la la-files-o"></i>
                                 <span> Accounting </span>
                                 <span class="menu-arrow"></span></a>
@@ -432,7 +440,7 @@
                                     <a href="budget-revenues.html">Budget Revenues</a>
                                 </li>
                             </ul>
-                        </li>
+                        </li> -->
                         <li class="submenu">
                             <a href="#"><i class="la la-money"></i>
                                 <span> Payroll </span>
@@ -440,7 +448,7 @@
                             <ul style="display: none">
                                 <li>
                                     <a href="salary.html">
-                                        Employee Salary
+                                        Approved Timesheet
                                     </a>
                                 </li>
                                 <li>

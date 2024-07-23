@@ -48,6 +48,5 @@ class ChangePasswordController extends Controller
             'password' => Hash::make($newPassword),
         ]);
     }
-    
 
 }

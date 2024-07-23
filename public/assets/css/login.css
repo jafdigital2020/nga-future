@@ -270,3 +270,16 @@ strong {
         opacity: 1;
     }
 }
+
+.position-relative {
+    position: relative;
+}
+
+.position-absolute {
+    position: absolute;
+}
+
+.inputbox .form-control {
+    padding-right: 2.5rem;
+    /* Adjust to ensure space for the icon */
+}

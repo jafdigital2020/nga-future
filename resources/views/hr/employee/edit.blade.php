@@ -10,8 +10,8 @@
             <div class="col-sm-12">
                 <h3 class="page-title">Employee Profile</h3>
                 <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
-                    <li class="breadcrumb-item active">View Employee</li>
+                    <li class="breadcrumb-item"><a href="{{ url('hr/dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Employee</li>
                 </ul>
             </div>
         </div>
@@ -94,10 +94,10 @@
                 <ul class="nav nav-tabs nav-tabs-bottom">
                     <li class="nav-item"><a href="#emp_profile" data-toggle="tab" class="nav-link active">Profile</a>
                     </li>
-                    <li class="nav-item"><a href="#emp_projects" data-toggle="tab" class="nav-link">Projects</a>
+                    <!-- <li class="nav-item"><a href="#emp_projects" data-toggle="tab" class="nav-link">Projects</a>
                     </li>
                     <li class="nav-item"><a href="#bank_statutory" data-toggle="tab" class="nav-link">Bank &
-                            Statutory <small class="text-danger">(Admin Only)</small></a></li>
+                            Statutory <small class="text-danger">(Admin Only)</small></a></li> -->
                 </ul>
             </div>
         </div>
@@ -114,40 +114,38 @@
                             <h3 class="card-title">Personal Informations <a href="#" class="edit-icon"
                                     data-toggle="modal" data-target="#personal_info_modal"><i
                                         class="fa fa-pencil"></i></a></h3>
+                            @if($user->personalInformation->isNotEmpty())
+                            @foreach($user->personalInformation as $info)
                             <ul class="personal-info">
                                 <li>
-                                    <div class="title">Passport No.</div>
-                                    <div class="text">9876543210</div>
+                                    <div class="title">Religion</div>
+                                    <div class="text">{{ $info->religion }}</div>
                                 </li>
                                 <li>
-                                    <div class="title">Passport Exp Date.</div>
-                                    <div class="text">9876543210</div>
+                                    <div class="title">Age</div>
+                                    <div class="text">{{ $info->age }}</div>
                                 </li>
                                 <li>
-                                    <div class="title">Tel</div>
-                                    <div class="text"><a href="">9876543210</a></div>
+                                    <div class="title">Education</div>
+                                    <div class="text">{{ $info->education }}</div>
                                 </li>
                                 <li>
                                     <div class="title">Nationality</div>
-                                    <div class="text">Indian</div>
-                                </li>
-                                <li>
-                                    <div class="title">Religion</div>
-                                    <div class="text">Christian</div>
+                                    <div class="text">{{ $info->nationality }}</div>
                                 </li>
                                 <li>
                                     <div class="title">Marital status</div>
-                                    <div class="text">Married</div>
-                                </li>
-                                <li>
-                                    <div class="title">Employment of spouse</div>
-                                    <div class="text">No</div>
+                                    <div class="text">{{ $info->mStatus }}</div>
                                 </li>
                                 <li>
                                     <div class="title">No. of children</div>
-                                    <div class="text">2</div>
+                                    <div class="text">{{ $info->numChildren }}</div>
                                 </li>
                             </ul>
+                            @endforeach
+                            @else
+                            <p>No Personal Info available.</p>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -913,6 +911,10 @@
                                                 {{ $user->position == 'Event Coordinator' ? 'selected' : '' }}>
                                                 Event Coordinator
                                             </option>
+                                            <option value="HR Generalist"
+                                                {{ $user->position == 'HR Generalist' ? 'selected' : '' }}>
+                                                HR Generalist
+                                            </option>
                                             <option value="Admin Staff"
                                                 {{ $user->position == 'Admin Staff' ? 'selected' : '' }}>
                                                 Admin Staff
@@ -920,6 +922,26 @@
                                         </select>
                                     </div>
                                 </div>
+
+                                <!-- Vac leave -->
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Vacation Leave</label>
+                                        <input type="number" class="form-control" name="vacLeave" id="vacLeave"
+                                            value="{{ $user->vacLeave ?? 0 }}" required>
+                                    </div>
+                                </div>
+                                <!-- /Vac leave -->
+
+                                <!-- Sick leave -->
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Sick Leave</label>
+                                        <input type="number" class="form-control" name="sickLeave" id="sickLeave"
+                                            value="{{ $user->sickLeave ?? 0 }}" required>
+                                    </div>
+                                </div>
+                                <!-- /Sick leave -->
                             </div>
                         </div>
                     </div>
@@ -963,8 +985,36 @@
                                         HR</option>
                                     <option value="3" {{ $user->role_as == '3' ? 'selected' : '' }}>Employee
                                     </option>
+                                    <option value="4" {{ $user->role_as == '4' ? 'selected' : '' }}>Operations Manager
+                                    </option>
+                                    <option value="5" {{ $user->role_as == '4' ? 'selected' : '' }}>IT Manager
+                                    </option>
+                                    <option value="6" {{ $user->role_as == '4' ? 'selected' : '' }}>Marketing Manager
+                                    </option>
                                 </select>
-
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>Department</label>
+                                <select class="form-control" name="department" id="department">
+                                    <option value="Website Development"
+                                        {{ $user->department == 'Website Development' ? 'selected' : '' }}>
+                                        Website Development
+                                    </option>
+                                    <option value="IT" {{ $user->department == 'IT' ? 'selected' : '' }}>
+                                        IT
+                                    </option>
+                                    <option value="SEO" {{ $user->department == 'SEO' ? 'selected' : '' }}>
+                                        SEO
+                                    </option>
+                                    <option value="Content" {{ $user->department == 'Content' ? 'selected' : '' }}>
+                                        Content
+                                    </option>
+                                    <option value="Marketing" {{ $user->department == 'Marketing' ? 'selected' : '' }}>
+                                        Marketing
+                                    </option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -989,67 +1039,60 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form>
+                <form action="{{ url('hr/employee/personal-info/'. $user->id) }}" method="POST">
+                    @csrf
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Passport No</label>
-                                <input type="text" class="form-control">
+                                <label>Religion</label>
+                                <input type="text" class="form-control" name="religion" id="religion"
+                                    value="{{ $info->religion ?? '' }}">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Passport Expiry Date</label>
-                                <div class="cal-icon">
-                                    <input class="form-control datetimepicker" type="text">
-                                </div>
+                                <label>Age</label>
+                                <input class="form-control" type="text" name="age" id="age"
+                                    value="{{ $info->age ?? '' }}">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Tel</label>
-                                <input class="form-control" type="text">
+                                <label>Education</label>
+                                <input class="form-control" type="text" name="education" id="education"
+                                    value="{{ $info->education ?? '' }}">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Nationality <span class="text-danger">*</span></label>
-                                <input class="form-control" type="text">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Religion</label>
-                                <div class="cal-icon">
-                                    <input class="form-control" type="text">
-                                </div>
+                                <input class="form-control" type="text" name="nationality" id="nationality"
+                                    value="{{ $info->nationality ?? '' }}">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Marital status <span class="text-danger">*</span></label>
-                                <select class="select form-control">
+                                <select class="form-control" name="mStatus" id="mStatus">
                                     <option>-</option>
-                                    <option>Single</option>
-                                    <option>Married</option>
+                                    <option value="Single" {{ ($info->mStatus ?? '') == 'Single' ? 'selected' : '' }}>
+                                        Single</option>
+                                    <option value="Married" {{ ($info->mStatus ?? '') == 'Married' ? 'selected' : '' }}>
+                                        Married</option>
+
                                 </select>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Employment of spouse</label>
-                                <input class="form-control" type="text">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
                                 <label>No. of children </label>
-                                <input class="form-control" type="text">
+                                <input class="form-control" type="text" name="numChildren" id="numChildren"
+                                    value="{{ $info->numChildren ?? '' }}">
                             </div>
                         </div>
                     </div>
                     <div class="submit-section">
-                        <button class="btn btn-primary submit-btn">Submit</button>
+                        <button class="btn btn-primary submit-btn">Save</button>
                     </div>
                 </form>
             </div>
@@ -1254,19 +1297,29 @@
                     @csrf
                     <div class="row">
                         <div class="col-md-12">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="form-group">
-                                        <label>New Password</label>
-                                        <input type="password" name="password" id="password" class="form-control"
-                                            required />
+                            <div class="form-group">
+                                <label>New Password</label>
+                                <div class="input-group">
+                                    <input type="password" name="password" id="password" class="form-control"
+                                        required />
+                                    <div class="input-group-append">
+                                        <span class="input-group-text" id="toggle-new-password">
+                                            <i class="la la-eye"></i>
+                                        </span>
                                     </div>
                                 </div>
-                                <div class="col-md-12">
-                                    <div class="form-group">
-                                        <label>Confirm Password</label>
-                                        <input type="password" name="password_confirmation" id="password_confirmation"
-                                            class="form-control" required />
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>Confirm Password</label>
+                                <div class="input-group">
+                                    <input type="password" name="password_confirmation" id="password_confirmation"
+                                        class="form-control" required />
+                                    <div class="input-group-append">
+                                        <span class="input-group-text" id="toggle-confirm-password">
+                                            <i class="la la-eye"></i>
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -1300,5 +1353,33 @@
     });
 
 </script>
+
+<script>
+    document.getElementById('toggle-new-password').addEventListener('click', function () {
+        var passwordField = document.getElementById('password');
+        var passwordFieldType = passwordField.getAttribute('type');
+        if (passwordFieldType === 'password') {
+            passwordField.setAttribute('type', 'text');
+            this.innerHTML = '<i class="la la-eye-slash"></i>';
+        } else {
+            passwordField.setAttribute('type', 'password');
+            this.innerHTML = '<i class="la la-eye"></i>';
+        }
+    });
+
+    document.getElementById('toggle-confirm-password').addEventListener('click', function () {
+        var passwordField = document.getElementById('password_confirmation');
+        var passwordFieldType = passwordField.getAttribute('type');
+        if (passwordFieldType === 'password') {
+            passwordField.setAttribute('type', 'text');
+            this.innerHTML = '<i class="la la-eye-slash"></i>';
+        } else {
+            passwordField.setAttribute('type', 'password');
+            this.innerHTML = '<i class="la la-eye"></i>';
+        }
+    });
+
+</script>
+
 
 @endsection

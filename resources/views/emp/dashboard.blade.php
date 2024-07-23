@@ -272,7 +272,7 @@
                         <label class="focus-label">Year</label>
                     </div>
                     <button id="searchButton" class="btn btn-danger">Search</button>
-                    <button class="btn btn-outline-danger">Send</button>
+                    <button id="saveButton" class="btn btn-outline-danger">Send</button>
                 </div>
             </div>
             <div id="calendar"></div>
@@ -411,6 +411,7 @@
         const calendar = document.getElementById('calendar');
         const monthSelect = document.getElementById('monthSelect');
         const searchButton = document.getElementById('searchButton');
+        const saveButton = document.getElementById('saveButton');
         const yearSelect = document.getElementById('yearSelect');
         const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const monthNames = [
@@ -418,11 +419,15 @@
             'July', 'August', 'September', 'October', 'November', 'December'
         ];
 
-        function renderCalendar(startDate, endDate, data) {
+        function renderCalendar(startDate, endDate, attendanceData, leaveData, status = 'new') {
             calendar.innerHTML = '';
 
             let totalWorkedSeconds = 0;
             let totalLateSeconds = 0;
+            let unpaidLeaveCount = 0;
+            let vacationLeaveCount = 0;
+            let sickLeaveCount = 0;
+            let bdayLeaveCount = 0;
 
             let currentDate = new Date(startDate);
             while (currentDate <= endDate) {
@@ -436,7 +441,7 @@
                     `${monthNames[currentDate.getMonth()]} ${currentDate.getDate()}, ${currentDate.getFullYear()}, ${daysOfWeek[currentDate.getDay()]}`;
                 dayDiv.appendChild(dateHeader);
 
-                const dayData = data.find(item => {
+                const dayData = attendanceData.find(item => {
                     const itemDate = new Date(item.date);
                     return itemDate.getDate() === currentDate.getDate() &&
                         itemDate.getMonth() === currentDate.getMonth() &&
@@ -474,6 +479,31 @@
                     }
                 }
 
+                // Check for leave data on this day and status is Approved
+                const leaveOnDay = leaveData.filter(leave => {
+                    const leaveStart = new Date(leave.start_date);
+                    const leaveEnd = new Date(leave.end_date);
+                    return leave.status === 'Approved' && currentDate >= leaveStart && currentDate <=
+                        leaveEnd;
+                });
+
+                leaveOnDay.forEach(leave => {
+                    const leaveTypeDiv = document.createElement('div');
+                    leaveTypeDiv.className = 'calendar-text';
+                    leaveTypeDiv.innerText = "Leave Type: " + leave.type;
+                    dayDiv.appendChild(leaveTypeDiv);
+
+                    if (leave.type === 'Unpaid Leave') {
+                        unpaidLeaveCount++;
+                    } else if (leave.type === 'Vacation Leave') {
+                        vacationLeaveCount++;
+                    } else if (leave.type === 'Sick Leave') {
+                        sickLeaveCount++;
+                    } else if (leave.type === 'Birthday Leave') {
+                        bdayLeaveCount++;
+                    }
+                });
+
                 calendar.appendChild(dayDiv);
                 currentDate.setDate(currentDate.getDate() + 1);
             }
@@ -493,7 +523,7 @@
             const totalBox = document.createElement('div');
             totalBox.className = 'day total-box';
             totalBox.innerText =
-                `Total Worked Hours: ${totalWorkedFormatted}\nTotal Late: ${totalLateFormatted}\nStatus:`;
+                `Total Worked Hours: ${totalWorkedFormatted}\nTotal Late: ${totalLateFormatted}\nUnpaid Leave: ${unpaidLeaveCount}\nVacation Leave: ${vacationLeaveCount}\nSick Leave: ${sickLeaveCount}\nBirthday Leave: ${bdayLeaveCount}\nStatus: ${status}`;
             calendar.appendChild(totalBox);
         }
 
@@ -507,10 +537,30 @@
                     end_date: endDate.toISOString().split('T')[0]
                 },
                 success: function (data) {
-                    callback(data);
+                    callback(data.attendance, data.leaves);
                 },
                 error: function (err) {
                     console.error('Error fetching attendance data:', err);
+                    // Handle the error on the front-end, e.g., display an alert or message to the user
+                }
+            });
+        }
+
+        function fetchStatus(cutoff, callback) {
+            $.ajax({
+                url: "{{ route('attendance.status') }}", // Ensure this route matches your Laravel route for fetching status
+                method: 'GET',
+                dataType: 'json',
+                data: {
+                    cutoff: cutoff
+                },
+                success: function (data) {
+                    callback(data.status);
+                },
+                error: function (err) {
+                    console.error('Error fetching status:', err);
+                    callback('new'); // Default to 'new' if there's an error
+                    // Handle the error on the front-end, e.g., display an alert or message to the user
                 }
             });
         }
@@ -520,100 +570,100 @@
 
             switch (monthIndex) {
                 case 0:
-                    startDate = new Date(year - 1, 11, 26);
-                    endDate = new Date(year, 0, 10);
+                    startDate = new Date(Date.UTC(year - 1, 11, 26));
+                    endDate = new Date(Date.UTC(year, 0, 10));
                     break;
                 case 1:
-                    startDate = new Date(year, 0, 11);
-                    endDate = new Date(year, 0, 25);
+                    startDate = new Date(Date.UTC(year, 0, 11));
+                    endDate = new Date(Date.UTC(year, 0, 25));
                     break;
                 case 2:
-                    startDate = new Date(year, 0, 26);
-                    endDate = new Date(year, 1, 10);
+                    startDate = new Date(Date.UTC(year, 0, 26));
+                    endDate = new Date(Date.UTC(year, 1, 10));
                     break;
                 case 3:
-                    startDate = new Date(year, 1, 11);
-                    endDate = new Date(year, 1, 25);
+                    startDate = new Date(Date.UTC(year, 1, 11));
+                    endDate = new Date(Date.UTC(year, 1, 25));
                     break;
                 case 4:
-                    startDate = new Date(year, 1, 26);
-                    endDate = new Date(year, 2, 10);
+                    startDate = new Date(Date.UTC(year, 1, 26));
+                    endDate = new Date(Date.UTC(year, 2, 10));
                     break;
                 case 5:
-                    startDate = new Date(year, 2, 11);
-                    endDate = new Date(year, 2, 25);
+                    startDate = new Date(Date.UTC(year, 2, 11));
+                    endDate = new Date(Date.UTC(year, 2, 25));
                     break;
                 case 6:
-                    startDate = new Date(year, 2, 26);
-                    endDate = new Date(year, 3, 10);
+                    startDate = new Date(Date.UTC(year, 2, 26));
+                    endDate = new Date(Date.UTC(year, 3, 10));
                     break;
                 case 7:
-                    startDate = new Date(year, 3, 11);
-                    endDate = new Date(year, 3, 25);
+                    startDate = new Date(Date.UTC(year, 3, 11));
+                    endDate = new Date(Date.UTC(year, 3, 25));
                     break;
                 case 8:
-                    startDate = new Date(year, 3, 26);
-                    endDate = new Date(year, 4, 10);
+                    startDate = new Date(Date.UTC(year, 3, 26));
+                    endDate = new Date(Date.UTC(year, 4, 10));
                     break;
                 case 9:
-                    startDate = new Date(year, 4, 11);
-                    endDate = new Date(year, 4, 25);
+                    startDate = new Date(Date.UTC(year, 4, 11));
+                    endDate = new Date(Date.UTC(year, 4, 25));
                     break;
                 case 10:
-                    startDate = new Date(year, 4, 26);
-                    endDate = new Date(year, 5, 10);
+                    startDate = new Date(Date.UTC(year, 4, 26));
+                    endDate = new Date(Date.UTC(year, 5, 10));
                     break;
                 case 11:
-                    startDate = new Date(year, 5, 11);
-                    endDate = new Date(year, 5, 25);
+                    startDate = new Date(Date.UTC(year, 5, 11));
+                    endDate = new Date(Date.UTC(year, 5, 25));
                     break;
                 case 12:
-                    startDate = new Date(year, 5, 26);
-                    endDate = new Date(year, 6, 10);
+                    startDate = new Date(Date.UTC(year, 5, 26));
+                    endDate = new Date(Date.UTC(year, 6, 10));
                     break;
                 case 13:
-                    startDate = new Date(year, 6, 11);
-                    endDate = new Date(year, 6, 25);
+                    startDate = new Date(Date.UTC(year, 6, 11));
+                    endDate = new Date(Date.UTC(year, 6, 25));
                     break;
                 case 14:
-                    startDate = new Date(year, 6, 26);
-                    endDate = new Date(year, 7, 10);
+                    startDate = new Date(Date.UTC(year, 6, 26));
+                    endDate = new Date(Date.UTC(year, 7, 10));
                     break;
                 case 15:
-                    startDate = new Date(year, 7, 11);
-                    endDate = new Date(year, 7, 25);
+                    startDate = new Date(Date.UTC(year, 7, 11));
+                    endDate = new Date(Date.UTC(year, 7, 25));
                     break;
                 case 16:
-                    startDate = new Date(year, 7, 26);
-                    endDate = new Date(year, 8, 10);
+                    startDate = new Date(Date.UTC(year, 7, 26));
+                    endDate = new Date(Date.UTC(year, 8, 10));
                     break;
                 case 17:
-                    startDate = new Date(year, 8, 11);
-                    endDate = new Date(year, 8, 25);
+                    startDate = new Date(Date.UTC(year, 8, 11));
+                    endDate = new Date(Date.UTC(year, 8, 25));
                     break;
                 case 18:
-                    startDate = new Date(year, 8, 26);
-                    endDate = new Date(year, 9, 10);
+                    startDate = new Date(Date.UTC(year, 8, 26));
+                    endDate = new Date(Date.UTC(year, 9, 10));
                     break;
                 case 19:
-                    startDate = new Date(year, 9, 11);
-                    endDate = new Date(year, 9, 25);
+                    startDate = new Date(Date.UTC(year, 9, 11));
+                    endDate = new Date(Date.UTC(year, 9, 25));
                     break;
                 case 20:
-                    startDate = new Date(year, 9, 26);
-                    endDate = new Date(year, 10, 10);
+                    startDate = new Date(Date.UTC(year, 9, 26));
+                    endDate = new Date(Date.UTC(year, 10, 10));
                     break;
                 case 21:
-                    startDate = new Date(year, 10, 11);
-                    endDate = new Date(year, 10, 25);
+                    startDate = new Date(Date.UTC(year, 10, 11));
+                    endDate = new Date(Date.UTC(year, 10, 25));
                     break;
                 case 22:
-                    startDate = new Date(year, 10, 26);
-                    endDate = new Date(year, 11, 10);
+                    startDate = new Date(Date.UTC(year, 10, 26));
+                    endDate = new Date(Date.UTC(year, 11, 10));
                     break;
                 case 23:
-                    startDate = new Date(year, 11, 11);
-                    endDate = new Date(year, 11, 25);
+                    startDate = new Date(Date.UTC(year, 11, 11));
+                    endDate = new Date(Date.UTC(year, 11, 25));
                     break;
             }
 
@@ -631,13 +681,118 @@
                 startDate,
                 endDate
             } = getCutoffDates(monthIndex, year);
+            const selectedOptionText = monthSelect.options[monthSelect.selectedIndex].text;
+            const cutoff = `${selectedOptionText} ${year}`;
 
-            fetchAttendanceData(startDate, endDate, function (data) {
-                renderCalendar(startDate, endDate, data);
+            fetchStatus(cutoff, function (status) {
+                fetchAttendanceData(startDate, endDate, function (attendanceData, leaveData) {
+                    renderCalendar(startDate, endDate, attendanceData, leaveData, status);
+                });
             });
         }
 
+        function saveAttendance() {
+            const monthSelect = document.getElementById('monthSelect');
+            const yearSelect = document.getElementById('yearSelect');
+            const selectedOptionText = monthSelect.options[monthSelect.selectedIndex].text;
+            const year = parseInt(yearSelect.value);
+            const cutoff = `${selectedOptionText} ${year}`;
+
+            const {
+                startDate,
+                endDate
+            } = getCutoffDates(monthSelect.selectedIndex, year);
+
+            const totalBox = document.querySelector('.total-box');
+            const totalWorked = totalBox.innerText.match(/Total Worked Hours: (\d{2}:\d{2}:\d{2})/)[1];
+            const totalLate = totalBox.innerText.match(/Total Late: (\d{2}:\d{2}:\d{2})/)[1];
+            const unpaidLeaveCount = totalBox.innerText.match(/Unpaid Leave: (\d+)/)[1];
+            const vacationLeaveCount = totalBox.innerText.match(/Vacation Leave: (\d+)/)[1];
+            const sickLeaveCount = totalBox.innerText.match(/Sick Leave: (\d+)/)[1];
+            const bdayLeaveCount = totalBox.innerText.match(/Birthday Leave: (\d+)/)[1];
+
+            const data = {
+                total_worked: totalWorked,
+                total_late: totalLate,
+                cutoff: cutoff,
+                start_date: startDate.toISOString().split('T')[0],
+                end_date: endDate.toISOString().split('T')[0],
+                unpaid_leave: unpaidLeaveCount,
+                vacation_leave: vacationLeaveCount,
+                sick_leave: sickLeaveCount,
+                birthday_leave: bdayLeaveCount,
+                status: 'pending'
+            };
+
+            console.log('Data to be saved:', data);
+
+            // Check if the attendance record already exists
+            $.ajax({
+                url: "{{ route('attendance.check') }}",
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                data: data,
+                success: function (response) {
+                    console.log('Check response:', response);
+                    if (response.exists) {
+                        if (response.status === 'pending') {
+                            alert(
+                                'The attendance sheet is already recorded and is waiting for approval.'
+                            );
+                            updateStatus('pending');
+                        } else if (response.status === 'approved' || response.status ===
+                            'rejected') {
+                            alert(`The attendance sheet has already been ${response.status}.`);
+                            updateStatus(response.status);
+                        } else {
+                            alert('Attendance record already exists for this period.');
+                        }
+                    } else {
+                        // Ask for confirmation before saving
+                        if (confirm('Do you wish to send this cut-off?')) {
+                            // Save the attendance record
+                            $.ajax({
+                                url: "{{ route('attendance.save') }}",
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr(
+                                        'content')
+                                },
+                                data: data,
+                                success: function (response) {
+                                    console.log('Attendance saved successfully:',
+                                        response);
+                                    alert('Attendance saved successfully.');
+                                    updateStatus('pending');
+                                },
+                                error: function (err) {
+                                    console.error('Error saving attendance:', err);
+                                    alert('Error saving attendance.');
+                                }
+                            });
+                        }
+                    }
+                },
+                error: function (err) {
+                    console.error('Error checking attendance:', err);
+                    alert('Error checking attendance.');
+                }
+            });
+        }
+
+        function updateStatus(status) {
+            const totalBox = document.querySelector('.total-box');
+            if (totalBox) {
+                const newText = totalBox.innerText.replace(/Status:.*/, `Status: ${status}`);
+                totalBox.innerText = newText;
+                console.log('Status updated to:', status);
+            }
+        }
+
         searchButton.addEventListener('click', searchCalendar);
+        saveButton.addEventListener('click', saveAttendance);
 
         // Initial search when the page loads
         const currentDate = new Date();
@@ -659,6 +814,7 @@
     });
 
 </script>
+
 
 
 @endsection

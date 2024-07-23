@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
 
     <link href="{{ asset('assets/css/login.css') }}" rel="stylesheet" />
+    <link href="{{ asset('assets/css/line-awesome.min.css') }}" rel="stylesheet" />
+
 </head>
 
 <body>
@@ -39,20 +41,23 @@
             @enderror
         </div>
 
-
         <div class="inputbox">
             <label>Password</label>
+
             <input required autocomplete="current-password" name="password"
                 class="form-control @error('password') is-invalid @enderror" id="password" type="password"
-                class="form-control rounded-left" placeholder="Password" required />
+                placeholder="Password" required />
+            <span class="position-absolute" id="toggle-password"
+                style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;">
+                <i class="la la-eye"></i>
+            </span>
+
             @error('password')
             <span class="invalid-feedback" role="alert">
                 <strong>{{ $message }}</strong>
             </span>
             @enderror
         </div>
-
-
 
         <input type="submit" value="sign in" class="submit">
 
@@ -85,6 +90,22 @@
         }
 
     </script>
+
+    <script>
+        document.getElementById('toggle-password').addEventListener('click', function () {
+            var passwordField = document.getElementById('password');
+            var passwordFieldType = passwordField.getAttribute('type');
+            if (passwordFieldType === 'password') {
+                passwordField.setAttribute('type', 'text');
+                this.innerHTML = '<i class="la la-eye-slash"></i>';
+            } else {
+                passwordField.setAttribute('type', 'password');
+                this.innerHTML = '<i class="la la-eye"></i>';
+            }
+        });
+
+    </script>
+
 
 </body>
 

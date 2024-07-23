@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Employee;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use App\Models\BankInformation;
 use App\Models\ContactEmergency;
+use App\Models\PersonalInformation;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
 
@@ -17,7 +18,8 @@ class ProfileController extends Controller
         $user = Auth::user();
         $contacts = ContactEmergency::where('users_id', $user->id)->get();
         $bankinfo = BankInformation::where('users_id', $user->id)->get();
-        return view('emp.profile.index', compact('user', 'contacts', 'bankinfo'));
+        $info = PersonalInformation::where('users_id', $user->id)->first();
+        return view('emp.profile.index', compact('user', 'contacts', 'bankinfo', 'info'));
     }
 
     public function update (Request $request) 
@@ -77,6 +79,44 @@ class ProfileController extends Controller
             $contact->save();
 
             Alert::success('Contact Emergency Added');
+        }
+
+        return redirect()->back();
+    }
+
+    public function personalInfo (Request $request)
+    {
+        $user = Auth::user();
+
+        $info = PersonalInformation::where('users_id', $user->id)->first();
+
+        if($info)
+        {
+            $info->religion = $request->input('religion');
+            $info->age = $request->input('age');
+            $info->education = $request->input('education');
+            $info->nationality = $request->input('nationality');
+            $info->mStatus = $request->input('mStatus');
+            $info->numChildren = $request->input('numChildren');
+
+            $info->save();
+
+            Alert::success('Personal Information Updated');
+        } else {
+            
+            $info = new PersonalInformation();
+            $info->users_id = $user->id;
+            $info->name = $user->name;
+            $info->religion = $request->input('religion');
+            $info->age = $request->input('age');
+            $info->education = $request->input('education');
+            $info->nationality = $request->input('nationality');
+            $info->mStatus = $request->input('mStatus');
+            $info->numChildren = $request->input('numChildren');
+
+            $info->save();
+
+            Alert::success('Personal Infromation Added');
         }
 
         return redirect()->back();

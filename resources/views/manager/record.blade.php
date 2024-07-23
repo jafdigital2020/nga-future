@@ -44,7 +44,7 @@
                                         <div class="staff-id">Department :
                                             {{ $user->department ?? 'No department record' }}</div>
                                         <div class="staff-id">Reporting to : {{ $supervisor->name }}</div>
-                                        <div class="staff-id">Date Hired : {{ $supervisor->dateHired }}</div>
+                                        <div class="staff-id">Date Hired : {{ $user->dateHired }}</div>
                                     </div>
                                 </div>
                                 <div class="col-md-7">
@@ -106,48 +106,49 @@
                 <div class="col-md-6 d-flex">
                     <div class="card profile-box flex-fill">
                         <div class="card-body">
-                            <h3 class="card-title">Personal Informations </h3>
+                            <h3 class="card-title">Personal Informations <a href="#" class="edit-icon"
+                                    data-toggle="modal" data-target="#personal_info_modal"><i
+                                        class="fa fa-pencil"></i></a></h3>
+                            @if($user->personalInformation->isNotEmpty())
+                            @foreach($user->personalInformation as $info)
                             <ul class="personal-info">
                                 <li>
-                                    <div class="title">Passport No.</div>
-                                    <div class="text">9876543210</div>
+                                    <div class="title">Religion</div>
+                                    <div class="text">{{ $info->religion }}</div>
                                 </li>
                                 <li>
-                                    <div class="title">Passport Exp Date.</div>
-                                    <div class="text">9876543210</div>
+                                    <div class="title">Age</div>
+                                    <div class="text">{{ $info->age }}</div>
                                 </li>
                                 <li>
-                                    <div class="title">Tel</div>
-                                    <div class="text"><a href="">9876543210</a></div>
+                                    <div class="title">Education</div>
+                                    <div class="text">{{ $info->education }}</div>
                                 </li>
                                 <li>
                                     <div class="title">Nationality</div>
-                                    <div class="text">Indian</div>
-                                </li>
-                                <li>
-                                    <div class="title">Religion</div>
-                                    <div class="text">Christian</div>
+                                    <div class="text">{{ $info->nationality }}</div>
                                 </li>
                                 <li>
                                     <div class="title">Marital status</div>
-                                    <div class="text">Married</div>
-                                </li>
-                                <li>
-                                    <div class="title">Employment of spouse</div>
-                                    <div class="text">No</div>
+                                    <div class="text">{{ $info->mStatus }}</div>
                                 </li>
                                 <li>
                                     <div class="title">No. of children</div>
-                                    <div class="text">2</div>
+                                    <div class="text">{{ $info->numChildren }}</div>
                                 </li>
                             </ul>
+                            @endforeach
+                            @else
+                            <p>No Personal Info available.</p>
+                            @endif
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6 d-flex">
                     <div class="card profile-box flex-fill">
                         <div class="card-body">
-                            <h3 class="card-title">Emergency Contact</h3>
+                            <h3 class="card-title">Emergency Contact <a href="#" class="edit-icon" data-toggle="modal"
+                                    data-target="#emergency_contact_modal"><i class="fa fa-pencil"></i></a></h3>
                             @if($user->contactEmergency->isNotEmpty())
                             <h5 class="section-title">Primary</h5>
                             @foreach($user->contactEmergency as $contact)
@@ -194,7 +195,8 @@
                 <div class="col-md-6 d-flex">
                     <div class="card profile-box flex-fill">
                         <div class="card-body">
-                            <h3 class="card-title">Goverment Mandates </h3>
+                            <h3 class="card-title">Goverment Mandates <a href="#" class="edit-icon" data-toggle="modal"
+                                    data-target="#family_info_modal"><i class="fa fa-pencil"></i></a></h3>
                             <ul class="personal-info">
                                 <li>
                                     <div class="title">SSS</div>
@@ -217,7 +219,8 @@
                     <div class="card profile-box flex-fill">
                         <div class="card-body">
 
-                            <h3 class="card-title">Bank Information</h3>
+                            <h3 class="card-title">Bank Information<a href="#" class="edit-icon" data-toggle="modal"
+                                    data-target="#bank_info"><i class="fa fa-pencil"></i></a></h3>
                             @if($user->bankInfo->isNotEmpty())
                             @foreach ($user->bankInfo as $bank)
                             <ul class="personal-info">

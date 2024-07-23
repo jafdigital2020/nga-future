@@ -108,7 +108,7 @@
                 </div>
             </div>
             <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
-                <button type="submit" class="btn btn-success btn-block">Search</button>
+                <button type="submit" class="btn btn-primary btn-block">Search</button>
             </div>
         </div>
     </form>
@@ -445,7 +445,7 @@
             var status = $(this).data('status');
 
             if (status === 'Approved') {
-                alert('This leave request has already been approved and cannot be edited.');
+                alert('This request has already been approved and cannot be edited.');
                 return;
             }
 
