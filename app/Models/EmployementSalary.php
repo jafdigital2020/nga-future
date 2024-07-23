@@ -2,24 +2,22 @@
 
 namespace App\Models;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class EmploymentRecord extends Model
+class EmployementSalary extends Model
 {
     use HasFactory;
-
-    protected $table = 'employment_records';
+    protected $table = 'employement_salaries';
     protected $fillable = [
         'users_id',
-        'name',
-        'hiredDate',
-        'supervisor',
-        'jobTitle',
-        'department',
-        'location',
+        'annSalary',
+        'salFreqMonthly',
+        'salRate',
+        'currency',
+        'proposalReason',
+        'proBy',
     ];
 
     public function user(): BelongsTo

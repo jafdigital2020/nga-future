@@ -10,7 +10,7 @@
             <div class="col-sm-12">
                 <h3 class="page-title">Employee Profile</h3>
                 <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url('manager/dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item active">View Employee</li>
                 </ul>
             </div>
@@ -544,437 +544,243 @@
         <div class="tab-pane fade" id="emp_record">
             <div class="card">
                 <div class="card-body">
-                    <h3 class="card-title"> Basic Salary Information</h3>
-                    <form>
-                        <div class="row">
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Salary basis <span
-                                            class="text-danger">*</span></label>
-                                    <select class="select">
-                                        <option>Select salary basis type</option>
-                                        <option>Hourly</option>
-                                        <option>Daily</option>
-                                        <option>Weekly</option>
-                                        <option>Monthly</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Salary amount <small class="text-muted">per
-                                            month</small></label>
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">$</span>
-                                        </div>
-                                        <input type="text" class="form-control" placeholder="Type your salary amount"
-                                            value="0.00">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Payment type</label>
-                                    <select class="select">
-                                        <option>Select payment type</option>
-                                        <option>Bank transfer</option>
-                                        <option>Check</option>
-                                        <option>Cash</option>
-                                    </select>
-                                </div>
+                    <div class="col-auto float-right ml-auto">
+                        <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_employee_record"><i
+                                class="fa fa-plus"></i> Add/Edit Employement Record</a>
+                        <!-- <div class="view-icons">
+                            <a href="employees.html" class="grid-view btn btn-link"><i class="fa fa-th"></i></a>
+                            <a href="employees-list.html" class="list-view btn btn-link active"><i
+                                    class="fa fa-bars"></i></a>
+                        </div> -->
+                    </div>
+                    <h3 class="card-title">Employee Record</h3>
+                    @if($user->employmentRecord->isNotEmpty())
+                    @foreach ($user->employmentRecord as $record)
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-form-label">Hired Date</label>
+                                <input type="text" name="eHired" id="eHired" class="form-control"
+                                    value="{{ $record->hiredDate }}" readonly>
                             </div>
                         </div>
-                        <hr>
-                        <h3 class="card-title"> PF Information</h3>
-                        <div class="row">
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">PF contribution</label>
-                                    <select class="select">
-                                        <option>Select PF contribution</option>
-                                        <option>Yes</option>
-                                        <option>No</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">PF No. <span class="text-danger">*</span></label>
-                                    <select class="select">
-                                        <option>Select PF contribution</option>
-                                        <option>Yes</option>
-                                        <option>No</option>
-                                    </select>
-                                </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-form-label">Job Title</label>
+                                <input type="text" name="ePosition" id="ePosition" class="form-control"
+                                    value="{{ $record->jobTitle }}" readonly>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Employee PF rate</label>
-                                    <select class="select">
-                                        <option>Select PF contribution</option>
-                                        <option>Yes</option>
-                                        <option>No</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Additional rate <span
-                                            class="text-danger">*</span></label>
-                                    <select class="select">
-                                        <option>Select additional rate</option>
-                                        <option>0%</option>
-                                        <option>1%</option>
-                                        <option>2%</option>
-                                        <option>3%</option>
-                                        <option>4%</option>
-                                        <option>5%</option>
-                                        <option>6%</option>
-                                        <option>7%</option>
-                                        <option>8%</option>
-                                        <option>9%</option>
-                                        <option>10%</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Total rate</label>
-                                    <input type="text" class="form-control" placeholder="N/A" value="11%">
-                                </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-form-label">Department</label>
+                                <input type="text" name="eDepartment" id="eDepartment" class="form-control"
+                                    value="{{ $record->department }}" readonly>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Employee PF rate</label>
-                                    <select class="select">
-                                        <option>Select PF contribution</option>
-                                        <option>Yes</option>
-                                        <option>No</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Additional rate <span
-                                            class="text-danger">*</span></label>
-                                    <select class="select">
-                                        <option>Select additional rate</option>
-                                        <option>0%</option>
-                                        <option>1%</option>
-                                        <option>2%</option>
-                                        <option>3%</option>
-                                        <option>4%</option>
-                                        <option>5%</option>
-                                        <option>6%</option>
-                                        <option>7%</option>
-                                        <option>8%</option>
-                                        <option>9%</option>
-                                        <option>10%</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Total rate</label>
-                                    <input type="text" class="form-control" placeholder="N/A" value="11%">
-                                </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-form-label">Immediate Supervisor</label>
+                                <input type="text" name="iSupervisor" id="iSupervisor" class="form-control"
+                                    value="{{ $record->supervisor }}" readonly>
                             </div>
                         </div>
-
-                        <hr>
-                        <h3 class="card-title"> ESI Information</h3>
-                        <div class="row">
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">ESI contribution</label>
-                                    <select class="select">
-                                        <option>Select ESI contribution</option>
-                                        <option>Yes</option>
-                                        <option>No</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">ESI No. <span class="text-danger">*</span></label>
-                                    <select class="select">
-                                        <option>Select ESI contribution</option>
-                                        <option>Yes</option>
-                                        <option>No</option>
-                                    </select>
-                                </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-form-label">Location</label>
+                                <input type="text" name="location" id="location" class="form-control"
+                                    value="{{ $record->location }}" readonly>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Employee ESI rate</label>
-                                    <select class="select">
-                                        <option>Select ESI contribution</option>
-                                        <option>Yes</option>
-                                        <option>No</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Additional rate <span
-                                            class="text-danger">*</span></label>
-                                    <select class="select">
-                                        <option>Select additional rate</option>
-                                        <option>0%</option>
-                                        <option>1%</option>
-                                        <option>2%</option>
-                                        <option>3%</option>
-                                        <option>4%</option>
-                                        <option>5%</option>
-                                        <option>6%</option>
-                                        <option>7%</option>
-                                        <option>8%</option>
-                                        <option>9%</option>
-                                        <option>10%</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Total rate</label>
-                                    <input type="text" class="form-control" placeholder="N/A" value="11%">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="submit-section">
-                            <button class="btn btn-primary submit-btn" type="submit">Save</button>
-                        </div>
-                    </form>
+                    </div>
+                    @endforeach
+                    @else
+                    <p>No Employment Record.</p>
+                    @endif
                 </div>
             </div>
         </div>
+
+        <!-- Employment Record Modal -->
+        <div id="add_employee_record" class="modal custom-modal fade" role="dialog">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Employment Record</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ url('manager/department-record/update-record/'. $user->id) }}" method="POST"
+                            enctype="multipart/form-data">
+                            @csrf
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="col-form-label">Hired Date</label>
+                                        <input type="text" name="eHired" id="eHired" class="form-control"
+                                            value="{{ $user->dateHired }}" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="col-form-label">Job Title</label>
+                                        <input type="text" name="ePosition" id="ePosition" class="form-control"
+                                            value="{{ $user->position }}" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="col-form-label">Department</label>
+                                        <input type="text" name="eDepartment" id="eDepartment" class="form-control"
+                                            value="{{ $user->department }}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="col-form-label">Immediate Supervisor</label>
+                                        <input type="text" name="iSupervisor" id="iSupervisor" class="form-control"
+                                            value="{{ $supervisor->name }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="col-form-label">Location</label>
+                                        <input type="text" name="location" id="location" class="form-control" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="submit-section">
+                                <button class="btn btn-primary submit-btn" type="submit">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /Employment Record Modal -->
         <!-- /Emp Tab -->
 
-        <!-- Emp Tab Tab -->
+        <!-- Emp Salary Tab -->
         <div class="tab-pane fade" id="emp_salary">
             <div class="card">
                 <div class="card-body">
-                    <h3 class="card-title"> Basic Salary Information</h3>
-                    <form>
-                        <div class="row">
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Salary basis <span
-                                            class="text-danger">*</span></label>
-                                    <select class="select">
-                                        <option>Select salary basis type</option>
-                                        <option>Hourly</option>
-                                        <option>Daily</option>
-                                        <option>Weekly</option>
-                                        <option>Monthly</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Salary amount <small class="text-muted">per
-                                            month</small></label>
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">$</span>
-                                        </div>
-                                        <input type="text" class="form-control" placeholder="Type your salary amount"
-                                            value="0.00">
+                    <div class="col-auto float-right ml-auto">
+                        <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_employee_salary"><i
+                                class="fa fa-plus"></i> Add Employment Salary Record</a>
+                        <!-- <div class="view-icons">
+                            <a href="employees.html" class="grid-view btn btn-link"><i class="fa fa-th"></i></a>
+                            <a href="employees-list.html" class="list-view btn btn-link active"><i
+                                    class="fa fa-bars"></i></a>
+                        </div> -->
+                    </div>
+                    <h3 class="card-title">Employee Salary Record</h3>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="card mb-0">
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="datatable table table-stripped mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Annual Salary</th>
+                                                    <th>Salary Frequency Monthly</th>
+                                                    <th>Salary Rate</th>
+                                                    <th>Currency</th>
+                                                    <th>Proposal Reason</th>
+                                                    <th>Proposed By:</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($user->employmentSalary as $sarecord)
+                                                <tr>
+                                                    <td>{{ $sarecord->name }}</td>
+                                                    <td>{{ $sarecord->annSalary }}</td>
+                                                    <td>{{ $sarecord->salFreqMonthly }}</td>
+                                                    <td>{{ $sarecord->salRate }}</td>
+                                                    <td>{{ $sarecord->currency }}</td>
+                                                    <td>{{ $sarecord->proposalReason }}</td>
+                                                    <td>{{ $sarecord->proBy }}</td>
+                                                    <td></td>
+                                                </tr>
+                                            </tbody>
+                                            @endforeach
+                                        </table>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Payment type</label>
-                                    <select class="select">
-                                        <option>Select payment type</option>
-                                        <option>Bank transfer</option>
-                                        <option>Check</option>
-                                        <option>Cash</option>
-                                    </select>
-                                </div>
-                            </div>
                         </div>
-                        <hr>
-                        <h3 class="card-title"> PF Information</h3>
-                        <div class="row">
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">PF contribution</label>
-                                    <select class="select">
-                                        <option>Select PF contribution</option>
-                                        <option>Yes</option>
-                                        <option>No</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">PF No. <span class="text-danger">*</span></label>
-                                    <select class="select">
-                                        <option>Select PF contribution</option>
-                                        <option>Yes</option>
-                                        <option>No</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Employee PF rate</label>
-                                    <select class="select">
-                                        <option>Select PF contribution</option>
-                                        <option>Yes</option>
-                                        <option>No</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Additional rate <span
-                                            class="text-danger">*</span></label>
-                                    <select class="select">
-                                        <option>Select additional rate</option>
-                                        <option>0%</option>
-                                        <option>1%</option>
-                                        <option>2%</option>
-                                        <option>3%</option>
-                                        <option>4%</option>
-                                        <option>5%</option>
-                                        <option>6%</option>
-                                        <option>7%</option>
-                                        <option>8%</option>
-                                        <option>9%</option>
-                                        <option>10%</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Total rate</label>
-                                    <input type="text" class="form-control" placeholder="N/A" value="11%">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Employee PF rate</label>
-                                    <select class="select">
-                                        <option>Select PF contribution</option>
-                                        <option>Yes</option>
-                                        <option>No</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Additional rate <span
-                                            class="text-danger">*</span></label>
-                                    <select class="select">
-                                        <option>Select additional rate</option>
-                                        <option>0%</option>
-                                        <option>1%</option>
-                                        <option>2%</option>
-                                        <option>3%</option>
-                                        <option>4%</option>
-                                        <option>5%</option>
-                                        <option>6%</option>
-                                        <option>7%</option>
-                                        <option>8%</option>
-                                        <option>9%</option>
-                                        <option>10%</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Total rate</label>
-                                    <input type="text" class="form-control" placeholder="N/A" value="11%">
-                                </div>
-                            </div>
-                        </div>
-
-                        <hr>
-                        <h3 class="card-title"> ESI Information</h3>
-                        <div class="row">
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">ESI contribution</label>
-                                    <select class="select">
-                                        <option>Select ESI contribution</option>
-                                        <option>Yes</option>
-                                        <option>No</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">ESI No. <span class="text-danger">*</span></label>
-                                    <select class="select">
-                                        <option>Select ESI contribution</option>
-                                        <option>Yes</option>
-                                        <option>No</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Employee ESI rate</label>
-                                    <select class="select">
-                                        <option>Select ESI contribution</option>
-                                        <option>Yes</option>
-                                        <option>No</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Additional rate <span
-                                            class="text-danger">*</span></label>
-                                    <select class="select">
-                                        <option>Select additional rate</option>
-                                        <option>0%</option>
-                                        <option>1%</option>
-                                        <option>2%</option>
-                                        <option>3%</option>
-                                        <option>4%</option>
-                                        <option>5%</option>
-                                        <option>6%</option>
-                                        <option>7%</option>
-                                        <option>8%</option>
-                                        <option>9%</option>
-                                        <option>10%</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Total rate</label>
-                                    <input type="text" class="form-control" placeholder="N/A" value="11%">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="submit-section">
-                            <button class="btn btn-primary submit-btn" type="submit">Save</button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
-        <!-- /Emp Tab -->
+
+        <!-- Employment Salary Modal -->
+        <div id="add_employee_salary" class="modal custom-modal fade" role="dialog">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Employment Record</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ url('manager/department-record/update-salary/'. $user->id) }}" method="POST"
+                            enctype="multipart/form-data">
+                            @csrf
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="col-form-label">Annual Salary</label>
+                                        <input type="text" name="annSalary" id="annSalary" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="col-form-label">Salary Frequency Monthly</label>
+                                        <input type="text" name="salFreqMonthly" id="salFreqMonthly"
+                                            class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="col-form-label">Salary Rate</label>
+                                        <input type="text" name="salRate" id="salRate" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="col-form-label">Currency</label>
+                                        <input type="text" name="currency" id="currency" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="col-form-label">Proposal Reason</label>
+                                        <textarea class="form-control" name="proposalReason"
+                                            id="proposalReason"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="submit-section">
+                                <button class="btn btn-primary submit-btn" type="submit">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /Employment Salary Modal -->
+        <!-- /Emp Salary Tab -->
 
     </div>
 </div>

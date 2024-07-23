@@ -27,6 +27,7 @@ class EmployeeController extends Controller
     {
         $name = $request->input('name');
         $empNumber = $request->input('empNumber');
+        $department  = $request->input('department');
 
         $data = User::query();
 
@@ -36,6 +37,10 @@ class EmployeeController extends Controller
 
         if ($empNumber) {
             $data->where('empNumber', 'like', "%$empNumber%");
+        }
+
+        if($department) {
+            $data->where('department', 'like', "%$department%");
         }
 
         $emp = $data->get();
@@ -87,6 +92,8 @@ class EmployeeController extends Controller
                 'pagIbig' => $request->input('pagIbig'),
                 'philHealth' => $request->input('philHealth'),
                 'image' => $imageName,
+                'department' => $request->input('department'),
+                'bdayLeave' => '1',
             ]);
 
             Alert::success('Employee Added Successfully', 'Employee Added');

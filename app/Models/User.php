@@ -5,8 +5,11 @@ namespace App\Models;
 use Carbon\Carbon;
 use App\Models\Salary;
 use Carbon\CarbonInterval;
+use App\Models\LeaveRequest;
 use App\Models\EmployeeSalary;
 use App\Models\BankInformation;
+use App\Models\EmploymentRecord;
+use App\Models\EmployementSalary;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\EmployeeAttendance;
 use Illuminate\Support\Facades\DB;
@@ -62,6 +65,9 @@ class User extends Authenticatable
         'image',
         'empNumber',
         'position',
+        'vacLeave',
+        'sickLeave',
+        'bdayLeave',
     ];
 
     public function isSupervisor()
@@ -73,29 +79,62 @@ class User extends Authenticatable
         ]);
     }
 
+    public function isAdmin()
+    {
+        return $this->role_as == self::ROLE_ADMIN;
+    }
+
+    public function isHR()
+    {
+        return $this->role_as == self::ROLE_HR;
+    }
+
+    // public static function getSupervisorForDepartment($department, $loggedInUser)
+    // {
+    //     if ($loggedInUser->isSupervisor()) {
+    //         return 'Management';
+    //     }
+
+    //     switch ($department) {
+    //         case 'IT':
+    //         case 'Website Development':
+    //             $supervisorRole = self::ROLE_IT_MANAGER;
+    //             break;
+    //         case 'Marketing':
+    //             $supervisorRole = self::ROLE_MARKETING_MANAGER;
+    //             break;
+    //         case 'SEO':
+    //         case 'Content':
+    //             $supervisorRole = self::ROLE_OPERATIONS_MANAGER;
+    //             break;
+    //         default:
+    //             return null;
+    //     }
+
+    //     return self::where('role_as', $supervisorRole)->first();
+    // }
+
     public static function getSupervisorForDepartment($department, $loggedInUser)
     {
-        if ($loggedInUser->isSupervisor()) {
+        if ($loggedInUser->isSupervisor() || $loggedInUser->isHr()) {
             return 'Management';
         }
+        
+        $supervisorRoles = [
+            'IT' => self::ROLE_IT_MANAGER,
+            'Website Development' => self::ROLE_IT_MANAGER,
+            'Marketing' => self::ROLE_MARKETING_MANAGER,
+            'SEO' => self::ROLE_OPERATIONS_MANAGER,
+            'Content' => self::ROLE_OPERATIONS_MANAGER,
+        ];
 
-        switch ($department) {
-            case 'IT':
-            case 'Website Development':
-                $supervisorRole = self::ROLE_IT_MANAGER;
-                break;
-            case 'Marketing':
-                $supervisorRole = self::ROLE_MARKETING_MANAGER;
-                break;
-            case 'SEO':
-            case 'Content':
-                $supervisorRole = self::ROLE_OPERATIONS_MANAGER;
-                break;
-            default:
-                return null;
+        $supervisorRole = $supervisorRoles[$department] ?? null;
+
+        if ($supervisorRole) {
+            return self::where('role_as', $supervisorRole)->first();
         }
 
-        return self::where('role_as', $supervisorRole)->first();
+        return null;
     }
     
     public static function getUsersByDepartments(array $departments)
@@ -154,6 +193,21 @@ class User extends Authenticatable
     public function employmentRecord (): HasMany
     {
         return $this->hasMany(EmploymentRecord::class, 'users_id', 'id');
+    }
+
+    public function employmentSalary (): HasMany
+    {
+        return $this->hasMany(EmployementSalary::class, 'users_id', 'id');
+    }
+
+    public function leaveRequests()
+    {
+        return $this->hasMany(LeaveRequest::class, 'users_id', 'id');
+    }
+
+    public function approvedLeaveRequests()
+    {
+        return $this->hasMany(LeaveRequest::class, 'approved_by');
     }
 
 

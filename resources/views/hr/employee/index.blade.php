@@ -45,10 +45,13 @@
             </div>
             <div class="col-sm-6 col-md-3">
                 <div class="form-group form-focus select-focus">
-                    <select class="select floating">
-                        <option>--Select Position--</option>
-
-
+                    <select class="select floating" name="department">
+                        <option>--Select Department--</option>
+                        <option value="Website Development">Website Development</option>
+                        <option value="SEO">SEO</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Graphics">Graphics</option>
+                        <option value="Content">Content</option>
                     </select>
                     <label class="focus-label">Department</label>
                 </div>
@@ -102,7 +105,7 @@
                                 <div class="dropdown">
                                     <a href="" class="btn btn-white btn-sm btn-rounded" data-toggle="dropdown"
                                         aria-expanded="false">
-                                        {{ $employee->position }}
+                                        {{ $employee->department }}
                                     </a>
                                 </div>
                             </td>
@@ -153,7 +156,7 @@
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label for="name">Full Name<span class="text-danger">*</span></label>
-                                <input type="text" name="name" class="form-control" />
+                                <input type="text" name="name" class="form-control" required />
                                 <span style="color: red">@error('name'){{
                                     $message
                                 }}@enderror</span>
@@ -163,7 +166,7 @@
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label>Employee Number<span class="text-danger">*</span></label>
-                                <input type="text" name="empNumber" class="form-control" />
+                                <input type="text" name="empNumber" class="form-control" required />
                                 <span style="color: red">@error('empNumber'){{
                                         $message
                                     }}@enderror</span>
@@ -173,7 +176,7 @@
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label>Type Of Contract<span class="text-danger">*</span></label>
-                                <select name="typeOfContract" class="form-control">
+                                <select name="typeOfContract" class="form-control" required>
                                     <option value="">-- Select --</option>
                                     <option value="Regular">Regular</option>
                                     <option value="Freelancer">Freelancer</option>
@@ -187,7 +190,7 @@
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label>Select Position<span class="text-danger">*</span></label>
-                                <select name="position" class="form-control">
+                                <select name="position" class="form-control" required>
                                     <!-- Technical Marketing -->
                                     <option>-- Select --</option>
                                     <option value="CEO & Founder">
@@ -247,7 +250,7 @@
                                     <span class="text-danger">*</span></label>
                                 <div class="cal-icon">
                                     <input class="form-control datetimepicker" type="text" name="dateHired"
-                                        placeholder="-- Select Date --" />
+                                        placeholder="-- Select Date --" required />
                                     <span style="color: red">@error('dateHired'){{
                                         $message
                                     }}@enderror</span>
@@ -261,7 +264,7 @@
                                     <span class="text-danger">*</span></label>
                                 <div class="cal-icon">
                                     <input type="text" name="birthday" class="form-control datetimepicker"
-                                        placeholder="-- Select Date --" />
+                                        placeholder="-- Select Date --" required />
                                     <span style="color: red">@error('birthday'){{
                                         $message
                                     }}@enderror</span>
@@ -272,7 +275,8 @@
                         <div class="col-sm-12">
                             <div class="form-group">
                                 <label>Complete Address<span class="text-danger">*</span></label>
-                                <textarea name="completeAddress" class="form-control" cols="30" rows="3"></textarea>
+                                <textarea name="completeAddress" class="form-control" cols="30" rows="3"
+                                    required></textarea>
 
                                 <span style="color: red">@error('completeAddress'){{
                                         $message
@@ -284,7 +288,7 @@
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label>Email address<span class="text-danger">*</span></label>
-                                <input type="email" name="email" class="form-control" />
+                                <input type="email" name="email" class="form-control" required />
                                 @error('email')
                                 <span class="text-danger">{{ $message }}</span>
                                 @enderror
@@ -305,18 +309,30 @@
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label>Phone Number<span class="text-danger">*</span></label>
-                                <input type="text" name="phoneNumber" class="form-control" />
+                                <input type="text" name="phoneNumber" class="form-control" required />
                                 <span style="color: red">@error('phoneNumber'){{
                                         $message
                                     }}@enderror</span>
                             </div>
                         </div>
-                        <!-- Hourly Rate -->
+
+
+                        <!-- Department -->
+
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <label>Hourly Rate<span class="text-danger">*</span></label>
-                                <input type="number" name="hourlyRate" class="form-control" />
-                                <span style="color: red">@error('hourlyRate'){{
+                                <label>Department<span class="text-danger">*</span></label>
+                                <select name="department" class="form-control" required>
+                                    <option value="">-- Select --</option>
+                                    <option value="Marketing">Marketing</option>
+                                    <option value="Website Development">Website Development</option>
+                                    <option value="SEO">SEO</option>
+                                    <option value="IT">IT</option>
+                                    <option value="Content">Content</option>
+                                    <option value="Graphics">Graphics</option>
+                                    <option value="HR">HR</option>
+                                </select>
+                                <span style="color: red">@error('role_as'){{
                                         $message
                                     }}@enderror</span>
                             </div>
@@ -336,7 +352,7 @@
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label>SSS<span class="text-danger">*</span></label>
-                                <input type="text" name="sss" class="form-control" />
+                                <input type="text" name="sss" class="form-control" required />
                                 <span style="color: red">@error('sss'){{ $message }}@enderror</span>
                             </div>
                         </div>
@@ -344,7 +360,7 @@
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label>Pag-Ibig<span class="text-danger">*</span></label>
-                                <input type="text" name="pagIbig" class="form-control" />
+                                <input type="text" name="pagIbig" class="form-control" required />
                                 <span style="color: red">@error('pagIbig'){{ $message }}@enderror</span>
                             </div>
                         </div>
@@ -352,7 +368,7 @@
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label>Phil Health<span class="text-danger">*</span></label>
-                                <input type="text" name="philHealth" class="form-control" />
+                                <input type="text" name="philHealth" class="form-control" required />
                                 <span style="color: red">@error('philHealth'){{ $message }}@enderror</span>
                             </div>
                         </div>
@@ -375,17 +391,32 @@
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label>Select Role<span class="text-danger">*</span></label>
-                                <select name="role_as" class="form-control">
+                                <select name="role_as" class="form-control" required>
                                     <option value="">-- Select --</option>
                                     <option value="3">Employee</option>
                                     <option value="1">Admin</option>
                                     <option value="2">HR</option>
+                                    <option value="4">Operations Manager</option>
+                                    <option value="5">IT Manager</option>
+                                    <option value="6">Marketing Manager</option>
                                 </select>
                                 <span style="color: red">@error('role_as'){{
                                         $message
                                     }}@enderror</span>
                             </div>
                         </div>
+
+                        <!-- Hourly Rate -->
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Hourly Rate<span class="text-danger">*</span></label>
+                                <input type="number" name="hourlyRate" class="form-control" required />
+                                <span style="color: red">@error('hourlyRate'){{
+                                        $message
+                                    }}@enderror</span>
+                            </div>
+                        </div>
+
                     </div>
                     <div class="modal-footer">
                         <button type="submit" class="btn btn-primary submit-btn">
@@ -402,271 +433,6 @@
     </div>
 </div>
 <!-- /Add Employee Modal -->
-
-<!-- Edit Employee Modal -->
-<div id="edit_user" class="modal custom-modal fade" role="dialog">
-    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Edit Employee</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="editForm" action="" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    @method('PUT')
-                    <div class="row">
-                        <!-- Name -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="name">Full Name<span class="text-danger">*</span></label>
-                                <input type="text" name="name" id="name" value="{{ $employee->name }}"
-                                    class="form-control" />
-                                <span style="color: red">@error('name'){{
-                                    $message
-                                }}@enderror</span>
-                            </div>
-                        </div>
-                        <!-- Employee Number -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label>Employee Number<span class="text-danger">*</span></label>
-                                <input type="text" name="empNumber" id="empNumber" class="form-control" />
-                                <span style="color: red">@error('empNumber'){{
-                                        $message
-                                    }}@enderror</span>
-                            </div>
-                        </div>
-                        <!-- Type Of Contract -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label>Type Of Contract<span class="text-danger">*</span></label>
-                                <select name="typeOfContract" id="typeOfContract" class="form-control">
-                                    <option value="">-- Select --</option>
-                                    <option value="Regular">Regular</option>
-                                    <option value="Contractual">Contractual</option>
-                                    <option value="Freelancer">Freelancer</option>
-                                </select>
-                                <span style="color: red">@error('typeOfContract'){{
-                                        $message
-                                    }}@enderror</span>
-                            </div>
-                        </div>
-                        <!-- Position -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label>Select Position<span class="text-danger">*</span></label>
-                                <select name="position" id="position" class="form-control">
-                                    <!-- Technical Marketing -->
-                                    <option>-- Select --</option>
-                                    <option value="CEO & Founder">
-                                        CEO & Founder
-                                    </option>
-                                    <option value="Co-Founder">
-                                        Co-Founder
-                                    </option>
-
-                                    <option value="Operations Supervisor">Operations Supervisor</option>
-                                    <option value="IT Supervisor">IT Supervisor</option>
-                                    <option value="Marketing Supervisor">
-                                        Marketing Supervisor
-                                    </option>
-                                    <options value="HR">HR</options>
-                                    <option value="Senior Website Developer">
-                                        Senior Website Developer
-                                    </option>
-                                    <option value="Junior Website Developer">
-                                        Junior Website Developer
-                                    </option>
-                                    <option value="Associate Website Developer">
-                                        Associate Website Developer
-                                    </option>
-                                    <option value="Cloud Specialist">
-                                        Cloud Specialist
-                                    </option>
-                                    <option value="SEO Specialist">
-                                        SEO Specialist
-                                    </option>
-                                    <option value="Graphic Artist">
-                                        Graphic Artist
-                                    </option>
-                                    <option value="Digital Marketing Associate">
-                                        Digital Marketing Associate
-                                    </option>
-                                    <option value="Content Writer">
-                                        Content Writer
-                                    </option>
-                                    <option value="Event Coordinator">
-                                        Event Coordinator
-                                    </option>
-                                    <option value="Admin Staff">
-                                        Admin Staff
-                                    </option>
-                                </select>
-                                <span style="color: red">@error('role_as'){{
-                                        $message
-                                    }}@enderror</span>
-                            </div>
-                        </div>
-
-                        <!-- Date Hired -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label class="col-form-label">Joining Date
-                                    <span class="text-danger">*</span></label>
-                                <div class="cal-icon">
-                                    <input class="form-control datetimepicker" type="text" name="dateHired"
-                                        id="dateHired" placeholder="-- Select Date --" />
-                                    <span style="color: red">@error('dateHired'){{
-                                        $message
-                                    }}@enderror</span>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Birthday -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label class="col-form-label">Birthday
-                                    <span class="text-danger">*</span></label>
-                                <div class="cal-icon">
-                                    <input type="text" name="birthday" id="birthday" class="form-control datetimepicker"
-                                        placeholder="-- Select Date --" />
-                                    <span style="color: red">@error('birthday'){{
-                                        $message
-                                    }}@enderror</span>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Complete Address -->
-                        <div class="col-sm-12">
-                            <div class="form-group">
-                                <label>Complete Address<span class="text-danger">*</span></label>
-                                <textarea name="completeAddress" id="completeAddress" class="form-control" cols="30"
-                                    rows="3"></textarea>
-
-                                <span style="color: red">@error('completeAddress'){{
-                                        $message
-                                    }}@enderror</span>
-                            </div>
-                        </div>
-
-                        <!-- Email Address -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label>Email address<span class="text-danger">*</span></label>
-                                <input type="email" name="email" id="email" class="form-control" />
-                                @error('email')
-                                <span class="text-danger">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-                        <!-- Password -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="exampleInputPassword1">Password<span class="text-danger">*</span></label>
-                                <input type="password" name="password" id="password" class="form-control"
-                                    id="exampleInputPassword1" maxlength="10" />
-                                <span style="color: red">@error('password'){{
-                                        $message
-                                    }}@enderror</span>
-                            </div>
-                        </div>
-                        <!-- Phone Number -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label>Phone Number<span class="text-danger">*</span></label>
-                                <input type="text" name="phoneNumber" id="phoneNumber" class="form-control" />
-                                <span style="color: red">@error('phoneNumber'){{
-                                        $message
-                                    }}@enderror</span>
-                            </div>
-                        </div>
-                        <!-- Hourly Rate -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label>Hourly Rate<span class="text-danger">*</span></label>
-                                <input type="number" name="hourlyRate" id="hourlyRate" class="form-control" />
-                                <span style="color: red">@error('hourlyRate'){{
-                                        $message
-                                    }}@enderror</span>
-                            </div>
-                        </div>
-
-                        <!-- GOVERMENT MANDATES -->
-                        <div class="col-sm-6">
-                            <div class="goverment">
-                                <h5 class="modal-title" id="exampleModalLabel">
-                                    Goverment Mandates
-                                </h5>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- SSS -->
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label>SSS<span class="text-danger">*</span></label>
-                                <input type="text" name="sss" id="sss" class="form-control" />
-                                <span style="color: red">@error('sss'){{ $message }}@enderror</span>
-                            </div>
-                        </div>
-                        <!-- PAG-IBIG -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label>Pag-Ibig<span class="text-danger">*</span></label>
-                                <input type="text" name="pagIbig" id="pagIbig" class="form-control" />
-                                <span style="color: red">@error('pagIbig'){{ $message }}@enderror</span>
-                            </div>
-                        </div>
-                        <!-- Phil Health -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label>Phil Health<span class="text-danger">*</span></label>
-                                <input type="text" name="philHealth" id="philHealth" class="form-control" />
-                                <span style="color: red">@error('philHealth'){{ $message }}@enderror</span>
-                            </div>
-                        </div>
-                        <!-- PROFILE PICTURE -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label>Profile Picture</label>
-                                <input id="image" type="file" class="form-control" name="image" />
-                            </div>
-                        </div>
-
-                        <!-- Role -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label>Select Role<span class="text-danger">*</span></label>
-                                <select name="role_as" class="form-control" id="role_as">
-                                    <option value="">-- Select --</option>
-                                    <option value="3">Employee</option>
-                                    <option value="1">Admin</option>
-                                    <option value="2">HR</option>
-                                </select>
-                                <span style="color: red">@error('role_as'){{
-                                        $message
-                                    }}@enderror</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary submit-btn">
-                            Save Changes
-                        </button>
-                        <button type="button" class="btn btn-secondary submit-btn" data-dismiss="modal"
-                            id="submit-button">
-                            Close
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- /Edit Employee Modal -->
 
 <!-- Delete User Modal -->
 <div class="modal custom-modal fade" id="delete_user" role="dialog">
@@ -712,18 +478,5 @@
     })
 
 </script>
-
-<!-- <script>
-    $(document).ready(function () {
-        $('.editBtn').click(function (e) {
-            e.preventDefault();
-
-            var edit_emp_id = $(this).val();
-            $('#edit_emp_id').val(edit_emp_id);
-            $('#delete_user').model('show');
-        })
-    })
-
-</script> -->
 
 @endsection

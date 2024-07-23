@@ -1,4 +1,4 @@
-@extends('layouts.hrmaster') @section('title', 'Leave') @section('content')
+@extends('layouts.managermaster') @section('title', 'Leave') @section('content')
 @include('sweetalert::alert')
 
 <!-- Page Content -->
@@ -10,7 +10,7 @@
             <div class="col">
                 <h3 class="page-title">Leaves</h3>
                 <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url('hr/dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
                     <li class="breadcrumb-item active">Leaves</li>
                 </ul>
             </div>
@@ -53,7 +53,7 @@
     <!-- /Leave Statistics -->
 
     <!-- Search Filter -->
-    <form action="{{ route('leave.searchr') }}" method="GET">
+    <form action="{{ route('leave.search') }}" method="GET">
         <div class="row filter-row">
             <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
                 <div class="form-group form-focus">
@@ -170,7 +170,7 @@
                                             Pending</a>
 
                                         <form id="approve-form-{{ $leave->id }}"
-                                            action="{{ route('leave.approver', $leave->id) }}" method="POST"
+                                            action="{{ route('leave.approve', $leave->id) }}" method="POST"
                                             style="display:inline;">
                                             @csrf
                                             <button type="button" class="dropdown-item approve-button"
@@ -181,7 +181,7 @@
 
 
                                         <form id="decline-form-{{ $leave->id }}"
-                                            action="{{ route('leave.decliner', $leave->id) }}" method="POST"
+                                            action="{{ route('leave.decline', $leave->id) }}" method="POST"
                                             style="display:inline;">
                                             @csrf
                                             <button type="button" class="dropdown-item decline-button"
@@ -228,7 +228,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="{{ route('mstore.leaver') }}" method="POST">
+                <form action="{{ route('mstore.leave') }}" method="POST">
                     @csrf
                     <div class="form-group">
                         <label>Leave Type <span class="text-danger">*</span></label>
@@ -456,7 +456,7 @@
             $('#dayse').val(days);
             $('#reasone').val(reason);
 
-            $('#editLeaveForm').attr('action', '/hr/leave/' +
+            $('#editLeaveForm').attr('action', '/manager/leave/' +
                 leaveId); // Ensure the form action URL is correct
             $('#edit_leave').modal('show');
         });
@@ -472,7 +472,7 @@
             }
 
             $('#delete_leave_id').val(leaveId);
-            $('#deleteLeaveForm').attr('action', '/hr/leave/' + leaveId);
+            $('#deleteLeaveForm').attr('action', '/manager/leave/' + leaveId);
             $('#delete_approve').modal('show');
         });
     });

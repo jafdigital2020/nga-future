@@ -32,6 +32,11 @@ class EmployeeAttendance extends Model
         return $this->belongsTo(Salary::class);
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'users_id');
+    }
+
     // public function getTotalHoursAttribute()
     // {
     //     if (!empty($this->timeOut)) {

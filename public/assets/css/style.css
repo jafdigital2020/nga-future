@@ -10216,12 +10216,12 @@ ul.comment-list li ul.children {
     gap: 5px;
 }
 
-.day-header {
+.day-header-att {
     font-size: 13px;
 }
 
-.day-header,
-.day {
+.day-header-att,
+.day-att {
     height: 150px;
     padding: 10px;
     border: 1px solid #ddd;
@@ -10229,13 +10229,13 @@ ul.comment-list li ul.children {
     position: relative;
 }
 
-.day-header {
+.day-header-att {
     background-color: #f2f2f2;
     font-weight: bold;
     height: 50px !important;
 }
 
-.day .date-number {
+.day-att .date-number {
     position: absolute;
     top: 5px;
     left: 5px;
@@ -10243,7 +10243,7 @@ ul.comment-list li ul.children {
     font-weight: bold;
 }
 
-.day .attendance-info {
+.day-att .attendance-info {
     margin-top: 30px;
     font-size: 0.8em;
 }
@@ -10270,4 +10270,5 @@ ul.comment-list li ul.children {
     font-weight: bold;
     text-align: center;
     font-size: 14px;
+    padding-top: 30px;
 }

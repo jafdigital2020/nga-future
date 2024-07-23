@@ -34,7 +34,6 @@ Route::prefix('emp')->middleware(['auth','isEmployee', 'sessionTimeout'])->group
 
     Route::get('/dashboard', [App\Http\Controllers\Employee\DashboardController::class, 'index'])->name('main.emp');
     Route::get('/dashboard/get-data', [\App\Http\Controllers\Employee\DashboardController::class, 'getUserAttendance'])->name('attendance.get');
-    // Route::get('attendance', [App\Http\Controllers\Employee\AttendanceController::class, 'index'])->name('attendance');
     Route::post('dashboard', [App\Http\Controllers\Employee\DashboardController::class, 'store']);
     Route::put('dashboard', [App\Http\Controllers\Employee\DashboardController::class, 'update']);
     Route::put('dashboard/breakin', [App\Http\Controllers\Employee\DashboardController::class, 'breakIn']);
@@ -47,6 +46,10 @@ Route::prefix('emp')->middleware(['auth','isEmployee', 'sessionTimeout'])->group
     Route::post('changepassword', [\App\Http\Controllers\Employee\ChangePasswordController::class, 'changePassword']);
     Route::get('payslip', [\App\Http\Controllers\Employee\PayslipController::class, 'index']);
     Route::get('payslip/view/{payslip_id}', [\App\Http\Controllers\Employee\PayslipController::class, 'view']);
+    Route::get('leave', [\App\Http\Controllers\Employee\LeaveController::class, 'index']);
+    Route::post('leave-request', [\App\Http\Controllers\Employee\LeaveController::class, 'storeLeave'])->name('store.leave');
+    Route::post('/leave/{id}', [\App\Http\Controllers\Employee\LeaveController::class, 'update'])->name('leave.update');
+    Route::delete('/leave/{id}', [\App\Http\Controllers\Employee\LeaveController::class, 'destroy'])->name('leave.destroy');
 });
 
 
@@ -54,14 +57,13 @@ Route::prefix('emp')->middleware(['auth','isEmployee', 'sessionTimeout'])->group
 
 Route::prefix('hr')->middleware(['auth','isHr', 'sessionTimeout'])->group(function () {
     Route::get('dashboard', [App\Http\Controllers\Hr\DashboardController::class, 'index'])->name('main.hr');
-    Route::get('attendance', [App\Http\Controllers\Hr\HRAttendanceController::class, 'index'])->name('att.test');
-    Route::post('attendance', [App\Http\Controllers\Hr\HRAttendanceController::class, 'store']);
-    Route::put('attendance', [App\Http\Controllers\Hr\HRAttendanceController::class, 'update']);
-    Route::put('attendance/breakin', [App\Http\Controllers\Hr\HRAttendanceController::class, 'breakIn']);
-    Route::put('attendance/breakout', [App\Http\Controllers\Hr\HRAttendanceController::class, 'breakOut']);
-    Route::post('attendance/empreport/update',[\App\Http\Controllers\Hr\HRAttendanceController::class, 'updateTable'])->name('update.table');
-    Route::post('attendance/empreport', [App\Http\Controllers\Hr\HRAttendanceController::class, 'updateTotals'])->name('updateTotals');
-    Route::get('attendance/empreport', [App\Http\Controllers\Hr\HRAttendanceController::class, 'empreport'])->name('report.empindex');
+    // Route::get('attendance', [App\Http\Controllers\Hr\HRAttendanceController::class, 'index'])->name('att.test');
+    Route::post('dashboard', [App\Http\Controllers\Hr\DashboardController::class, 'store']);
+    Route::put('dashboard', [App\Http\Controllers\Hr\DashboardController::class, 'update']);
+    Route::put('dashboard/breakin', [App\Http\Controllers\Hr\DashboardController::class, 'breakIn']);
+    Route::put('dashboard/breakout', [App\Http\Controllers\Hr\DashboardController::class, 'breakOut']);
+    Route::post('/attendance/empreport/update',[\App\Http\Controllers\Hr\HRAttendanceController::class, 'updateTable'])->name('update.table');
+    Route::get('/dashboard/get-data', [App\Http\Controllers\Hr\DashboardController::class, 'getUserAttendance'])->name('attendance.geth');
     Route::get('employee', [App\Http\Controllers\Hr\EmployeeController::class, 'index'])->name('employee.index');
     Route::post('employee', [\App\Http\Controllers\Hr\EmployeeController::class, 'store']);
     Route::get('employee/search', [\App\Http\Controllers\Hr\EmployeeController::class, 'search'])->name('employee.search');
@@ -81,6 +83,12 @@ Route::prefix('hr')->middleware(['auth','isHr', 'sessionTimeout'])->group(functi
     Route::post('employee/contact/{user_id}', [\App\Http\Controllers\Hr\EmployeeController::class, 'contactStore'])->name('contact.store');
     Route::post('employee/bank/{user_id}', [\App\Http\Controllers\Hr\EmployeeController::class, 'bankInfo'])->name('bank.store');
     Route::post('employee/changepassword/{user_id}', [\App\Http\Controllers\Hr\EmployeeController::class, 'changePassword'])->name('hr.changepassword');
+    Route::get('/leave', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'index'])->name('leave.searchr');
+    Route::post('/leave/{id}/approve', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'approve'])->name('leave.approver');
+    Route::post('/leave/{id}/decline', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'decline'])->name('leave.decliner');
+    Route::post('/leave-request', [App\Http\Controllers\Hr\LeaveAdminController::class, 'storeLeave'])->name('mstore.leaver');
+    Route::post('/leave/{id}', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'update'])->name('leavem.updater');
+    Route::delete('/leave/{id}', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'destroy'])->name('leavem.destroyr');
 });
 
 // Manager Route
@@ -95,4 +103,12 @@ Route::prefix('manager')->middleware(['auth', 'isManager', 'sessionTimeout'])->g
     Route::put('dashboard/breakout', [App\Http\Controllers\Manager\DashboardController::class, 'breakOut']);
     Route::get('/department-employee', [App\Http\Controllers\Manager\DepartmentController::class, 'index']);
     Route::get('/department-record/{user_id}', [\App\Http\Controllers\Manager\DepartmentController::class, 'edit']);
+    Route::post('/department-record/update-record/{user_id}', [\App\Http\Controllers\Manager\DepartmentController::class , 'employmentStore'])->name('employment.store');
+    Route::post('/department-record/update-salary/{user_id}', [\App\Http\Controllers\Manager\DepartmentController::class, 'employmentSalaryStore'])->name('employment.salary');
+    Route::get('/leave', [\App\Http\Controllers\Manager\LeaveController::class, 'index'])->name('leave.search');
+    Route::post('/leave/{id}/approve', [\App\Http\Controllers\Manager\LeaveController::class, 'approve'])->name('leave.approve');
+    Route::post('/leave/{id}/decline', [\App\Http\Controllers\Manager\LeaveController::class, 'decline'])->name('leave.decline');
+    Route::post('/leave-request', [App\Http\Controllers\Manager\LeaveController::class, 'storeLeave'])->name('mstore.leave');
+    Route::post('/leave/{id}', [\App\Http\Controllers\Manager\LeaveController::class, 'update'])->name('leavem.update');
+    Route::delete('/leave/{id}', [\App\Http\Controllers\Manager\LeaveController::class, 'destroy'])->name('leavem.destroy');
 });

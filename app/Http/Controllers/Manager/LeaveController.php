@@ -1,16 +1,21 @@
 <?php
 
-namespace App\Http\Controllers\Hr;
+namespace App\Http\Controllers\Manager;
 
 use App\Models\User;
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
 use App\Models\EmployeeAttendance;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
+use Carbon\Carbon;
 
-class LeaveAdminController extends Controller
+
+class LeaveController extends Controller
 {
+   
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -135,7 +140,7 @@ class LeaveAdminController extends Controller
                                     })
                                     ->count();
 
-        return view('hr.leave.index', compact(
+        return view('manager.leave', compact(
             'leaveRequests', 
             'pendingCount', 
             'vacationLeaveCountToday', 

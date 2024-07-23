@@ -235,28 +235,41 @@
                 <div class="filter-controls">
                     <div class="form-group form-focus select-focus">
                         <select class="select floating" id="monthSelect">
-                            <option value="0">January</option>
-                            <option value="1">February</option>
-                            <option value="2">March</option>
-                            <option value="3">April</option>
-                            <option value="4">May</option>
-                            <option value="5">June</option>
-                            <option value="6">July</option>
-                            <option value="7">August</option>
-                            <option value="8">September</option>
-                            <option value="9">October</option>
-                            <option value="10">November</option>
-                            <option value="11">December</option>
+                            <option value="0">December - January 1st Cut-off</option>
+                            <option value="1">January 2nd Cut-off</option>
+                            <option value="2">January - February 1st Cut-off</option>
+                            <option value="3">February 2nd Cut-off</option>
+                            <option value="4">February - March 1st Cut-off</option>
+                            <option value="5">March 2nd Cut-off</option>
+                            <option value="6">March - April 1st Cut-off</option>
+                            <option value="7">April 2nd Cut-off</option>
+                            <option value="8">April - May 1st Cut-off</option>
+                            <option value="9">May 2nd Cut-off</option>
+                            <option value="10">May - June 1st Cut-off</option>
+                            <option value="11">June 2nd Cut-off</option>
+                            <option value="12">June - July 1st Cut-off</option>
+                            <option value="13">July 2nd Cut-off</option>
+                            <option value="14">July - August 1st Cut-off</option>
+                            <option value="15">August 2nd Cut-off</option>
+                            <option value="16">August - September 1st Cut-off</option>
+                            <option value="17">September 2nd Cut-off</option>
+                            <option value="18">September - October 1st Cut-off</option>
+                            <option value="19">October 2nd Cut-off</option>
+                            <option value="20">October - November 1st Cut-off</option>
+                            <option value="21">November 2nd Cut-off</option>
+                            <option value="22">November - December 1st Cut-off</option>
+                            <option value="23">December 2nd Cut-off</option>
                         </select>
-                        <label class="focus-label">Month</label>
+                        <label class="focus-label">Cut-off Period</label>
                     </div>
                     <div class="form-group form-focus select-focus">
-                        <select class="select floating" id="cutoffSelect">
-                            <option value="first">1st Cut-off (1-15)</option>
-                            <option value="second">2nd Cut-off (16-30/31)</option>
-                            <option value="whole">Whole Month</option>
+                        <select name="" id="yearSelect" class="select floating">
+                            <option value="2023">2023</option>
+                            <option value="2024">2024</option>
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
                         </select>
-                        <label class="focus-label">Cut-off</label>
+                        <label class="focus-label">Year</label>
                     </div>
                     <button id="searchButton" class="btn btn-danger">Search</button>
                     <button class="btn btn-outline-danger">Send</button>
@@ -278,102 +291,39 @@
                     <ul class="nav nav-tabs nav-tabs-top">
                         <li class="nav-item"><a class="nav-link active" href="#top-tab1" data-toggle="tab">Employement
                                 Record</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#top-tab2" data-toggle="tab">Salary</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#top-tab2" data-toggle="tab">Salary Record</a>
+                        </li>
                     </ul>
                     <div class="tab-content">
                         <div class="tab-pane show active" id="top-tab1">
                             <div class="col-lg-12">
                                 <div class="card">
                                     <div class="card-header">
-                                        <h4 class="card-title mb-0">Responsive Tables</h4>
+                                        <h4 class="card-title mb-0">Employment Record</h4>
                                     </div>
                                     <div class="card-body">
                                         <div class="table-responsive">
                                             <table class="table table-nowrap mb-0">
                                                 <thead>
                                                     <tr>
-                                                        <th>#</th>
-                                                        <th>First Name</th>
-                                                        <th>Last Name</th>
-                                                        <th>Age</th>
-                                                        <th>City</th>
-                                                        <th>Country</th>
+                                                        <th>Name</th>
+                                                        <th>Hired Date</th>
+                                                        <th>Job Title</th>
+                                                        <th>Department</th>
+                                                        <th>Location</th>
                                                     </tr>
                                                 </thead>
+                                                @foreach ($record as $rec)
                                                 <tbody>
                                                     <tr>
-                                                        <td>1</td>
-                                                        <td>Anna</td>
-                                                        <td>Pitt</td>
-                                                        <td>35</td>
-                                                        <td>New York</td>
-                                                        <td>USA</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>1</td>
-                                                        <td>Anna</td>
-                                                        <td>Pitt</td>
-                                                        <td>35</td>
-                                                        <td>New York</td>
-                                                        <td>USA</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>1</td>
-                                                        <td>Anna</td>
-                                                        <td>Pitt</td>
-                                                        <td>35</td>
-                                                        <td>New York</td>
-                                                        <td>USA</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>1</td>
-                                                        <td>Anna</td>
-                                                        <td>Pitt</td>
-                                                        <td>35</td>
-                                                        <td>New York</td>
-                                                        <td>USA</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>1</td>
-                                                        <td>Anna</td>
-                                                        <td>Pitt</td>
-                                                        <td>35</td>
-                                                        <td>New York</td>
-                                                        <td>USA</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>1</td>
-                                                        <td>Anna</td>
-                                                        <td>Pitt</td>
-                                                        <td>35</td>
-                                                        <td>New York</td>
-                                                        <td>USA</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>1</td>
-                                                        <td>Anna</td>
-                                                        <td>Pitt</td>
-                                                        <td>35</td>
-                                                        <td>New York</td>
-                                                        <td>USA</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>1</td>
-                                                        <td>Anna</td>
-                                                        <td>Pitt</td>
-                                                        <td>35</td>
-                                                        <td>New York</td>
-                                                        <td>USA</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>1</td>
-                                                        <td>Anna</td>
-                                                        <td>Pitt</td>
-                                                        <td>35</td>
-                                                        <td>New York</td>
-                                                        <td>USA</td>
+                                                        <td>{{ $rec->name }}</td>
+                                                        <td>{{ $rec->hiredDate }}</td>
+                                                        <td>{{ $rec->jobTitle }}</td>
+                                                        <td>{{ $rec->department }}</td>
+                                                        <td>{{ $rec->location }}</td>
                                                     </tr>
                                                 </tbody>
+                                                @endforeach
                                             </table>
                                         </div>
                                     </div>
@@ -381,7 +331,41 @@
                             </div>
                         </div>
                         <div class="tab-pane" id="top-tab2">
-                            Tab content 2
+                            <div class="col-lg-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h4 class="card-title mb-0">Salary Record</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-nowrap mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Name</th>
+                                                        <th>Annual Salary</th>
+                                                        <th>Salary Frequency Monthly</th>
+                                                        <th>Salary Rate</th>
+                                                        <th>Currency</th>
+                                                        <th>Proposal Reason</th>
+                                                    </tr>
+                                                </thead>
+                                                @foreach ($salrecord as $sal)
+                                                <tbody>
+                                                    <tr>
+                                                        <td>{{ $sal->name }}</td>
+                                                        <td>{{ $sal->annSalary }}</td>
+                                                        <td>{{ $sal->salFreqMonthly }}</td>
+                                                        <td>{{ $sal->salRate }}</td>
+                                                        <td>{{ $sal->currency }}</td>
+                                                        <td>{{ $sal->proposalReason }}</td>
+                                                    </tr>
+                                                </tbody>
+                                                @endforeach
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                     </div>
@@ -393,8 +377,6 @@
     <!-- /Employee Tabs -->
 
 </div>
-
-
 
 @endsection
 
@@ -428,50 +410,38 @@
     document.addEventListener('DOMContentLoaded', function () {
         const calendar = document.getElementById('calendar');
         const monthSelect = document.getElementById('monthSelect');
-        const cutoffSelect = document.getElementById('cutoffSelect');
         const searchButton = document.getElementById('searchButton');
-        const monthDisplay = document.getElementById('monthDisplay');
-
-        const daysOfWeek = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']; // Adjusted to start with Monday
+        const yearSelect = document.getElementById('yearSelect');
+        const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const monthNames = [
             'January', 'February', 'March', 'April', 'May', 'June',
             'July', 'August', 'September', 'October', 'November', 'December'
         ];
 
-        function renderCalendar(month, year, startDay, endDay, data) {
+        function renderCalendar(startDate, endDate, data) {
             calendar.innerHTML = '';
-
-            const firstDayOfMonth = new Date(year, month, 1).getDay();
-            const startIndex = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
-
-            daysOfWeek.forEach(day => {
-                const dayHeader = document.createElement('div');
-                dayHeader.className = 'day-header';
-                dayHeader.innerText = day;
-                calendar.appendChild(dayHeader);
-            });
-
-            for (let i = 0; i < startIndex; i++) {
-                const emptyDayDiv = document.createElement('div');
-                emptyDayDiv.className = 'day';
-                calendar.appendChild(emptyDayDiv);
-            }
 
             let totalWorkedSeconds = 0;
             let totalLateSeconds = 0;
 
-            for (let i = startDay; i <= endDay; i++) {
-                const day = new Date(year, month, i);
+            let currentDate = new Date(startDate);
+            while (currentDate <= endDate) {
                 const dayDiv = document.createElement('div');
-                dayDiv.className = 'day';
+                dayDiv.className = 'day-att';
                 dayDiv.style.padding = '5px';
-                const dateNumber = document.createElement('span');
-                dateNumber.className = 'date-number';
-                dateNumber.innerText = i;
-                dayDiv.appendChild(dateNumber);
 
-                const dayData = data.find(item => new Date(item.date).getDate() === i && new Date(item.date)
-                    .getMonth() === month);
+                const dateHeader = document.createElement('div');
+                dateHeader.className = 'day-header-att';
+                dateHeader.innerText =
+                    `${monthNames[currentDate.getMonth()]} ${currentDate.getDate()}, ${currentDate.getFullYear()}, ${daysOfWeek[currentDate.getDay()]}`;
+                dayDiv.appendChild(dateHeader);
+
+                const dayData = data.find(item => {
+                    const itemDate = new Date(item.date);
+                    return itemDate.getDate() === currentDate.getDate() &&
+                        itemDate.getMonth() === currentDate.getMonth() &&
+                        itemDate.getFullYear() === currentDate.getFullYear();
+                });
                 if (dayData) {
                     const timeIn = document.createElement('div');
                     timeIn.className = 'calendar-text';
@@ -505,6 +475,7 @@
                 }
 
                 calendar.appendChild(dayDiv);
+                currentDate.setDate(currentDate.getDate() + 1);
             }
 
             const workedHours = Math.floor(totalWorkedSeconds / 3600);
@@ -522,16 +493,11 @@
             const totalBox = document.createElement('div');
             totalBox.className = 'day total-box';
             totalBox.innerText =
-                `Total Worked Hours: ${totalWorkedFormatted}\nTotal Late: ${totalLateFormatted}`;
+                `Total Worked Hours: ${totalWorkedFormatted}\nTotal Late: ${totalLateFormatted}\nStatus:`;
             calendar.appendChild(totalBox);
         }
 
-
-        function fetchAttendanceData(month, year, cutoff, callback) {
-            const startDate = new Date(year, month, cutoff === 'second' ? 16 : 1);
-            const endDate = new Date(year, month + (cutoff === 'first' ? 0 : 1), cutoff === 'first' ? 15 :
-                new Date(year, month + 1, 0).getDate());
-
+        function fetchAttendanceData(startDate, endDate, callback) {
             $.ajax({
                 url: "{{ route('attendance.get') }}",
                 method: 'GET',
@@ -549,24 +515,125 @@
             });
         }
 
+        function getCutoffDates(monthIndex, year) {
+            let startDate, endDate;
+
+            switch (monthIndex) {
+                case 0:
+                    startDate = new Date(year - 1, 11, 26);
+                    endDate = new Date(year, 0, 10);
+                    break;
+                case 1:
+                    startDate = new Date(year, 0, 11);
+                    endDate = new Date(year, 0, 25);
+                    break;
+                case 2:
+                    startDate = new Date(year, 0, 26);
+                    endDate = new Date(year, 1, 10);
+                    break;
+                case 3:
+                    startDate = new Date(year, 1, 11);
+                    endDate = new Date(year, 1, 25);
+                    break;
+                case 4:
+                    startDate = new Date(year, 1, 26);
+                    endDate = new Date(year, 2, 10);
+                    break;
+                case 5:
+                    startDate = new Date(year, 2, 11);
+                    endDate = new Date(year, 2, 25);
+                    break;
+                case 6:
+                    startDate = new Date(year, 2, 26);
+                    endDate = new Date(year, 3, 10);
+                    break;
+                case 7:
+                    startDate = new Date(year, 3, 11);
+                    endDate = new Date(year, 3, 25);
+                    break;
+                case 8:
+                    startDate = new Date(year, 3, 26);
+                    endDate = new Date(year, 4, 10);
+                    break;
+                case 9:
+                    startDate = new Date(year, 4, 11);
+                    endDate = new Date(year, 4, 25);
+                    break;
+                case 10:
+                    startDate = new Date(year, 4, 26);
+                    endDate = new Date(year, 5, 10);
+                    break;
+                case 11:
+                    startDate = new Date(year, 5, 11);
+                    endDate = new Date(year, 5, 25);
+                    break;
+                case 12:
+                    startDate = new Date(year, 5, 26);
+                    endDate = new Date(year, 6, 10);
+                    break;
+                case 13:
+                    startDate = new Date(year, 6, 11);
+                    endDate = new Date(year, 6, 25);
+                    break;
+                case 14:
+                    startDate = new Date(year, 6, 26);
+                    endDate = new Date(year, 7, 10);
+                    break;
+                case 15:
+                    startDate = new Date(year, 7, 11);
+                    endDate = new Date(year, 7, 25);
+                    break;
+                case 16:
+                    startDate = new Date(year, 7, 26);
+                    endDate = new Date(year, 8, 10);
+                    break;
+                case 17:
+                    startDate = new Date(year, 8, 11);
+                    endDate = new Date(year, 8, 25);
+                    break;
+                case 18:
+                    startDate = new Date(year, 8, 26);
+                    endDate = new Date(year, 9, 10);
+                    break;
+                case 19:
+                    startDate = new Date(year, 9, 11);
+                    endDate = new Date(year, 9, 25);
+                    break;
+                case 20:
+                    startDate = new Date(year, 9, 26);
+                    endDate = new Date(year, 10, 10);
+                    break;
+                case 21:
+                    startDate = new Date(year, 10, 11);
+                    endDate = new Date(year, 10, 25);
+                    break;
+                case 22:
+                    startDate = new Date(year, 10, 26);
+                    endDate = new Date(year, 11, 10);
+                    break;
+                case 23:
+                    startDate = new Date(year, 11, 11);
+                    endDate = new Date(year, 11, 25);
+                    break;
+            }
+
+            return {
+                startDate,
+                endDate
+            };
+        }
+
         function searchCalendar() {
-            const month = parseInt(monthSelect.value);
-            const year = new Date().getFullYear(); // Assuming current year
-            const cutoff = cutoffSelect.value;
+            const monthIndex = parseInt(monthSelect.value);
+            const year = parseInt(yearSelect.value);
 
-            fetchAttendanceData(month, year, cutoff, function (data) {
-                const daysInMonth = new Date(year, month + 1, 0).getDate();
-                let startDay = 1,
-                    endDay = daysInMonth;
+            const {
+                startDate,
+                endDate
+            } = getCutoffDates(monthIndex, year);
 
-                if (cutoff === 'first') {
-                    endDay = 15;
-                } else if (cutoff === 'second') {
-                    startDay = 16;
-                }
-
-                renderCalendar(month, year, startDay, endDay, data);
-                // updateMonthDisplay(month, year);
+            fetchAttendanceData(startDate, endDate, function (data) {
+                renderCalendar(startDate, endDate, data);
             });
         }
 
@@ -574,8 +641,20 @@
 
         // Initial search when the page loads
         const currentDate = new Date();
-        monthSelect.value = currentDate.getMonth();
-        cutoffSelect.value = currentDate.getDate() <= 15 ? 'first' : 'second';
+        const currentDay = currentDate.getDate();
+        let initialMonthIndex;
+
+        if (currentDay <= 10) {
+            initialMonthIndex = currentDate.getMonth() * 2;
+        } else if (currentDay <= 25) {
+            initialMonthIndex = currentDate.getMonth() * 2 + 1;
+        } else {
+            initialMonthIndex = currentDate.getMonth() * 2 + 2;
+        }
+
+        monthSelect.value = initialMonthIndex.toString();
+        yearSelect.value = currentDate.getFullYear().toString();
+
         searchCalendar();
     });
 

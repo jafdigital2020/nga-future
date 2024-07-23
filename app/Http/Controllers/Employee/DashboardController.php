@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use App\Models\EmployeeAttendance;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\EmployementSalary;
+use App\Models\EmploymentRecord;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
@@ -83,7 +85,9 @@ class DashboardController extends Controller
         $authUserId = auth()->user()->id;
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
-        
+
+        $record = EmploymentRecord::where('users_id', $user->id)->get();
+        $salrecord = EmployementSalary::where('users_id', $user->id)->get();
         $data = EmployeeAttendance::where('users_id', $authUserId);
         
         if ($startDate && $endDate) {
@@ -94,8 +98,6 @@ class DashboardController extends Controller
 
         $department = $user->department;
         $supervisor = User::getSupervisorForDepartment($department, $user);
-
-        
         
         if ($request->ajax()) {
             return response()->json($filteredData);
@@ -106,7 +108,7 @@ class DashboardController extends Controller
         $empatt = DB::table('attendance')->where('users_id', auth()->user()->id)->get();
         $latest = EmployeeAttendance::where('users_id', Auth::user()->id)->latest()->first();
         
-        return view('emp.dashboard', compact('user', 'empatt', 'all', 'total', 'latest', 'filteredData', 'supervisor'));
+        return view('emp.dashboard', compact('user', 'empatt', 'all', 'total', 'latest', 'filteredData', 'supervisor', 'record', 'salrecord'));
     }
 
     public function getUserAttendance()

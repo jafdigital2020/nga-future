@@ -73,9 +73,9 @@
                 </span>
             </a>
             <!-- Header Title -->
-            <!-- <div class="page-title-box">
-                <h3>ONE JAF</h3>
-            </div> -->
+            <div class="page-title-box">
+                <h3>JAF Digital Marketing & IT Services</h3>
+            </div>
             <!-- /Header Title -->
             <a id="mobile_btn" class="mobile_btn" href="#sidebar"><i class="fa fa-bars"></i></a>
             <!-- Header Menu -->
@@ -440,7 +440,7 @@
                         <li class="menu-title">
                             <span>Manager</span>
                         </li>
-                        <li class="">
+                        <li class="{{ Request::is('manager/department-employee') ? 'active':'' }}">
                             <a href="{{ url('manager/department-employee') }}"><i class="la la-user"></i>
                                 <span>Department</span></a>
                         </li>
@@ -458,18 +458,9 @@
                                 </li>
                             </ul>
                         </li> -->
-                        <li class="submenu">
-                            <a href="#"><i class="la la-rocket"></i>
-                                <span> Leave</span>
-                                <span class="menu-arrow"></span></a>
-                            <ul style="display: none">
-                                <li>
-                                    <a href="projects.html">Request a Leave</a>
-                                </li>
-                                <li>
-                                    <a href="tasks.html">Leave Reports</a>
-                                </li>
-                            </ul>
+                        <li class="{{ Request::is('manager/leave') ? 'active':'' }}">
+                            <a href="{{ url('manager/leave') }}"><i class="la la-rocket"></i>
+                                <span>Leave</span></a>
                         </li>
                         <!-- <li>
                             <a href="tickets.html"><i class="la la-ticket"></i>

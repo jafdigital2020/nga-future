@@ -49,7 +49,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/dataTables.bootstrap4.min.css') }}" />
 
     <!-- Tagsinput CSS -->
-    <link rel="stylesheet" href="assets/plugins/bootstrap-tagsinput/bootstrap-tagsinput.css">
+    <link rel="stylesheet" href="{{ asset('assets/plugins/bootstrap-tagsinput/bootstrap-tagsinput.css') }}">
 
 </head>
 
@@ -454,18 +454,9 @@
                                 </li>
                             </ul>
                         </li> -->
-                        <li class="submenu">
-                            <a href="#"><i class="la la-rocket"></i>
-                                <span> Leave</span>
-                                <span class="menu-arrow"></span></a>
-                            <ul style="display: none">
-                                <li>
-                                    <a href="projects.html">Request a Leave</a>
-                                </li>
-                                <li>
-                                    <a href="tasks.html">Leave Reports</a>
-                                </li>
-                            </ul>
+                        <li class="{{ Request::is('emp/leave') ? 'active':'' }}">
+                            <a href="{{ url('emp/leave') }}"><i class="la la-rocket"></i>
+                                <span>Leave</span></a>
                         </li>
                         <!-- <li>
                             <a href="tickets.html"><i class="la la-ticket"></i>
@@ -620,7 +611,6 @@
         });
 
     </script>
-
 
 </body>
 
