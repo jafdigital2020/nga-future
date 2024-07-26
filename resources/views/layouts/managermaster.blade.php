@@ -61,7 +61,7 @@
             <!-- Logo -->
             <div class="header-left">
                 <a href="index.html" class="logo">
-                    <img src="{{ asset('assets/img/jaflogo.png') }}" alt="OneJAF Logo" width="100%" />
+                    <img src="{{ asset('assets/img/Long.png') }}" alt="OneJAF Logo" width="100%" />
                 </a>
             </div>
             <!-- /Logo -->

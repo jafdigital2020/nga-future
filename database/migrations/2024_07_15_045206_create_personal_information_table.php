@@ -24,6 +24,7 @@ class CreatePersonalInformationTable extends Migration
             $table->string('nationality')->nullable();
             $table->string('mStatus')->nullable();
             $table->string('numChildren')->nullable();
+            $table->string('personalEmail')->nullable();
             $table->timestamps();
         });
     }

@@ -207,7 +207,8 @@
                                     <option value="Marketing Supervisor">
                                         Marketing Supervisor
                                     </option>
-                                    <options value="HR">HR</options>
+                                    <option value="HR Generalist">HR Generalist</option>
+                                    <option value="Website Team Leader">Website Team Leader</option>
                                     <option value="Senior Website Developer">
                                         Senior Website Developer
                                     </option>
@@ -220,9 +221,9 @@
                                     <option value="Cloud Specialist">
                                         Cloud Specialist
                                     </option>
-                                    <option value="SEO Specialist">
-                                        SEO Specialist
-                                    </option>
+                                    <option value="SEO Team Leader">SEO Team Leader</option>
+                                    <option value="Senior SEO">Senior SEO</option>
+                                    <option value="Junior SEO">Junior SEO</option>
                                     <option value="Graphic Artist">
                                         Graphic Artist
                                     </option>
@@ -319,11 +320,16 @@
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label for="exampleInputPassword1">Password<span class="text-danger">*</span></label>
-                                <input type="password" name="password" class="form-control" id="exampleInputPassword1"
-                                    maxlength="10" />
-                                <span style="color: red">@error('password'){{
-                                        $message
-                                    }}@enderror</span>
+                                <div class="input-group">
+                                    <input type="password" name="password" class="form-control"
+                                        id="exampleInputPassword1" maxlength="10" />
+                                    <div class="input-group-append">
+                                        <span class="input-group-text" id="toggle-password">
+                                            <i class="la la-eye"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                <span style="color: red">@error('password'){{ $message }}@enderror</span>
                             </div>
                         </div>
                         <!-- Phone Number -->
@@ -431,10 +437,7 @@
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label>Hourly Rate<span class="text-danger">*</span></label>
-                                <input type="number" name="hourlyRate" class="form-control" required />
-                                <span style="color: red">@error('hourlyRate'){{
-                                        $message
-                                    }}@enderror</span>
+                                <input type="number" name="hourlyRate" class="form-control" />
                             </div>
                         </div>
 
@@ -497,6 +500,21 @@
             $('#delete_user').model('show');
         })
     })
+
+</script>
+
+<script>
+    document.getElementById('toggle-password').addEventListener('click', function () {
+        var passwordField = document.getElementById('exampleInputPassword1');
+        var passwordFieldType = passwordField.getAttribute('type');
+        if (passwordFieldType === 'password') {
+            passwordField.setAttribute('type', 'text');
+            this.innerHTML = '<i class="la la-eye-slash"></i>';
+        } else {
+            passwordField.setAttribute('type', 'password');
+            this.innerHTML = '<i class="la la-eye"></i>';
+        }
+    });
 
 </script>
 

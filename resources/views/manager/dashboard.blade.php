@@ -492,7 +492,8 @@
 
                 leaveOnDay.forEach(leave => {
                     const leaveTypeDiv = document.createElement('div');
-                    leaveTypeDiv.className = 'calendar-text';
+                    leaveTypeDiv.className =
+                        'calendar-text leave-type-button';
                     leaveTypeDiv.innerText = "Leave Type: " + leave.type;
                     dayDiv.appendChild(leaveTypeDiv);
 

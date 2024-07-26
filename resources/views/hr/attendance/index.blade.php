@@ -92,7 +92,7 @@
                 <table class="table table-striped custom-table table-nowrap mb-0">
                     <thead>
                         <tr>
-                            <th>Employee</th>
+                            <th class="sticky-column">Employee</th>
                             @for($i = 1; $i <= 31; $i++) <th>{{ $i }}</th>
                                 @endfor
                         </tr>
@@ -100,23 +100,25 @@
                     <tbody>
                         @foreach($users as $user)
                         <tr>
-                            <td>
+                            <td class="sticky-column">
                                 <h2 class="table-avatar">
                                     <a href="#" class="avatar">
                                         @if ($user->image)
                                         <img src="{{ asset('images/' . $user->image) }}" alt="Profile Image" />
                                         @else
-                                        <img src="{{
-                                                asset('images/default.png')
-                                            }}" alt="Profile Image" />
-                                        @endif</a>
+                                        <img src="{{ asset('images/default.png') }}" alt="Profile Image" />
+                                        @endif
+                                    </a>
                                     <a href="#">{{ $user->name }}
-                                        <span>{{ $user->department }}</span></a>
+                                        <span>{{ $user->department }}</span>
+                                    </a>
                                 </h2>
                             </td>
-                            @for($i = 1; $i <= 31; $i++) @php $attendance=$user->employeeAttendance->firstWhere('date',
+                            @for($i = 1; $i <= 31; $i++) @php $attendance=$user->employeeAttendance->firstWhere(
+                                'date',
                                 $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT) . '-' . str_pad($i, 2, '0',
-                                STR_PAD_LEFT));
+                                STR_PAD_LEFT)
+                                );
                                 @endphp
                                 <td>
                                     @if($attendance)
@@ -139,6 +141,7 @@
                         @endforeach
                     </tbody>
                 </table>
+
 
                 <!-- /Display Attendance Table -->
             </div>

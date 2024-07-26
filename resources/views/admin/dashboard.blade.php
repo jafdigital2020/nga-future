@@ -446,6 +446,7 @@
             </div>
         </div>
     </div>
+
 </div>
 <!-- /Attendance Modal -->
 <!-- /Calendar Record -->

@@ -141,6 +141,10 @@
                                     <div class="title">No. of children</div>
                                     <div class="text">{{ $info->numChildren }}</div>
                                 </li>
+                                <li>
+                                    <div class="title">Personal Email Address</div>
+                                    <div class="text">{{ $info->personalEmail }}</div>
+                                </li>
                             </ul>
                             @endforeach
                             @else
@@ -200,7 +204,7 @@
                 <div class="col-md-6 d-flex">
                     <div class="card profile-box flex-fill">
                         <div class="card-body">
-                            <h3 class="card-title">Goverment Mandates <a href="#" class="edit-icon" data-toggle="modal"
+                            <h3 class="card-title">Government Mandates <a href="#" class="edit-icon" data-toggle="modal"
                                     data-target="#family_info_modal"><i class="fa fa-pencil"></i></a></h3>
                             <ul class="personal-info">
                                 <li>
@@ -214,6 +218,10 @@
                                 <li>
                                     <div class="title">PhilHealth</div>
                                     <div class="text">{{ $user->philHealth }}</div>
+                                </li>
+                                <li>
+                                    <div class="title">Tin</div>
+                                    <div class="text">{{ $user->tin }}</div>
                                 </li>
 
                             </ul>
@@ -871,6 +879,10 @@
                                                 {{ $user->position == 'Marketing Supervisor' ? 'selected' : '' }}>
                                                 Marketing Supervisor
                                             </option>
+                                            <option value="Website Team Leader "
+                                                {{ $user->position == 'Website Team Leader' ? 'selected' : '' }}>
+                                                Website Team Leader
+                                            </option>
                                             <option value="Senior Website Developer"
                                                 {{ $user->position == 'Senior Website Developer' ? 'selected' : '' }}>
                                                 Senior Website Developer
@@ -887,13 +899,17 @@
                                                 {{ $user->position == 'Cloud Specialist' ? 'selected' : '' }}>
                                                 Cloud Specialist
                                             </option>
-                                            <option value="SEO Specialist"
-                                                {{ $user->position == 'SEO Specialist' ? 'selected' : '' }}>
-                                                SEO Specialist
+                                            <option value="SEO Team Leader"
+                                                {{ $user->position == 'SEO Team Leader' ? 'selected' : '' }}>
+                                                SEO Team Leader
                                             </option>
-                                            <option value="SEO Specialist"
-                                                {{ $user->position == 'SEO Specialist' ? 'selected' : '' }}>
-                                                SEO Specialist
+                                            <option value="Senior SEO"
+                                                {{ $user->position == 'Senior SEO' ? 'selected' : '' }}>
+                                                Senior SEO
+                                            </option>
+                                            <option value="Junior SEO"
+                                                {{ $user->position == 'Junior SEO' ? 'selected' : '' }}>
+                                                Junior SEO
                                             </option>
                                             <option value="Graphic Artist"
                                                 {{ $user->position == 'Graphic Artist' ? 'selected' : '' }}>
@@ -1046,34 +1062,34 @@
                             <div class="form-group">
                                 <label>Religion</label>
                                 <input type="text" class="form-control" name="religion" id="religion"
-                                    value="{{ $info->religion ?? '' }}">
+                                    value="{{ $info->religion ?? '' }}" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Age</label>
                                 <input class="form-control" type="text" name="age" id="age"
-                                    value="{{ $info->age ?? '' }}">
+                                    value="{{ $info->age ?? '' }}" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Education</label>
                                 <input class="form-control" type="text" name="education" id="education"
-                                    value="{{ $info->education ?? '' }}">
+                                    value="{{ $info->education ?? '' }}" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Nationality <span class="text-danger">*</span></label>
+                                <label>Nationality</label>
                                 <input class="form-control" type="text" name="nationality" id="nationality"
-                                    value="{{ $info->nationality ?? '' }}">
+                                    value="{{ $info->nationality ?? '' }}" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Marital status <span class="text-danger">*</span></label>
-                                <select class="form-control" name="mStatus" id="mStatus">
+                                <select class="form-control" name="mStatus" id="mStatus" required>
                                     <option>-</option>
                                     <option value="Single" {{ ($info->mStatus ?? '') == 'Single' ? 'selected' : '' }}>
                                         Single</option>
@@ -1087,7 +1103,14 @@
                             <div class="form-group">
                                 <label>No. of children </label>
                                 <input class="form-control" type="text" name="numChildren" id="numChildren"
-                                    value="{{ $info->numChildren ?? '' }}">
+                                    value="{{ $info->numChildren ?? '' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>Personal Email Adress </label>
+                                <input class="form-control" type="email" name="personalEmail" id="personalEmail"
+                                    value="{{ $info->personalEmail ?? '' }}" required>
                             </div>
                         </div>
                     </div>
@@ -1119,25 +1142,32 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="row">
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <div class="form-group">
                                         <label>SSS</label>
                                         <input type="text" name="sss" id="sss" class="form-control"
                                             value="{{ $user->sss }}">
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Pag-Ibig</label>
                                         <input type="text" name="pagIbig" id="pagIbig" class="form-control"
                                             value="{{ $user->pagIbig }}">
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <div class="form-group">
                                         <label>PhilHealth</label>
                                         <input type="text" name="philHealth" id="philHealth" class="form-control"
                                             value="{{ $user->philHealth }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Tin</label>
+                                        <input type="text" name="tin" id="tin" class="form-control"
+                                            value="{{ $user->tin }}">
                                     </div>
                                 </div>
                             </div>

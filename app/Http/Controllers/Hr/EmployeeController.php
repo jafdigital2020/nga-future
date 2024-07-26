@@ -69,7 +69,7 @@ class EmployeeController extends Controller
                 'philHealth' => ['required', 'string', 'max:255'],
             ]);
 
-            $imageName = null;
+            $imageName = 'default.png';
             if ($request->hasFile('image')) {
                 $imageName = time() . '.' . $request->image->extension();
                 $request->image->move(public_path('images'), $imageName);
@@ -85,15 +85,16 @@ class EmployeeController extends Controller
                 'dateHired' => $request->input('dateHired'),
                 'birthday' => $request->input('birthday'),
                 'completeAddress' => $request->input('completeAddress'),
-                'hourlyRate' => $request->input('hourlyRate'),
+                'mSalary' => $request->input('mSalary'),
                 'position' => $request->input('position'),
                 'role_as' => $request->input('role_as'),
                 'sss' => $request->input('sss'),
                 'pagIbig' => $request->input('pagIbig'),
                 'philHealth' => $request->input('philHealth'),
+                'tin' => $request->input('tin'),
                 'image' => $imageName,
                 'department' => $request->input('department'),
-                'bdayLeave' => '1',
+                'bdayLeave' => $request->input('bdayLeave'),
                 'vacLeave' => $request->input('vacLeave'),
                 'sickLeave' => $request->input('sickLeave'),
 
@@ -180,6 +181,7 @@ class EmployeeController extends Controller
         $user->sss = $request->input('sss');
         $user->pagIbig = $request->input('pagIbig');
         $user->philHealth = $request->input('philHealth');
+        $user->tin = $request->input('tin');
 
         $user->save();
 

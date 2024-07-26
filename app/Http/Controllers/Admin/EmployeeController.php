@@ -62,7 +62,6 @@ class EmployeeController extends Controller
                 'birthday' => ['required', 'string', 'max:255'],
                 'completeAddress' => ['required', 'string', 'max:255'],
                 'position' => ['required', 'string', 'max:255'],
-                'hourlyRate' => ['required', 'string', 'max:255'],
                 'role_as' => ['required', 'integer'],
                 'sss' => ['required', 'string', 'max:255'],
                 'pagIbig' => ['required', 'string', 'max:255'],
@@ -91,6 +90,7 @@ class EmployeeController extends Controller
                 'sss' => $request->input('sss'),
                 'pagIbig' => $request->input('pagIbig'),
                 'philHealth' => $request->input('philHealth'),
+                'tin' => $request->input('tin'),
                 'image' => $imageName,
                 'department' => $request->input('department'),
                 'bdayLeave' => '1',
@@ -180,6 +180,7 @@ class EmployeeController extends Controller
         $user->sss = $request->input('sss');
         $user->pagIbig = $request->input('pagIbig');
         $user->philHealth = $request->input('philHealth');
+        $user->tin = $request->input('tin');
 
         $user->save();
 

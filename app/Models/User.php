@@ -70,6 +70,11 @@ class User extends Authenticatable
         'vacLeave',
         'sickLeave',
         'bdayLeave',
+        'fName',
+        'mName',
+        'lName',
+        'suffix',
+        'tin',
     ];
 
     public function isSupervisor()

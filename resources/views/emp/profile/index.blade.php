@@ -215,7 +215,10 @@
                                     <div class="title">PhilHealth</div>
                                     <div class="text">{{ $user->philHealth }}</div>
                                 </li>
-
+                                <li>
+                                    <div class="title">Tin</div>
+                                    <div class="text">{{ $user->tin }}</div>
+                                </li>
                             </ul>
                         </div>
                     </div>
@@ -224,8 +227,7 @@
                     <div class="card profile-box flex-fill">
                         <div class="card-body">
 
-                            <h3 class="card-title">Bank Information<a href="#" class="edit-icon" data-toggle="modal"
-                                    data-target="#bank_info"><i class="fa fa-pencil"></i></a></h3>
+                            <h3 class="card-title">Bank Information</h3>
                             @if($user->bankInfo->isNotEmpty())
                             @foreach ($user->bankInfo as $bank)
                             <ul class="personal-info">

@@ -143,6 +143,10 @@
                                     <div class="title">No. of children</div>
                                     <div class="text">{{ $info->numChildren }}</div>
                                 </li>
+                                <li>
+                                    <div class="title">Personal Email Address</div>
+                                    <div class="text">{{ $info->personalEmail }}</div>
+                                </li>
                             </ul>
                             @endforeach
                             @else
@@ -215,6 +219,11 @@
                                 <li>
                                     <div class="title">PhilHealth</div>
                                     <div class="text">{{ isset($user->philHealth) ? $user->philHealth : 'No Data' }}
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="title">Tin</div>
+                                    <div class="text">{{ isset($user->tin) ? $user->tin : 'No Data' }}
                                     </div>
                                 </li>
                             </ul>
@@ -882,25 +891,29 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Religion</label>
-                                <input type="text" class="form-control" name="religion" id="religion">
+                                <input type="text" class="form-control" name="religion" id="religion"
+                                    value="{{ $info->religion ?? '' }}">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Age</label>
-                                <input class="form-control" type="text" name="age" id="age">
+                                <input class="form-control" type="text" name="age" id="age"
+                                    value="{{ $info->age ?? '' }}">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Education</label>
-                                <input class="form-control" type="text" name="education" id="education">
+                                <input class="form-control" type="text" name="education" id="education"
+                                    value="{{ $info->education ?? '' }}">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Nationality <span class="text-danger">*</span></label>
-                                <input class="form-control" type="text" name="nationality" id="nationality">
+                                <input class="form-control" type="text" name="nationality" id="nationality"
+                                    value="{{ $info->nationality ?? '' }}">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -908,15 +921,25 @@
                                 <label>Marital status <span class="text-danger">*</span></label>
                                 <select class="form-control" name="mStatus" id="mStatus">
                                     <option>-</option>
-                                    <option>Single</option>
-                                    <option>Married</option>
+                                    <option value="Single" {{ ($info->mStatus ?? '') == 'Single' ? 'selected' : '' }}>
+                                        Single</option>
+                                    <option value="Married" {{ ($info->mStatus ?? '') == 'Married' ? 'selected' : '' }}>
+                                        Married</option>
                                 </select>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>No. of children </label>
-                                <input class="form-control" type="text" name="numChildren" id="numChildren">
+                                <input class="form-control" type="text" name="numChildren" id="numChildren"
+                                    value="{{ $info->numChildren ?? '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>Personal Email</label>
+                                <input class="form-control" type="text" name="personalEmail" id="personalEmail"
+                                    value="{{ $info->personalEmail ?? '' }}">
                             </div>
                         </div>
                     </div>

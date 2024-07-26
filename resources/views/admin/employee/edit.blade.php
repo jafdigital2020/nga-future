@@ -216,7 +216,7 @@
                 <div class="col-md-6 d-flex">
                     <div class="card profile-box flex-fill">
                         <div class="card-body">
-                            <h3 class="card-title">Goverment Mandates <a href="#" class="edit-icon" data-toggle="modal"
+                            <h3 class="card-title">Government Mandates <a href="#" class="edit-icon" data-toggle="modal"
                                     data-target="#family_info_modal"><i class="fa fa-pencil"></i></a></h3>
                             <ul class="personal-info">
                                 <li>
@@ -231,7 +231,10 @@
                                     <div class="title">PhilHealth</div>
                                     <div class="text">{{ $user->philHealth }}</div>
                                 </li>
-
+                                <li>
+                                    <div class="title">Tin</div>
+                                    <div class="text">{{ $user->tin }}</div>
+                                </li>
                             </ul>
                         </div>
                     </div>
@@ -1133,25 +1136,32 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="row">
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <div class="form-group">
                                         <label>SSS</label>
                                         <input type="text" name="sss" id="sss" class="form-control"
                                             value="{{ $user->sss }}">
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Pag-Ibig</label>
                                         <input type="text" name="pagIbig" id="pagIbig" class="form-control"
                                             value="{{ $user->pagIbig }}">
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <div class="form-group">
                                         <label>PhilHealth</label>
                                         <input type="text" name="philHealth" id="philHealth" class="form-control"
                                             value="{{ $user->philHealth }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Tin</label>
+                                        <input type="text" name="tin" id="tin" class="form-control"
+                                            value="{{ $user->tin }}">
                                     </div>
                                 </div>
                             </div>

@@ -9254,7 +9254,7 @@ ul.comment-list li ul.children {
     .mini-sidebar .header-left .logo img {
         height: auto;
         max-height: 40px;
-        width: auto;
+        width: 60px;
         margin-top: 10px;
     }
 
@@ -10279,7 +10279,7 @@ ul.comment-list li ul.children {
     margin: 4px;
     font-size: 14px;
     color: white;
-    background-color: #007bff;
+    background-color: #DF1C2A;
     border: none;
     border-radius: 4px;
     text-align: center;
@@ -10288,5 +10288,13 @@ ul.comment-list li ul.children {
 }
 
 .leave-type-button:hover {
-    background-color: #0056b3;
+    background-color: red;
+}
+
+.sticky-column {
+    position: sticky;
+    left: 0;
+    background-color: #fff;
+    z-index: 10;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
