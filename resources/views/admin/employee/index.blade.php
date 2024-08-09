@@ -66,8 +66,8 @@
     <div class="row">
         <div class="col-md-12">
             <div class="table-responsive">
-                <table class="table table-striped custom-table datatable" id="dataTable">
-                    <thead>
+                <table class="table table-hover table-nowrap custom-table datatable" id="dataTable">
+                    <thead class="thead-light">
                         <tr>
                             <th>Name</th>
                             <th>Employee ID</th>
@@ -93,7 +93,7 @@
                                                 asset('images/default.png')
                                             }}" alt="Profile Image" />
                                         @endif</a>
-                                    <a href="#">{{ $employee->name }}
+                                    <a href="#">{{ $employee->fName }} {{ $employee->lName }}
                                         <span>{{ $employee->position }}</span></a>
                                 </h2>
                             </td>
@@ -152,14 +152,42 @@
                 <form action="{{ url('admin/employee') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="row">
-                        <!-- Name -->
+                        <!-- First Name -->
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label for="name">First Name<span class="text-danger">*</span></label>
+                                <input type="text" name="fName" class="form-control" required />
+                            </div>
+                        </div>
+                        <!-- Middle Name -->
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label for="name">Middle Name<span class="text-danger">*</span></label>
+                                <input type="text" name="mName" class="form-control" required />
+
+                            </div>
+                        </div>
+                        <!-- last Name -->
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label for="name">Last Name<span class="text-danger">*</span></label>
+                                <input type="text" name="lName" class="form-control" required />
+
+                            </div>
+                        </div>
+                        <!-- Suffix Name -->
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label for="suffix">Suffix</label>
+                                <input type="text" name="suffix" class="form-control" />
+                            </div>
+                        </div>
+
+                        <!-- Professional / Nick Name -->
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <label for="name">Full Name<span class="text-danger">*</span></label>
-                                <input type="text" name="name" class="form-control" required />
-                                <span style="color: red">@error('name'){{
-                                    $message
-                                }}@enderror</span>
+                                <label for="name">Professional Name</label>
+                                <input type="text" name="name" class="form-control" />
                             </div>
                         </div>
                         <!-- Employee Number -->
@@ -172,6 +200,7 @@
                                     }}@enderror</span>
                             </div>
                         </div>
+
                         <!-- Type Of Contract -->
                         <div class="col-sm-6">
                             <div class="form-group">
@@ -180,6 +209,7 @@
                                     <option value="">-- Select --</option>
                                     <option value="Regular">Regular</option>
                                     <option value="Contractual">Contractual</option>
+                                    <option value="Probationary">Probationary</option>
                                     <option value="Intern">Intern</option>
                                 </select>
                                 <span style="color: red">@error('typeOfContract'){{
@@ -187,83 +217,34 @@
                                     }}@enderror</span>
                             </div>
                         </div>
-
                         <!-- Position -->
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <label>Select Position<span class="text-danger">*</span></label>
-                                <select name="position" class="form-control" required>
-                                    <!-- Technical Marketing -->
-                                    <option>-- Select --</option>
-                                    <option value="CEO & Founder">
-                                        CEO & Founder
-                                    </option>
-                                    <option value="Co-Founder">
-                                        Co-Founder
-                                    </option>
+                                <label>Position<span class="text-danger">*</span></label>
+                                <input type="text" name="position" class="form-control" required />
+                            </div>
+                        </div>
 
-                                    <option value="Operations Supervisor">Operations Supervisor</option>
-                                    <option value="IT Supervisor">IT Supervisor</option>
-                                    <option value="Marketing Supervisor">
-                                        Marketing Supervisor
-                                    </option>
-                                    <option value="HR Generalist">HR Generalist</option>
-                                    <option value="Website Team Leader">Website Team Leader</option>
-                                    <option value="Senior Website Developer">
-                                        Senior Website Developer
-                                    </option>
-                                    <option value="Junior Website Developer">
-                                        Junior Website Developer
-                                    </option>
-                                    <option value="Associate Website Developer">
-                                        Associate Website Developer
-                                    </option>
-                                    <option value="Cloud Specialist">
-                                        Cloud Specialist
-                                    </option>
-                                    <option value="SEO Team Leader">SEO Team Leader</option>
-                                    <option value="Senior SEO">Senior SEO</option>
-                                    <option value="Junior SEO">Junior SEO</option>
-                                    <option value="Graphic Artist">
-                                        Graphic Artist
-                                    </option>
-                                    <option value="Digital Marketing Associate">
-                                        Digital Marketing Associate
-                                    </option>
-                                    <option value="Content Writer">
-                                        Content Writer
-                                    </option>
-                                    <option value="Event Coordinator">
-                                        Event Coordinator
-                                    </option>
-                                    <option value="Admin Staff">
-                                        Admin Staff
-                                    </option>
+                        <!-- Department -->
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Department<span class="text-danger">*</span></label>
+                                <select name="department" class="form-control" required>
+                                    <option value="">-- Select --</option>
+                                    <option value="Marketing">Marketing</option>
+                                    <option value="Website Development">Website Development</option>
+                                    <option value="SEO">SEO</option>
+                                    <option value="IT">IT</option>
+                                    <option value="Content">Content</option>
+                                    <option value="Graphics">Graphics</option>
+                                    <option value="HR">HR</option>
                                 </select>
                                 <span style="color: red">@error('role_as'){{
-                                        $message
-                                    }}@enderror</span>
+                                                                $message
+                                                            }}@enderror</span>
                             </div>
                         </div>
-
-                        <!-- Vacation Leave -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="">Vacation Leave <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" name="vacLeave" required>
-                            </div>
-                        </div>
-                        <!-- /Vacation Leave -->
-
-                        <!-- /Sick leave -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="">Sick Leave <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" name="sickcLeave" required>
-                            </div>
-                        </div>
-                        <!-- /Sick leave -->
-
 
                         <!-- Date Hired -->
                         <div class="col-sm-6">
@@ -279,6 +260,18 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Phone Number -->
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Contact Number<span class="text-danger">*</span></label>
+                                <input type="text" name="phoneNumber" class="form-control" required />
+                                <span style="color: red">@error('phoneNumber'){{
+                                        $message
+                                    }}@enderror</span>
+                            </div>
+                        </div>
+
                         <!-- Birthday -->
                         <div class="col-sm-6">
                             <div class="form-group">
@@ -332,32 +325,19 @@
                                 <span style="color: red">@error('password'){{ $message }}@enderror</span>
                             </div>
                         </div>
-                        <!-- Phone Number -->
+
+                        <!-- Role -->
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <label>Phone Number<span class="text-danger">*</span></label>
-                                <input type="text" name="phoneNumber" class="form-control" required />
-                                <span style="color: red">@error('phoneNumber'){{
-                                        $message
-                                    }}@enderror</span>
-                            </div>
-                        </div>
-
-
-                        <!-- Department -->
-
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label>Department<span class="text-danger">*</span></label>
-                                <select name="department" class="form-control" required>
+                                <label>Select Role<span class="text-danger">*</span></label>
+                                <select name="role_as" class="form-control" required>
                                     <option value="">-- Select --</option>
-                                    <option value="Marketing">Marketing</option>
-                                    <option value="Website Development">Website Development</option>
-                                    <option value="SEO">SEO</option>
-                                    <option value="IT">IT</option>
-                                    <option value="Content">Content</option>
-                                    <option value="Graphics">Graphics</option>
-                                    <option value="HR">HR</option>
+                                    <option value="3">Employee</option>
+                                    <option value="1">Admin</option>
+                                    <option value="2">HR</option>
+                                    <option value="4">Operations Manager</option>
+                                    <option value="5">IT Manager</option>
+                                    <option value="6">Marketing Manager</option>
                                 </select>
                                 <span style="color: red">@error('role_as'){{
                                         $message
@@ -365,11 +345,60 @@
                             </div>
                         </div>
 
-                        <!-- GOVERMENT MANDATES -->
+                        <!-- Salary -->
                         <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Monthly Salary<span class="text-danger">*</span></label>
+                                <input type="number" name="mSalary" class="form-control" required />
+                                <span style="color: red">@error('hourlyRate'){{
+                                        $message
+                                    }}@enderror</span>
+                            </div>
+                        </div>
+
+                        <!-- Leave Credits -->
+
+                        <div class="col-sm-12">
                             <div class="goverment">
                                 <h5 class="modal-title" id="exampleModalLabel">
-                                    Goverment Mandates
+                                    Leave Credits
+                                </h5>
+                            </div>
+                        </div>
+
+                        <!-- Vacation Leave -->
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label for="">Vacation Leave <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="vacLeave" required>
+                            </div>
+                        </div>
+                        <!-- /Vacation Leave -->
+
+                        <!-- Sick leave -->
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label for="">Sick Leave <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="sickLeave" required>
+                            </div>
+                        </div>
+                        <!-- /Sick leave -->
+
+                        <!-- Bday leave -->
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label for="">Birthday Leave <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="bdayLeave" required>
+                            </div>
+                        </div>
+                        <!-- /Bday leave -->
+
+
+                        <!-- GOVERMENT MANDATES -->
+                        <div class="col-sm-12">
+                            <div class="goverment">
+                                <h5 class="modal-title" id="exampleModalLabel">
+                                    Government Mandates
                                 </h5>
                             </div>
                         </div>
@@ -399,45 +428,13 @@
                                 <span style="color: red">@error('philHealth'){{ $message }}@enderror</span>
                             </div>
                         </div>
-                        <!-- PROFILE PICTURE -->
+
+                        <!-- Tin Number -->
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <label>Profile Picture</label>
-                                <input id="image" type="file" class="form-control @error('image') is-invalid @enderror"
-                                    name="image" />
-
-                                @error('image')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <!-- Role -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label>Select Role<span class="text-danger">*</span></label>
-                                <select name="role_as" class="form-control" required>
-                                    <option value="">-- Select --</option>
-                                    <option value="3">Employee</option>
-                                    <option value="1">Admin</option>
-                                    <option value="2">HR</option>
-                                    <option value="4">Operations Manager</option>
-                                    <option value="5">IT Manager</option>
-                                    <option value="6">Marketing Manager</option>
-                                </select>
-                                <span style="color: red">@error('role_as'){{
-                                        $message
-                                    }}@enderror</span>
-                            </div>
-                        </div>
-
-                        <!-- Hourly Rate -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label>Hourly Rate<span class="text-danger">*</span></label>
-                                <input type="number" name="hourlyRate" class="form-control" />
+                                <label>Tax Identification Number<span class="text-danger">*</span></label>
+                                <input type="text" name="tin" class="form-control" required />
+                                <span style="color: red">@error('philHealth'){{ $message }}@enderror</span>
                             </div>
                         </div>
 

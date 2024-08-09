@@ -76,7 +76,8 @@ class DashboardController extends Controller
  
          // Leave Counts
          $vacationLeaveCountToday = LeaveRequest::where('type', 'Vacation Leave')
-                                     ->where(function($query) {
+                                    ->where('status', 'Approved')
+                                    ->where(function($query) {
                                          $query->whereDate('start_date', today())
                                                ->orWhereDate('end_date', today())
                                                ->orWhere(function($query) {
@@ -87,7 +88,8 @@ class DashboardController extends Controller
                                      ->count();
  
          $sickLeaveCountToday = LeaveRequest::where('type', 'Sick Leave')
-                                     ->where(function($query) {
+                                    ->where('status', 'Approved')
+                                    ->where(function($query) {
                                          $query->whereDate('start_date', today())
                                                ->orWhereDate('end_date', today())
                                                ->orWhere(function($query) {
@@ -98,7 +100,8 @@ class DashboardController extends Controller
                                      ->count();
  
          $birthdayLeaveCountToday = LeaveRequest::where('type', 'Birthday Leave')
-                                     ->where(function($query) {
+                                    ->where('status', 'Approved')
+                                    ->where(function($query) {
                                          $query->whereDate('start_date', today())
                                                ->orWhereDate('end_date', today())
                                                ->orWhere(function($query) {
@@ -109,7 +112,8 @@ class DashboardController extends Controller
                                      ->count();
  
          $unpaidLeaveCountToday = LeaveRequest::where('type', 'Unpaid Leave')
-                                     ->where(function($query) {
+                                    ->where('status', 'Approved')
+                                    ->where(function($query) {
                                          $query->whereDate('start_date', today())
                                                ->orWhereDate('end_date', today())
                                                ->orWhere(function($query) {
@@ -290,4 +294,6 @@ class DashboardController extends Controller
 
         return response()->json(['status' => 'New']);
     }
+
+    
 }

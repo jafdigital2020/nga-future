@@ -38,7 +38,8 @@
                             <div class="row">
                                 <div class="col-md-5">
                                     <div class="profile-info-left">
-                                        <h3 class="user-name m-t-0 mb-0">{{ $user->name }}</h3>
+                                        <h3 class="user-name m-t-0 mb-0">{{ $user->lName }}, {{ $user->fNamme }}
+                                            {{ $user->mName }} ({{ $user->name }})</h3>
                                         <h6 class="text-muted">{{ $user->position }}</h6>
                                         <div class="staff-id">Employee ID : {{ $user->empNumber }}</div>
                                         <div class="staff-id">Department :
@@ -87,8 +88,8 @@
                 <ul class="nav nav-tabs nav-tabs-bottom">
                     <li class="nav-item"><a href="#emp_profile" data-toggle="tab" class="nav-link active">Profile</a>
                     </li>
-                    <li class="nav-item"><a href="#emp_projects" data-toggle="tab" class="nav-link">Projects</a>
-                    </li>
+                    <!-- <li class="nav-item"><a href="#emp_projects" data-toggle="tab" class="nav-link">Projects</a>
+                    </li> -->
                     <li class="nav-item"><a href="#emp_record" data-toggle="tab" class="nav-link">Employee Record
                             <small class="text-danger">(Admin/Manager Only)</small></a></li>
                     <li class="nav-item"><a href="#emp_salary" data-toggle="tab" class="nav-link">Employee Salary Record
@@ -117,10 +118,6 @@
                                     <div class="text">{{ $info->religion }}</div>
                                 </li>
                                 <li>
-                                    <div class="title">Age</div>
-                                    <div class="text">{{ $info->age }}</div>
-                                </li>
-                                <li>
                                     <div class="title">Education</div>
                                     <div class="text">{{ $info->education }}</div>
                                 </li>
@@ -135,6 +132,10 @@
                                 <li>
                                     <div class="title">No. of children</div>
                                     <div class="text">{{ $info->numChildren }}</div>
+                                </li>
+                                <li>
+                                    <div class="title">Personal Email</div>
+                                    <div class="text">{{ $info->personalEmail }}</div>
                                 </li>
                             </ul>
                             @endforeach
@@ -195,8 +196,7 @@
                 <div class="col-md-6 d-flex">
                     <div class="card profile-box flex-fill">
                         <div class="card-body">
-                            <h3 class="card-title">Goverment Mandates <a href="#" class="edit-icon" data-toggle="modal"
-                                    data-target="#family_info_modal"><i class="fa fa-pencil"></i></a></h3>
+                            <h3 class="card-title">Government Mandates</h3>
                             <ul class="personal-info">
                                 <li>
                                     <div class="title">SSS</div>
@@ -210,7 +210,10 @@
                                     <div class="title">PhilHealth</div>
                                     <div class="text">{{ $user->philHealth }}</div>
                                 </li>
-
+                                <li>
+                                    <div class="title">TIN</div>
+                                    <div class="text">{{ $user->tin }}</div>
+                                </li>
                             </ul>
                         </div>
                     </div>

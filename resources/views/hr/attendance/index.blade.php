@@ -89,8 +89,8 @@
         <div class="col-lg-12">
             <div class="table-responsive">
                 <!-- Display Attendance Table -->
-                <table class="table table-striped custom-table table-nowrap mb-0">
-                    <thead>
+                <table class="table table-hover table-nowrap custom-table table-nowrap mb-0">
+                    <thead class="thead-light">
                         <tr>
                             <th class="sticky-column">Employee</th>
                             @for($i = 1; $i <= 31; $i++) <th>{{ $i }}</th>
@@ -102,14 +102,20 @@
                         <tr>
                             <td class="sticky-column">
                                 <h2 class="table-avatar">
-                                    <a href="#" class="avatar">
+                                    <a href="{{ url('hr/employee/edit'.$user->id) }}" class="avatar">
                                         @if ($user->image)
                                         <img src="{{ asset('images/' . $user->image) }}" alt="Profile Image" />
                                         @else
                                         <img src="{{ asset('images/default.png') }}" alt="Profile Image" />
                                         @endif
                                     </a>
-                                    <a href="#">{{ $user->name }}
+                                    <a href="{{ url('hr/employee/edit/'.$user->id) }}">
+                                        @if ($user->fName
+                                        || $user->lName)
+                                        {{ $user->fName }} {{ $user->lName }}
+                                        @else
+                                        {{ $user->name }}
+                                        @endif
                                         <span>{{ $user->department }}</span>
                                     </a>
                                 </h2>

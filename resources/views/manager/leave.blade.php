@@ -135,13 +135,17 @@
                         <tr>
                             <td>
                                 <h2 class="table-avatar">
-                                    <a href="profile.html" class="avatar">
+                                    <a href="#" class="avatar">
                                         @if ($leave->user->image)
                                         <img src="{{ asset('images/' . $leave->user->image) }}" alt="Profile Image" />
                                         @else
                                         <img src="{{ asset('images/default.png') }}" alt="Profile Image" /></a>
                                     @endif
-                                    <a href="#">{{ $leave->name }}<span>{{ $leave->user->department }}</span></a>
+                                    <a href="#">@if ($leave->user->fName || $leave->user->lName)
+                                        {{ $leave->user->fName }} {{ $leave->user->lName }}
+                                        @else
+                                        {{ $leave->user->name }}
+                                        @endif<span>{{ $leave->user->department }}</span></a>
                                 </h2>
                             </td>
                             <td>{{ $leave->type }}</td>

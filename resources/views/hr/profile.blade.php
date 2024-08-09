@@ -1,4 +1,4 @@
-@extends('layouts.hrmaster') @section('title', 'Employees') @section('content')
+@extends('layouts.hrmaster') @section('title', 'Profile') @section('content')
 @include('sweetalert::alert')
 
 <!-- Page Content -->
@@ -122,10 +122,6 @@
                                 <li>
                                     <div class="title">Religion</div>
                                     <div class="text">{{ $info->religion }}</div>
-                                </li>
-                                <li>
-                                    <div class="title">Age</div>
-                                    <div class="text">{{ $info->age }}</div>
                                 </li>
                                 <li>
                                     <div class="title">Education</div>
@@ -792,7 +788,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="{{ route('emp.update') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('hr.update') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="row">
                         <div class="col-md-12">
@@ -810,9 +806,43 @@
                                 </div>
                             </div>
                             <div class="row">
+                                <!-- First Name -->
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="name">First Name<span class="text-danger">*</span></label>
+                                        <input type="text" name="fName" id="fName" class="form-control"
+                                            value="{{ $user->fName }}" required />
+                                    </div>
+                                </div>
+                                <!-- Middle Name -->
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="name">Middle Name<span class="text-danger">*</span></label>
+                                        <input type="text" name="mName" id="mName" class="form-control"
+                                            value="{{ $user->mName }}" required />
+
+                                    </div>
+                                </div>
+                                <!-- last Name -->
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="name">Last Name<span class="text-danger">*</span></label>
+                                        <input type="text" name="lName" id="lName" class="form-control"
+                                            value="{{ $user->lName }}" required />
+
+                                    </div>
+                                </div>
+                                <!-- Suffix Name -->
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="suffix">Suffix</label>
+                                        <input type="text" name="suffix" id="suffix" value="{{ $user->suffix }}"
+                                            class="form-control" />
+                                    </div>
+                                </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>Full Name</label>
+                                        <label>Professional Name</label>
                                         <input type="text" name="name" id="name" class="form-control"
                                             value="{{ $user->name }}">
                                     </div>
@@ -897,13 +927,6 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Age</label>
-                                <input class="form-control" type="text" name="age" id="age"
-                                    value="{{ $info->age ?? '' }}">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
                                 <label>Education</label>
                                 <input class="form-control" type="text" name="education" id="education"
                                     value="{{ $info->education ?? '' }}">
@@ -935,7 +958,7 @@
                                     value="{{ $info->numChildren ?? '' }}">
                             </div>
                         </div>
-                        <div class="col-md-12">
+                        <div class="col-md-6">
                             <div class="form-group">
                                 <label>Personal Email</label>
                                 <input class="form-control" type="text" name="personalEmail" id="personalEmail"
@@ -1016,7 +1039,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form method="POST" action="{{ route('profile.econtact') }}">
+                <form method="POST" action="{{ route('profile.econtactr') }}">
                     @csrf
                     <div class="card">
                         <div class="card-body">

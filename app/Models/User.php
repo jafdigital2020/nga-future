@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use App\Models\Salary;
+use App\Models\Payroll;
 use Carbon\CarbonInterval;
 use App\Models\LeaveRequest;
 use App\Models\EmployeeSalary;
@@ -207,6 +208,11 @@ class User extends Authenticatable
         return $this->hasMany(ApprovedAttendance::class, 'approved_by');
     }
 
+    public function payrollPayslip()
+    {
+        return $this->hasMany(Payroll::class, 'users_id', 'id');
+    }
+
     public function checkIn()
     {
         $now = $this->freshTimestamp();
@@ -380,15 +386,26 @@ class User extends Authenticatable
         // Calculate the timeEnd based on timeIn
         $timeInParsed = Carbon::parse($timeIn->timeIn);
         $shiftStart = Carbon::parse('09:00:00');
-        $shiftEnd = Carbon::parse('20:00:00'); // Fixed shift end time if checked in after 11:00 AM
+        $shiftEnd = Carbon::parse('20:00:00'); // Fixed shift end time if checked in after 11:00 AM 
+
     
+        // if ($timeInParsed->gt(Carbon::parse('11:00:00'))) {
+        //     $timeEnd = $shiftEnd->format('h:i:s A');
+        // } else {
+        //     $timeEnd = $timeInParsed->copy()->addHours(9)->format('h:i:s A');
+        // }
+
         if ($timeInParsed->gt(Carbon::parse('11:00:00'))) {
             // If checked in after 11:00 AM, timeEnd is fixed at 8:00 PM
-            $timeEnd = $shiftEnd->format('h:i:s A');
+            $timeEnd = Carbon::parse('20:00:00')->format('h:i:s A');
+        } elseif ($timeInParsed->lt(Carbon::parse('09:00:00'))) {
+            // If checked in before 9:00 AM, timeEnd is fixed at 6:00 PM
+            $timeEnd = Carbon::parse('18:00:00')->format('h:i:s A');
         } else {
             // Otherwise, timeEnd is 9 hours after timeIn
             $timeEnd = $timeInParsed->copy()->addHours(9)->format('h:i:s A');
         }
+        
     
         $timeIn->update([
             'timeOut' => $timeOut,

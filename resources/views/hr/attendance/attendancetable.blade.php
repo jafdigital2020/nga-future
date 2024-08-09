@@ -87,8 +87,8 @@
         <div class="col-lg-12">
             <div class="table-responsive">
                 @csrf
-                <table class="table datatable" id="edittable">
-                    <thead>
+                <table class="table table-hover table-nowrapdatatable" id="edittable">
+                    <thead class="thead-light">
                         <tr>
                             <th>Name</th>
                             <th>Date</th>

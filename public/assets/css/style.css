@@ -74,6 +74,11 @@ Version      : 3.6
 
 ========================================*/
 
+@import url(https://unpkg.com/@webpixels/css@1.1.5/dist/index.css);
+
+/* Bootstrap Icons */
+@import url("https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.4.0/font/bootstrap-icons.min.css");
+
 @font-face {
     font-family: "Material Icons";
     font-style: normal;
@@ -7852,9 +7857,10 @@ ul.comment-list li ul.children {
     background-color: #fff;
     border-bottom: 1px solid #ededed;
     display: flex;
-    margin: -30px -30px 30px;
+    margin: -20px -30px 30px;
     padding: 20px;
     position: relative;
+
 }
 
 .welcome-img {
@@ -9572,6 +9578,7 @@ ul.comment-list li ul.children {
         top: 0;
         width: 60px;
         z-index: 10;
+        margin-top: 20px;
     }
 
     #toggle_btn {
@@ -9929,6 +9936,7 @@ ul.comment-list li ul.children {
 
     .mobile-user-menu {
         display: block;
+        margin-top: 20px;
     }
 
     .search-box {
@@ -10295,6 +10303,26 @@ ul.comment-list li ul.children {
     position: sticky;
     left: 0;
     background-color: #fff;
-    z-index: 10;
+    z-index: 9999;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+
+@media (max-width: 767px) {
+    .logoSide {
+        width: 50%;
+    }
+}
+
+@media only screen and (min-width: 768px) {
+
+    .nav-tabs.nav-tabs-bottom>li>a.active,
+    .nav-tabs.nav-tabs-bottom>li>a.active:hover,
+    .nav-tabs.nav-tabs-bottom>li>a.active:focus {
+        margin-left: 20px;
+    }
+}
+
+.logoSide {
+    margin-top: 7px;
 }

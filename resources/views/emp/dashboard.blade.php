@@ -143,7 +143,8 @@
                         <div class="stats-info">
                             <p>
                                 Name
-                                <strong>{{ Auth::user()->name }}</strong>
+                                <strong>{{ Auth::user()->lName }}, {{ Auth::user()->fName }} {{ Auth::user()->mName }}
+                                    ({{ Auth::user()->name }})</strong>
                             </p>
                         </div>
                         <div class="stats-info">
@@ -171,7 +172,13 @@
 
                                 <strong>Management</strong>
                                 @elseif ($supervisor)
-                                <strong>{{ $supervisor->name }}</strong>
+                                <strong>
+                                    @if ($supervisor->fName || $supervisor->lName)
+                                    {{ $supervisor->fName }} {{ $supervisor->lName }}
+                                    @else
+                                    {{ $supervisor->name }}
+                                    @endif
+                                </strong>
                                 @else
                                 <strong>No supervisor assigned for this department.</strong>
                                 @endif
@@ -279,6 +286,7 @@
         </div>
     </div>
 
+
     <!-- /Calendar Record -->
 
     <!-- Employee Tabs -->
@@ -299,12 +307,12 @@
                             <div class="col-lg-12">
                                 <div class="card">
                                     <div class="card-header">
-                                        <h4 class="card-title mb-0">Employment Record</h4>
+                                        <h5 class="mb-0">Employment Record</h5>
                                     </div>
                                     <div class="card-body">
                                         <div class="table-responsive">
-                                            <table class="table table-nowrap mb-0">
-                                                <thead>
+                                            <table class="table table-hover table-nowrap">
+                                                <thead class="thead-light">
                                                     <tr>
                                                         <th>Name</th>
                                                         <th>Hired Date</th>
@@ -334,12 +342,12 @@
                             <div class="col-lg-12">
                                 <div class="card">
                                     <div class="card-header">
-                                        <h4 class="card-title mb-0">Salary Record</h4>
+                                        <h5 class="mb-0">Salary Record</h5>
                                     </div>
                                     <div class="card-body">
                                         <div class="table-responsive">
-                                            <table class="table table-nowrap mb-0">
-                                                <thead>
+                                            <table class="table table-hover table-nowrap">
+                                                <thead class="thead-light">
                                                     <tr>
                                                         <th>Name</th>
                                                         <th>Annual Salary</th>
@@ -418,6 +426,95 @@
             'January', 'February', 'March', 'April', 'May', 'June',
             'July', 'August', 'September', 'October', 'November', 'December'
         ];
+
+        const holidays = {
+            regular: [{
+                    name: "New Year's Day",
+                    date: '01-01'
+                },
+                {
+                    name: 'Maundy Thursday',
+                    date: '03-28'
+                },
+                {
+                    name: 'Good Friday',
+                    date: '03-29'
+                },
+                {
+                    name: 'Araw ng Kagitingan',
+                    date: '04-09'
+                },
+                {
+                    name: "Eid'l Fitr",
+                    date: '04-10'
+                },
+                {
+                    name: 'Labor Day',
+                    date: '05-01'
+                },
+                {
+                    name: 'Independence Day',
+                    date: '06-12'
+                },
+                {
+                    name: "Eid’l Adha",
+                    date: '06-17'
+                },
+                {
+                    name: 'National Heroes Day',
+                    date: '08-26'
+                },
+                {
+                    name: 'Bonifacio Day',
+                    date: '11-30'
+                },
+                {
+                    name: 'Christmas Day',
+                    date: '12-25'
+                },
+                {
+                    name: 'Rizal Day',
+                    date: '12-30'
+                }
+            ],
+            special: [{
+                    name: 'Ninoy Aquino Day',
+                    date: '08-21'
+                },
+                {
+                    name: "All Saints' Day",
+                    date: '11-01'
+                },
+                {
+                    name: 'Feast of the Immaculate Conception of Mary',
+                    date: '12-08'
+                },
+                {
+                    name: 'Last Day of the Year',
+                    date: '12-31'
+                },
+                {
+                    name: 'Additional Special Day',
+                    date: '02-09'
+                },
+                {
+                    name: 'Chinese New Year',
+                    date: '02-10'
+                },
+                {
+                    name: 'Black Saturday',
+                    date: '03-30'
+                },
+                {
+                    name: 'All Souls\' Day',
+                    date: '11-02'
+                },
+                {
+                    name: 'Christmas Eve',
+                    date: '12-24'
+                }
+            ]
+        };
 
         function renderCalendar(startDate, endDate, attendanceData, leaveData, status = 'new') {
             calendar.innerHTML = '';
@@ -505,6 +602,26 @@
                     }
                 });
 
+                // Highlight holidays
+                const holiday = checkHoliday(currentDate);
+                if (holiday) {
+                    const holidayDiv = document.createElement('div');
+                    holidayDiv.className = 'holiday-button';
+                    holidayDiv.innerText = holiday.name;
+
+                    if (holiday.type === 'regular') {
+                        holidayDiv.style.backgroundColor = 'green';
+                    } else {
+                        holidayDiv.style.backgroundColor = 'black';
+                    }
+
+                    holidayDiv.style.color = 'white';
+                    holidayDiv.style.padding = '5px';
+                    holidayDiv.style.marginTop = '5px';
+                    holidayDiv.style.borderRadius = '5px';
+                    dayDiv.appendChild(holidayDiv);
+                }
+
                 calendar.appendChild(dayDiv);
                 currentDate.setDate(currentDate.getDate() + 1);
             }
@@ -526,6 +643,17 @@
             totalBox.innerText =
                 `Total Worked Hours: ${totalWorkedFormatted}\nTotal Late: ${totalLateFormatted}\nUnpaid Leave: ${unpaidLeaveCount}\nVacation Leave: ${vacationLeaveCount}\nSick Leave: ${sickLeaveCount}\nBirthday Leave: ${bdayLeaveCount}\nStatus: ${status}`;
             calendar.appendChild(totalBox);
+        }
+
+        function checkHoliday(date) {
+            const formattedDate =
+                `${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+            const holiday = holidays.regular.find(h => h.date === formattedDate) || holidays.special.find(h => h
+                .date === formattedDate);
+            if (holiday) {
+                holiday.type = holidays.regular.some(h => h.date === formattedDate) ? 'regular' : 'special';
+            }
+            return holiday;
         }
 
         function fetchAttendanceData(startDate, endDate, callback) {
@@ -815,7 +943,5 @@
     });
 
 </script>
-
-
 
 @endsection

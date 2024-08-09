@@ -220,8 +220,9 @@ class DashboardController extends Controller
             // Create a new ApprovedAttendance record
             $attendance = new ApprovedAttendance();
             $attendance->users_id = Auth::id(); 
-            $attendance->name = Auth::user()->name;
+            $attendance->name = Auth::user()->fName . ' ' . Auth::user()->lName;
             $attendance->department = Auth::user()->department;
+            $attendance->month = date('F'); 
             $attendance->totalHours = $request->input('total_worked');
             $attendance->totalLate = $request->input('total_late');
             $attendance->cut_off = $request->input('cutoff');

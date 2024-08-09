@@ -10,7 +10,7 @@ Route::get('/', function () {
 });
 
 
-Auth::routes(['register' => false]);
+Auth::routes(['register' => true]);
 
 // Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
@@ -19,6 +19,10 @@ Auth::routes(['register' => false]);
 Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(function() {
 
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.index');
+    Route::post('dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'store']);
+    Route::put('dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'update']);
+    Route::put('dashboard/breakin', [App\Http\Controllers\Admin\DashboardController::class, 'breakIn']);
+    Route::put('dashboard/breakout', [App\Http\Controllers\Admin\DashboardController::class, 'breakOut']);
     Route::get('employee', [App\Http\Controllers\Admin\EmployeeController::class, 'index']);
     Route::post('employee', [App\Http\Controllers\Admin\EmployeeController::class, 'store']);
     Route::get('employee/search', [App\Http\Controllers\Admin\EmployeeController::class, 'search'])->name('admin.search');
@@ -42,7 +46,20 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::get('/attendance/search', [App\Http\Controllers\Admin\AttendanceReportController::class, 'index'])->name('attendance.admin');
     Route::get('/attendance/tableview', [App\Http\Controllers\Admin\AttendanceReportController::class, 'empreport'])->name('report.admin');
     Route::post('attendance/tableview/update', [App\Http\Controllers\Admin\AttendanceReportController::class, 'updateTable'])->name('admin.table');
-
+    Route::get('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'index']);
+    Route::post('profile', [\App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('admin.update');
+    Route::post('/profile/personal-info', [App\Http\Controllers\Admin\ProfileController::class, 'personalInfo'])->name('admin.info');
+    Route::post('profile/contact', [App\Http\Controllers\Admin\ProfileController::class, 'contactStore'])->name('admin.econtactr');
+    Route::get('profile/changepassword', [\App\Http\Controllers\Admin\ProfileController::class, 'changePasswordHr'])->name('adminchange.pass');
+    Route::post('profile/changepassword', [\App\Http\Controllers\Admin\ProfileController::class, 'changePassword']);
+    Route::get('approve', [App\Http\Controllers\Admin\PayrollController::class, 'approvedTime'])->name('approvedTimeAdmin');
+    Route::post('approve/update/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'update'])->name('admin.updateAttendance');
+    Route::delete('approve/delete/{id}', [\App\Http\Controllers\Admin\PayrollController::class, 'destroy'])->name('admin.destroy');
+    Route::get('payroll/edit/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'payroll'])->name('admin.payroll');
+    Route::post('payroll/edit/payslip/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'payslip'])->name('admin.payslip');
+    Route::get('payslip', [App\Http\Controllers\Admin\PayrollController::class, 'payslipView'])->name('admin.payslipView');
+    Route::get('payslip/view/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'viewPayslip'])->name('admin.viewPayslip');
+    Route::get('download', [App\Http\Controllers\Admin\PayrollController::class, 'download'])->name('admin.downloadPayslip');
 });
 
 // Employee Route
@@ -62,8 +79,6 @@ Route::prefix('emp')->middleware(['auth','isEmployee', 'sessionTimeout'])->group
     Route::post('profile/personal-info', [\App\Http\Controllers\Employee\ProfileController::class, 'personalInfo']);
     Route::get('changepassword', [\App\Http\Controllers\Employee\ChangePasswordController::class, 'index'])->name('change.pass');
     Route::post('changepassword', [\App\Http\Controllers\Employee\ChangePasswordController::class, 'changePassword']);
-    Route::get('payslip', [\App\Http\Controllers\Employee\PayslipController::class, 'index']);
-    Route::get('payslip/view/{payslip_id}', [\App\Http\Controllers\Employee\PayslipController::class, 'view']);
     Route::get('leave', [\App\Http\Controllers\Employee\LeaveController::class, 'index']);
     Route::post('leave-request', [\App\Http\Controllers\Employee\LeaveController::class, 'storeLeave'])->name('store.leave');
     Route::post('/leave/{id}', [\App\Http\Controllers\Employee\LeaveController::class, 'update'])->name('leave.update');
@@ -71,7 +86,9 @@ Route::prefix('emp')->middleware(['auth','isEmployee', 'sessionTimeout'])->group
     Route::post('dashboard/attendance/send', [\App\Http\Controllers\Employee\DashboardController::class, 'saveAttendance'])->name('attendance.save');
     Route::post('dashboard/attendance/check', [\App\Http\Controllers\Employee\DashboardController::class, 'check'])->name('attendance.check');
     Route::get('dashboard/attendance/status', [\App\Http\Controllers\Employee\DashboardController::class, 'getStatus'])->name('attendance.status');
-    
+    Route::get('payslip', [App\Http\Controllers\Employee\PayslipController::class, 'payslipView'])->name('emp.payslipView');
+    Route::get('payslip/view/{id}', [App\Http\Controllers\Employee\PayslipController::class, 'viewPayslip'])->name('emp.viewPayslip');
+    Route::get('download', [App\Http\Controllers\Employee\PayslipController::class, 'download'])->name('emp.downloadPayslip');
 });
 
 
@@ -92,14 +109,6 @@ Route::prefix('hr')->middleware(['auth','isHr', 'sessionTimeout'])->group(functi
     Route::get('employee/edit/{user_id}', [\App\Http\Controllers\Hr\EmployeeController::class, 'edit'])->name('employee.edit');
     Route::put('employee/update/{user_id}', [\App\Http\Controllers\Hr\EmployeeController::class, 'update'])->name('employee.update');
     Route::put('employee/update/mandates/{user_id}', [\App\Http\Controllers\Hr\EmployeeController::class, 'government'])->name('employee.mandates');
-    Route::get('payroll', [App\Http\Controllers\Hr\PayrollController::class, 'index']);
-    Route::get('payroll', [\App\Http\Controllers\Hr\PayrollController::class, 'emppayroll'])->name('emppayroll');
-    Route::post('payroll', [\App\Http\Controllers\Hr\PayrollController::class, 'store'])->name('employee.salaries.store');
-    Route::post('payroll/check', [\App\Http\Controllers\Hr\PayrollController::class, 'check'])->name('employee.salaries.check');
-    Route::get('payslip', [App\Http\Controllers\Hr\PayslipController::class, 'index']);
-    Route::get('payroll/edit/{salary_id}', [App\Http\Controllers\Hr\PayrollController::class, 'edit']);
-    Route::get('payroll/view/{salary_id}', [App\Http\Controllers\Hr\PayrollController::class, 'view']);
-    Route::get('payroll/click_delete/{salary_id}', [App\Http\Controllers\Hr\PayrollController::class, 'function_delete']);
     Route::get('leave', [App\Http\Controllers\Hr\LeaveAdminController::class, 'index']);
     Route::post('employee/contact/{user_id}', [\App\Http\Controllers\Hr\EmployeeController::class, 'contactStore'])->name('contact.store');
     Route::post('employee/bank/{user_id}', [\App\Http\Controllers\Hr\EmployeeController::class, 'bankInfo'])->name('bank.store');
@@ -119,11 +128,21 @@ Route::prefix('hr')->middleware(['auth','isHr', 'sessionTimeout'])->group(functi
     Route::get('/attendance/tableview', [App\Http\Controllers\Hr\HRAttendanceController::class, 'empreport'])->name('report.empindex');
     Route::post('attendance/tableview/update',[\App\Http\Controllers\Hr\HRAttendanceController::class, 'updateTable'])->name('update.table');
     Route::get('/profile', [App\Http\Controllers\Hr\ProfileController::class, 'index']);
+    Route::post('profile', [\App\Http\Controllers\Hr\ProfileController::class, 'update'])->name('hr.update');
     Route::post('/profile/personal-info', [App\Http\Controllers\Hr\ProfileController::class, 'personalInfo'])->name('personal.info');
     Route::post('profile/contact', [App\Http\Controllers\Hr\ProfileController::class, 'contactStore'])->name('profile.econtactr');
     Route::get('profile/changepassword', [\App\Http\Controllers\Hr\ProfileController::class, 'changePasswordHr'])->name('hrchange.pass');
     Route::post('profile/changepassword', [\App\Http\Controllers\Hr\ProfileController::class, 'changePassword']);
     Route::post('employee/personal-info/{user_id}', [App\Http\Controllers\Admin\EmployeeController::class, 'personalInfo'])->name('hr.personal');
+    Route::get('payroll', [App\Http\Controllers\Hr\PayrollController::class, 'index']);
+    Route::get('approve', [App\Http\Controllers\Hr\PayrollController::class, 'approvedTime'])->name('approvedTime');
+    Route::post('approve/update/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'update'])->name('hr.updateAttendance');
+    Route::delete('approve/delete/{id}', [\App\Http\Controllers\Hr\PayrollController::class, 'destroy'])->name('hr.destroy');
+    Route::get('payroll/edit/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'payroll'])->name('hr.payroll');
+    Route::post('payroll/edit/payslip/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'payslip'])->name('hr.payslip');
+    Route::get('payslip', [App\Http\Controllers\Hr\PayrollController::class, 'payslipView'])->name('hr.payslipView');
+    Route::get('payslip/view/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'viewPayslip'])->name('hr.viewPayslip');
+    Route::get('download', [App\Http\Controllers\Hr\PayrollController::class, 'download'])->name('hr.downloadPayslip');
 });
 
 
@@ -154,8 +173,12 @@ Route::prefix('manager')->middleware(['auth', 'isManager', 'sessionTimeout'])->g
     Route::post('/attendance/{id}/approve', [\App\Http\Controllers\Manager\AttendanceApproveController::class, 'approve'])->name('att.approve');
     Route::post('/attendance/{id}/decline', [\App\Http\Controllers\Manager\AttendanceApproveController::class, 'decline'])->name('att.decline');
     Route::get('/profile', [App\Http\Controllers\Manager\ProfileController::class, 'index']);
+    Route::post('profile', [\App\Http\Controllers\Manager\ProfileController::class, 'update'])->name('manager.update');
     Route::post('/profile/personal-info', [App\Http\Controllers\Manager\ProfileController::class, 'personalInfo'])->name('personal.infom');
     Route::post('profile/contact', [App\Http\Controllers\Manager\ProfileController::class,'contactStore'])->name('profile.econtactm');
     Route::get('profile/changepassword', [App\Http\Controllers\Manager\ProfileController::class, 'changePasswordHr'])->name('manager.pass');
     Route::post('profile/changepassword', [App\Http\Controllers\Manager\ProfileController::class, 'changePassword']);
+    Route::get('payslip', [App\Http\Controllers\Manager\PayslipController::class, 'payslipView'])->name('manager.payslipView');
+    Route::get('payslip/view/{id}', [App\Http\Controllers\Manager\PayslipController::class, 'viewPayslip'])->name('manager.viewPayslip');
+    Route::get('download', [App\Http\Controllers\Manager\PayslipController::class, 'download'])->name('manager.downloadPayslip');
 });

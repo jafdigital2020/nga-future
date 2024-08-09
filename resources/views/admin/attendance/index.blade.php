@@ -89,8 +89,8 @@
         <div class="col-lg-12">
             <div class="table-responsive">
                 <!-- Display Attendance Table -->
-                <table class="table table-striped custom-table table-nowrap mb-0">
-                    <thead>
+                <table class="table table-hover table-nowrap custom-table table-nowrap mb-0">
+                    <thead class="thead-light">
                         <tr>
                             <th>Employee</th>
                             @for($i = 1; $i <= 31; $i++) <th>{{ $i }}</th>
@@ -100,7 +100,7 @@
                     <tbody>
                         @foreach($users as $user)
                         <tr>
-                            <td>
+                            <td class="sticky-column">
                                 <h2 class="table-avatar">
                                     <a href="#" class="avatar">
                                         @if ($user->image)
@@ -110,7 +110,7 @@
                                                 asset('images/default.png')
                                             }}" alt="Profile Image" />
                                         @endif</a>
-                                    <a href="#">{{ $user->name }}
+                                    <a href="#">{{ $user->fName }} {{ $user->lName }}
                                         <span>{{ $user->department }}</span></a>
                                 </h2>
                             </td>

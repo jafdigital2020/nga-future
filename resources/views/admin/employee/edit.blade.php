@@ -38,7 +38,8 @@
                             <div class="row">
                                 <div class="col-md-5">
                                     <div class="profile-info-left">
-                                        <h3 class="user-name m-t-0 mb-0">{{ $user->name }}</h3>
+                                        <h3 class="user-name m-t-0 mb-0">{{ $user->lName }}, {{ $user->fName }}
+                                            {{ $user->mName }} ({{ $user->name }})</h3>
                                         <h6 class="text-muted">{{ $user->position }}</h6>
                                         <div class="staff-id">Employee ID : {{ $user->empNumber }}</div>
                                         <div class="staff-id">Department :
@@ -51,13 +52,13 @@
                                             @if(is_string($supervisor))
                                             {{ $supervisor }}
                                             @else
-                                            {{ $supervisor->name }}
+                                            {{ $supervisor->fName }} {{ $supervisor->lName }}
                                             @endif
                                             @else
                                             N/A
                                             @endif
                                             @endif</div>
-                                        <div class="staff-id">Date Hired : {{ $user->dateHired }}</div>
+
                                         <div class="staff-msg">
                                             <a class="btn btn-danger" href="#" data-toggle="modal"
                                                 data-target="#change_password">Change Password</a>
@@ -87,6 +88,10 @@
                                         <li>
                                             <div class="title">Type of contract:</div>
                                             <div class="text">{{ $user->typeOfContract }}</div>
+                                        </li>
+                                        <li>
+                                            <div class="title">Date Hired:</div>
+                                            <div class="text">{{ $user->dateHired }}</div>
                                         </li>
                                     </ul>
                                 </div>
@@ -138,10 +143,6 @@
                                     <div class="text">{{ $info->religion }}</div>
                                 </li>
                                 <li>
-                                    <div class="title">Age</div>
-                                    <div class="text">{{ $info->age }}</div>
-                                </li>
-                                <li>
                                     <div class="title">Education</div>
                                     <div class="text">{{ $info->education }}</div>
                                 </li>
@@ -156,6 +157,10 @@
                                 <li>
                                     <div class="title">No. of children</div>
                                     <div class="text">{{ $info->numChildren }}</div>
+                                </li>
+                                <li>
+                                    <div class="title">Personal Email Address</div>
+                                    <div class="text">{{ $info->personalEmail }}</div>
                                 </li>
                             </ul>
                             @endforeach
@@ -856,9 +861,43 @@
                                 </div>
                             </div>
                             <div class="row">
+                                <!-- First Name -->
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="name">First Name<span class="text-danger">*</span></label>
+                                        <input type="text" name="fName" id="fName" class="form-control"
+                                            value="{{ $user->fName }}" required />
+                                    </div>
+                                </div>
+                                <!-- Middle Name -->
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="name">Middle Name<span class="text-danger">*</span></label>
+                                        <input type="text" name="mName" id="mName" class="form-control"
+                                            value="{{ $user->mName }}" required />
+
+                                    </div>
+                                </div>
+                                <!-- last Name -->
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="name">Last Name<span class="text-danger">*</span></label>
+                                        <input type="text" name="lName" id="lName" class="form-control"
+                                            value="{{ $user->lName }}" required />
+
+                                    </div>
+                                </div>
+                                <!-- Suffix Name -->
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="suffix">Suffix</label>
+                                        <input type="text" name="suffix" id="suffix" value="{{ $user->suffix }}"
+                                            class="form-control" />
+                                    </div>
+                                </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>Full Name</label>
+                                        <label>Professional Name</label>
                                         <input type="text" name="name" id="name" class="form-control"
                                             value="{{ $user->name }}">
                                     </div>
@@ -888,7 +927,44 @@
                                         </div>
                                     </div>
                                 </div>
+                                <!-- Position -->
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Position</label>
+                                        <input type="text" class="form-control" name="position" id="position"
+                                            value="{{ $user->position ? $user->position : '' }}" required>
+                                    </div>
+                                </div>
+                                <!-- Department -->
                                 <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Department</label>
+                                        <select class="form-control" name="department" id="department">
+                                            <option value="Website Development"
+                                                {{ $user->department == 'Website Development' ? 'selected' : '' }}>
+                                                Website Development
+                                            </option>
+                                            <option value="IT" {{ $user->department == 'IT' ? 'selected' : '' }}>
+                                                IT
+                                            </option>
+                                            <option value="SEO" {{ $user->department == 'SEO' ? 'selected' : '' }}>
+                                                SEO
+                                            </option>
+                                            <option value="Content"
+                                                {{ $user->department == 'Content' ? 'selected' : '' }}>
+                                                Content
+                                            </option>
+                                            <option value="Marketing"
+                                                {{ $user->department == 'Marketing' ? 'selected' : '' }}>
+                                                Marketing
+                                            </option>
+                                            <option value="HR" {{ $user->department == 'HR' ? 'selected' : '' }}>
+                                                HR
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
                                     <div class="form-group">
                                         <label>Type Of Contract</label>
                                         <select class="form-control" name="typeOfContract" id="typeOfContract">
@@ -898,103 +974,46 @@
                                             <option value="Contractual"
                                                 {{ $user->typeOfContract == 'Contractual' ? 'selected' : '' }}>
                                                 Contractual</option>
-                                            <option value="Freelancer"
-                                                {{ $user->typeOfContract == 'Freelancer' ? 'selected' : '' }}>Freelancer
+                                            <option value="Probationary"
+                                                {{ $user->typeOfContract == 'Probationary' ? 'selected' : '' }}>
+                                                Probationary
+                                            </option>
+                                            <option value="Intern"
+                                                {{ $user->typeOfContract == 'Intern' ? 'selected' : '' }}>Intern
                                             </option>
                                         </select>
 
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Position</label>
-                                        <select class="form-control" name="position" id="position">
-                                            <option value="CEO & Founder"
-                                                {{ $user->position == 'CEO & Founder' ? 'selected' : '' }}>CEO & Founder
-                                            </option>
-                                            <option value="Co-Founder"
-                                                {{ $user->position == 'Co-Founder' ? 'selected' : '' }}>
-                                                Co-Founder</option>
-                                            <option value="Operations Supervisor"
-                                                {{ $user->position == 'Operations Supervisor' ? 'selected' : '' }}>
-                                                Operations Supervisor
-                                            </option>
-                                            <option value="IT Supervisor"
-                                                {{ $user->position == 'IT Supervisor' ? 'selected' : '' }}>
-                                                IT Supervisor
-                                            </option>
-                                            <option value="Marketing Supervisor"
-                                                {{ $user->position == 'Marketing Supervisor' ? 'selected' : '' }}>
-                                                Marketing Supervisor
-                                            </option>
-                                            <option value="Senior Website Developer"
-                                                {{ $user->position == 'Senior Website Developer' ? 'selected' : '' }}>
-                                                Senior Website Developer
-                                            </option>
-                                            <option value="Junior Website Developer"
-                                                {{ $user->position == 'Junior Website Developer' ? 'selected' : '' }}>
-                                                Junior Website Developer
-                                            </option>
-                                            <option value="Associate Website Developer"
-                                                {{ $user->position == 'Associate Website Developer' ? 'selected' : '' }}>
-                                                Associate Website Developer
-                                            </option>
-                                            <option value="Cloud Specialist"
-                                                {{ $user->position == 'Cloud Specialist' ? 'selected' : '' }}>
-                                                Cloud Specialist
-                                            </option>
-                                            <option value="SEO Specialist"
-                                                {{ $user->position == 'SEO Specialist' ? 'selected' : '' }}>
-                                                SEO Specialist
-                                            </option>
-                                            <option value="SEO Specialist"
-                                                {{ $user->position == 'SEO Specialist' ? 'selected' : '' }}>
-                                                SEO Specialist
-                                            </option>
-                                            <option value="Graphic Artist"
-                                                {{ $user->position == 'Graphic Artist' ? 'selected' : '' }}>
-                                                Graphic Artist
-                                            </option>
-                                            <option value="Digital Marketing Associate"
-                                                {{ $user->position == 'Digital Marketing Associate' ? 'selected' : '' }}>
-                                                Digital Marketing Associate
-                                            </option>
-                                            <option value="Content Writer"
-                                                {{ $user->position == 'Content Writer' ? 'selected' : '' }}>
-                                                Content Writer
-                                            </option>
-                                            <option value="Event Coordinator"
-                                                {{ $user->position == 'Event Coordinator' ? 'selected' : '' }}>
-                                                Event Coordinator
-                                            </option>
-                                            <option value="Admin Staff"
-                                                {{ $user->position == 'Admin Staff' ? 'selected' : '' }}>
-                                                Admin Staff
-                                            </option>
-                                        </select>
-                                    </div>
-                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <!-- Vac leave -->
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label>Vacation Leave</label>
+                                <input type="number" class="form-control" name="vacLeave" id="vacLeave"
+                                    value="{{ $user->vacLeave ?? 0 }}" required>
+                            </div>
+                        </div>
 
-                                <!-- Vac leave -->
-                                <div class="col-sm-6">
-                                    <div class="form-group">
-                                        <label>Vacation Leave</label>
-                                        <input type="number" class="form-control" name="vacLeave" id="vacLeave"
-                                            value="{{ $user->vacLeave }}" required>
-                                    </div>
-                                </div>
-                                <!-- /Vac leave -->
 
-                                <!-- Sick leave -->
-                                <div class="col-sm-6">
-                                    <div class="form-group">
-                                        <label>Sick Leave</label>
-                                        <input type="number" class="form-control" name="sickLeave" id="sickLeave"
-                                            value="{{ $user->sickLeave }}" required>
-                                    </div>
-                                </div>
+                        <!-- Sick leave -->
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label>Sick Leave</label>
+                                <input type="number" class="form-control" name="sickLeave" id="sickLeave"
+                                    value="{{ $user->sickLeave ?? 0 }}" required>
+                            </div>
+                        </div>
 
-                                <!-- /Sick leave -->
+                        <!-- Bday Leave -->
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label>Bday Leave</label>
+                                <input type="number" class="form-control" name="bdayLeave" id="bdayLeave"
+                                    value="{{ $user->bdayLeave ?? 0 }}" required>
                             </div>
                         </div>
                     </div>
@@ -1022,9 +1041,9 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label> Hourly Rate </label>
-                                <input type="text" name="hourlyRate" id="hourlyRate" class="form-control"
-                                    value="{{ $user->hourlyRate }}">
+                                <label> Monthly Salary </label>
+                                <input type="text" name="mSalary" id="mSalary" class="form-control"
+                                    value="{{ $user->mSalary }}">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -1038,10 +1057,16 @@
                                         HR</option>
                                     <option value="3" {{ $user->role_as == '3' ? 'selected' : '' }}>Employee
                                     </option>
+                                    <option value="4" {{ $user->role_as == '4' ? 'selected' : '' }}>Operations Manager
+                                    </option>
+                                    <option value="5" {{ $user->role_as == '4' ? 'selected' : '' }}>IT Manager
+                                    </option>
+                                    <option value="6" {{ $user->role_as == '4' ? 'selected' : '' }}>Marketing Manager
+                                    </option>
                                 </select>
-
                             </div>
                         </div>
+
                     </div>
                     <div class="submit-section">
                         <button class="btn btn-primary submit-btn" type="submit">Save Changes</button>
@@ -1070,41 +1095,49 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Religion</label>
-                                <input type="text" class="form-control" name="religion" id="religion">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Age</label>
-                                <input class="form-control" type="text" name="age" id="age">
+                                <input type="text" class="form-control" name="religion" id="religion"
+                                    value="{{ $info->religion ?? '' }}" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Education</label>
-                                <input class="form-control" type="text" name="education" id="education">
+                                <input class="form-control" type="text" name="education" id="education"
+                                    value="{{ $info->education ?? '' }}" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Nationality <span class="text-danger">*</span></label>
-                                <input class="form-control" type="text" name="nationality" id="nationality">
+                                <label>Nationality</label>
+                                <input class="form-control" type="text" name="nationality" id="nationality"
+                                    value="{{ $info->nationality ?? '' }}" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Marital status <span class="text-danger">*</span></label>
-                                <select class="form-control" name="mStatus" id="mStatus">
+                                <select class="form-control" name="mStatus" id="mStatus" required>
                                     <option>-</option>
-                                    <option>Single</option>
-                                    <option>Married</option>
+                                    <option value="Single" {{ ($info->mStatus ?? '') == 'Single' ? 'selected' : '' }}>
+                                        Single</option>
+                                    <option value="Married" {{ ($info->mStatus ?? '') == 'Married' ? 'selected' : '' }}>
+                                        Married</option>
+
                                 </select>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>No. of children </label>
-                                <input class="form-control" type="text" name="numChildren" id="numChildren">
+                                <input class="form-control" type="text" name="numChildren" id="numChildren"
+                                    value="{{ $info->numChildren ?? '' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Personal Email Adress </label>
+                                <input class="form-control" type="email" name="personalEmail" id="personalEmail"
+                                    value="{{ $info->personalEmail ?? '' }}" required>
                             </div>
                         </div>
                     </div>

@@ -38,12 +38,14 @@
                             <div class="row">
                                 <div class="col-md-5">
                                     <div class="profile-info-left">
-                                        <h3 class="user-name m-t-0 mb-0">{{ $user->name }}</h3>
+                                        <h3 class="user-name m-t-0 mb-0">{{ $user->lName }}, {{ $user->fName }}
+                                            {{ $user->mName }} ({{ $user->name }})</h3>
+
                                         <h6 class="text-muted">{{ $user->position }}</h6>
-                                        <small
-                                            class="text-muted">{{ $user->department ?? 'No department record' }}</small>
-                                        <div class="staff-id">Employee ID : {{ $user->empNumber }}</div>
-                                        <div class="small doj text-muted">Date of Join : {{ $user->dateHired }}</div>
+                                        <div class="staff-id">Department:
+                                            {{ $user->department ?? 'No department record' }}</div>
+                                        <div class="staff-id">Employee ID: {{ $user->empNumber }}</div>
+                                        <div class="staff-id">Date of Join: {{ $user->dateHired }}</div>
                                         <div class="staff-msg">
                                             <a class="btn btn-danger" href="#" data-toggle="modal"
                                                 data-target="#change_password">Change Password</a>
@@ -120,10 +122,6 @@
                                 <li>
                                     <div class="title">Religion</div>
                                     <div class="text">{{ $info->religion }}</div>
-                                </li>
-                                <li>
-                                    <div class="title">Age</div>
-                                    <div class="text">{{ $info->age }}</div>
                                 </li>
                                 <li>
                                     <div class="title">Education</div>
@@ -261,519 +259,6 @@
             </div>
         </div>
         <!-- /Profile Info Tab -->
-
-        <!-- Projects Tab -->
-        <div class="tab-pane fade" id="emp_projects">
-            <div class="row">
-                <div class="col-lg-4 col-sm-6 col-md-4 col-xl-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="dropdown profile-action">
-                                <a aria-expanded="false" data-toggle="dropdown" class="action-icon dropdown-toggle"
-                                    href="#"><i class="material-icons">more_vert</i></a>
-                                <div class="dropdown-menu dropdown-menu-right">
-                                    <a data-target="#edit_project" data-toggle="modal" href="#" class="dropdown-item"><i
-                                            class="fa fa-pencil m-r-5"></i> Edit</a>
-                                    <a data-target="#delete_project" data-toggle="modal" href="#"
-                                        class="dropdown-item"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
-                                </div>
-                            </div>
-                            <h4 class="project-title"><a href="project-view.html">Office Management</a></h4>
-                            <small class="block text-ellipsis m-b-15">
-                                <span class="text-xs">1</span> <span class="text-muted">open tasks, </span>
-                                <span class="text-xs">9</span> <span class="text-muted">tasks completed</span>
-                            </small>
-                            <p class="text-muted">Lorem Ipsum is simply dummy text of the printing and
-                                typesetting industry. When an unknown printer took a galley of type and
-                                scrambled it...
-                            </p>
-                            <div class="pro-deadline m-b-15">
-                                <div class="sub-title">
-                                    Deadline:
-                                </div>
-                                <div class="text-muted">
-                                    17 Apr 2019
-                                </div>
-                            </div>
-                            <div class="project-members m-b-15">
-                                <div>Project Leader :</div>
-                                <ul class="team-members">
-                                    <li>
-                                        <a href="#" data-toggle="tooltip" title="Jeffery Lalor"><img alt=""
-                                                src="assets/img/profiles/avatar-16.jpg"></a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="project-members m-b-15">
-                                <div>Team :</div>
-                                <ul class="team-members">
-                                    <li>
-                                        <a href="#" data-toggle="tooltip" title="John Doe"><img alt=""
-                                                src="assets/img/profiles/avatar-02.jpg"></a>
-                                    </li>
-                                    <li>
-                                        <a href="#" data-toggle="tooltip" title="Richard Miles"><img alt=""
-                                                src="assets/img/profiles/avatar-09.jpg"></a>
-                                    </li>
-                                    <li>
-                                        <a href="#" data-toggle="tooltip" title="John Smith"><img alt=""
-                                                src="assets/img/profiles/avatar-10.jpg"></a>
-                                    </li>
-                                    <li>
-                                        <a href="#" data-toggle="tooltip" title="Mike Litorus"><img alt=""
-                                                src="assets/img/profiles/avatar-05.jpg"></a>
-                                    </li>
-                                    <li>
-                                        <a href="#" class="all-users">+15</a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <p class="m-b-5">Progress <span class="text-success float-right">40%</span></p>
-                            <div class="progress progress-xs mb-0">
-                                <div style="width: 40%" title="" data-toggle="tooltip" role="progressbar"
-                                    class="progress-bar bg-success" data-original-title="40%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4 col-sm-6 col-md-4 col-xl-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="dropdown profile-action">
-                                <a aria-expanded="false" data-toggle="dropdown" class="action-icon dropdown-toggle"
-                                    href="#"><i class="material-icons">more_vert</i></a>
-                                <div class="dropdown-menu dropdown-menu-right">
-                                    <a data-target="#edit_project" data-toggle="modal" href="#" class="dropdown-item"><i
-                                            class="fa fa-pencil m-r-5"></i> Edit</a>
-                                    <a data-target="#delete_project" data-toggle="modal" href="#"
-                                        class="dropdown-item"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
-                                </div>
-                            </div>
-                            <h4 class="project-title"><a href="project-view.html">Project Management</a></h4>
-                            <small class="block text-ellipsis m-b-15">
-                                <span class="text-xs">2</span> <span class="text-muted">open tasks, </span>
-                                <span class="text-xs">5</span> <span class="text-muted">tasks completed</span>
-                            </small>
-                            <p class="text-muted">Lorem Ipsum is simply dummy text of the printing and
-                                typesetting industry. When an unknown printer took a galley of type and
-                                scrambled it...
-                            </p>
-                            <div class="pro-deadline m-b-15">
-                                <div class="sub-title">
-                                    Deadline:
-                                </div>
-                                <div class="text-muted">
-                                    17 Apr 2019
-                                </div>
-                            </div>
-                            <div class="project-members m-b-15">
-                                <div>Project Leader :</div>
-                                <ul class="team-members">
-                                    <li>
-                                        <a href="#" data-toggle="tooltip" title="Jeffery Lalor"><img alt=""
-                                                src="assets/img/profiles/avatar-16.jpg"></a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="project-members m-b-15">
-                                <div>Team :</div>
-                                <ul class="team-members">
-                                    <li>
-                                        <a href="#" data-toggle="tooltip" title="John Doe"><img alt=""
-                                                src="assets/img/profiles/avatar-02.jpg"></a>
-                                    </li>
-                                    <li>
-                                        <a href="#" data-toggle="tooltip" title="Richard Miles"><img alt=""
-                                                src="assets/img/profiles/avatar-09.jpg"></a>
-                                    </li>
-                                    <li>
-                                        <a href="#" data-toggle="tooltip" title="John Smith"><img alt=""
-                                                src="assets/img/profiles/avatar-10.jpg"></a>
-                                    </li>
-                                    <li>
-                                        <a href="#" data-toggle="tooltip" title="Mike Litorus"><img alt=""
-                                                src="assets/img/profiles/avatar-05.jpg"></a>
-                                    </li>
-                                    <li>
-                                        <a href="#" class="all-users">+15</a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <p class="m-b-5">Progress <span class="text-success float-right">40%</span></p>
-                            <div class="progress progress-xs mb-0">
-                                <div style="width: 40%" title="" data-toggle="tooltip" role="progressbar"
-                                    class="progress-bar bg-success" data-original-title="40%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4 col-sm-6 col-md-4 col-xl-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="dropdown profile-action">
-                                <a aria-expanded="false" data-toggle="dropdown" class="action-icon dropdown-toggle"
-                                    href="#"><i class="material-icons">more_vert</i></a>
-                                <div class="dropdown-menu dropdown-menu-right">
-                                    <a data-target="#edit_project" data-toggle="modal" href="#" class="dropdown-item"><i
-                                            class="fa fa-pencil m-r-5"></i> Edit</a>
-                                    <a data-target="#delete_project" data-toggle="modal" href="#"
-                                        class="dropdown-item"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
-                                </div>
-                            </div>
-                            <h4 class="project-title"><a href="project-view.html">Video Calling App</a></h4>
-                            <small class="block text-ellipsis m-b-15">
-                                <span class="text-xs">3</span> <span class="text-muted">open tasks, </span>
-                                <span class="text-xs">3</span> <span class="text-muted">tasks completed</span>
-                            </small>
-                            <p class="text-muted">Lorem Ipsum is simply dummy text of the printing and
-                                typesetting industry. When an unknown printer took a galley of type and
-                                scrambled it...
-                            </p>
-                            <div class="pro-deadline m-b-15">
-                                <div class="sub-title">
-                                    Deadline:
-                                </div>
-                                <div class="text-muted">
-                                    17 Apr 2019
-                                </div>
-                            </div>
-                            <div class="project-members m-b-15">
-                                <div>Project Leader :</div>
-                                <ul class="team-members">
-                                    <li>
-                                        <a href="#" data-toggle="tooltip" title="Jeffery Lalor"><img alt=""
-                                                src="assets/img/profiles/avatar-16.jpg"></a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="project-members m-b-15">
-                                <div>Team :</div>
-                                <ul class="team-members">
-                                    <li>
-                                        <a href="#" data-toggle="tooltip" title="John Doe"><img alt=""
-                                                src="assets/img/profiles/avatar-02.jpg"></a>
-                                    </li>
-                                    <li>
-                                        <a href="#" data-toggle="tooltip" title="Richard Miles"><img alt=""
-                                                src="assets/img/profiles/avatar-09.jpg"></a>
-                                    </li>
-                                    <li>
-                                        <a href="#" data-toggle="tooltip" title="John Smith"><img alt=""
-                                                src="assets/img/profiles/avatar-10.jpg"></a>
-                                    </li>
-                                    <li>
-                                        <a href="#" data-toggle="tooltip" title="Mike Litorus"><img alt=""
-                                                src="assets/img/profiles/avatar-05.jpg"></a>
-                                    </li>
-                                    <li>
-                                        <a href="#" class="all-users">+15</a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <p class="m-b-5">Progress <span class="text-success float-right">40%</span></p>
-                            <div class="progress progress-xs mb-0">
-                                <div style="width: 40%" title="" data-toggle="tooltip" role="progressbar"
-                                    class="progress-bar bg-success" data-original-title="40%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4 col-sm-6 col-md-4 col-xl-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="dropdown profile-action">
-                                <a aria-expanded="false" data-toggle="dropdown" class="action-icon dropdown-toggle"
-                                    href="#"><i class="material-icons">more_vert</i></a>
-                                <div class="dropdown-menu dropdown-menu-right">
-                                    <a data-target="#edit_project" data-toggle="modal" href="#" class="dropdown-item"><i
-                                            class="fa fa-pencil m-r-5"></i> Edit</a>
-                                    <a data-target="#delete_project" data-toggle="modal" href="#"
-                                        class="dropdown-item"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
-                                </div>
-                            </div>
-                            <h4 class="project-title"><a href="project-view.html">Hospital Administration</a></h4>
-                            <small class="block text-ellipsis m-b-15">
-                                <span class="text-xs">12</span> <span class="text-muted">open tasks, </span>
-                                <span class="text-xs">4</span> <span class="text-muted">tasks completed</span>
-                            </small>
-                            <p class="text-muted">Lorem Ipsum is simply dummy text of the printing and
-                                typesetting industry. When an unknown printer took a galley of type and
-                                scrambled it...
-                            </p>
-                            <div class="pro-deadline m-b-15">
-                                <div class="sub-title">
-                                    Deadline:
-                                </div>
-                                <div class="text-muted">
-                                    17 Apr 2019
-                                </div>
-                            </div>
-                            <div class="project-members m-b-15">
-                                <div>Project Leader :</div>
-                                <ul class="team-members">
-                                    <li>
-                                        <a href="#" data-toggle="tooltip" title="Jeffery Lalor"><img alt=""
-                                                src="assets/img/profiles/avatar-16.jpg"></a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="project-members m-b-15">
-                                <div>Team :</div>
-                                <ul class="team-members">
-                                    <li>
-                                        <a href="#" data-toggle="tooltip" title="John Doe"><img alt=""
-                                                src="assets/img/profiles/avatar-02.jpg"></a>
-                                    </li>
-                                    <li>
-                                        <a href="#" data-toggle="tooltip" title="Richard Miles"><img alt=""
-                                                src="assets/img/profiles/avatar-09.jpg"></a>
-                                    </li>
-                                    <li>
-                                        <a href="#" data-toggle="tooltip" title="John Smith"><img alt=""
-                                                src="assets/img/profiles/avatar-10.jpg"></a>
-                                    </li>
-                                    <li>
-                                        <a href="#" data-toggle="tooltip" title="Mike Litorus"><img alt=""
-                                                src="assets/img/profiles/avatar-05.jpg"></a>
-                                    </li>
-                                    <li>
-                                        <a href="#" class="all-users">+15</a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <p class="m-b-5">Progress <span class="text-success float-right">40%</span></p>
-                            <div class="progress progress-xs mb-0">
-                                <div style="width: 40%" title="" data-toggle="tooltip" role="progressbar"
-                                    class="progress-bar bg-success" data-original-title="40%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- /Projects Tab -->
-
-        <!-- Bank Statutory Tab -->
-        <div class="tab-pane fade" id="bank_statutory">
-            <div class="card">
-                <div class="card-body">
-                    <h3 class="card-title"> Basic Salary Information</h3>
-                    <form>
-                        <div class="row">
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Salary basis <span
-                                            class="text-danger">*</span></label>
-                                    <select class="select">
-                                        <option>Select salary basis type</option>
-                                        <option>Hourly</option>
-                                        <option>Daily</option>
-                                        <option>Weekly</option>
-                                        <option>Monthly</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Salary amount <small class="text-muted">per
-                                            month</small></label>
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">$</span>
-                                        </div>
-                                        <input type="text" class="form-control" placeholder="Type your salary amount"
-                                            value="0.00">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Payment type</label>
-                                    <select class="select">
-                                        <option>Select payment type</option>
-                                        <option>Bank transfer</option>
-                                        <option>Check</option>
-                                        <option>Cash</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <hr>
-                        <h3 class="card-title"> PF Information</h3>
-                        <div class="row">
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">PF contribution</label>
-                                    <select class="select">
-                                        <option>Select PF contribution</option>
-                                        <option>Yes</option>
-                                        <option>No</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">PF No. <span class="text-danger">*</span></label>
-                                    <select class="select">
-                                        <option>Select PF contribution</option>
-                                        <option>Yes</option>
-                                        <option>No</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Employee PF rate</label>
-                                    <select class="select">
-                                        <option>Select PF contribution</option>
-                                        <option>Yes</option>
-                                        <option>No</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Additional rate <span
-                                            class="text-danger">*</span></label>
-                                    <select class="select">
-                                        <option>Select additional rate</option>
-                                        <option>0%</option>
-                                        <option>1%</option>
-                                        <option>2%</option>
-                                        <option>3%</option>
-                                        <option>4%</option>
-                                        <option>5%</option>
-                                        <option>6%</option>
-                                        <option>7%</option>
-                                        <option>8%</option>
-                                        <option>9%</option>
-                                        <option>10%</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Total rate</label>
-                                    <input type="text" class="form-control" placeholder="N/A" value="11%">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Employee PF rate</label>
-                                    <select class="select">
-                                        <option>Select PF contribution</option>
-                                        <option>Yes</option>
-                                        <option>No</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Additional rate <span
-                                            class="text-danger">*</span></label>
-                                    <select class="select">
-                                        <option>Select additional rate</option>
-                                        <option>0%</option>
-                                        <option>1%</option>
-                                        <option>2%</option>
-                                        <option>3%</option>
-                                        <option>4%</option>
-                                        <option>5%</option>
-                                        <option>6%</option>
-                                        <option>7%</option>
-                                        <option>8%</option>
-                                        <option>9%</option>
-                                        <option>10%</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Total rate</label>
-                                    <input type="text" class="form-control" placeholder="N/A" value="11%">
-                                </div>
-                            </div>
-                        </div>
-
-                        <hr>
-                        <h3 class="card-title"> ESI Information</h3>
-                        <div class="row">
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">ESI contribution</label>
-                                    <select class="select">
-                                        <option>Select ESI contribution</option>
-                                        <option>Yes</option>
-                                        <option>No</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">ESI No. <span class="text-danger">*</span></label>
-                                    <select class="select">
-                                        <option>Select ESI contribution</option>
-                                        <option>Yes</option>
-                                        <option>No</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Employee ESI rate</label>
-                                    <select class="select">
-                                        <option>Select ESI contribution</option>
-                                        <option>Yes</option>
-                                        <option>No</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Additional rate <span
-                                            class="text-danger">*</span></label>
-                                    <select class="select">
-                                        <option>Select additional rate</option>
-                                        <option>0%</option>
-                                        <option>1%</option>
-                                        <option>2%</option>
-                                        <option>3%</option>
-                                        <option>4%</option>
-                                        <option>5%</option>
-                                        <option>6%</option>
-                                        <option>7%</option>
-                                        <option>8%</option>
-                                        <option>9%</option>
-                                        <option>10%</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="col-form-label">Total rate</label>
-                                    <input type="text" class="form-control" placeholder="N/A" value="11%">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="submit-section">
-                            <button class="btn btn-primary submit-btn" type="submit">Save</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-        <!-- /Bank Statutory Tab -->
-
     </div>
 </div>
 <!-- /Page Content -->
@@ -808,9 +293,43 @@
                                 </div>
                             </div>
                             <div class="row">
+                                <!-- First Name -->
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="name">First Name<span class="text-danger">*</span></label>
+                                        <input type="text" name="fName" id="fName" class="form-control"
+                                            value="{{ $user->fName }}" required />
+                                    </div>
+                                </div>
+                                <!-- Middle Name -->
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="name">Middle Name<span class="text-danger">*</span></label>
+                                        <input type="text" name="mName" id="mName" class="form-control"
+                                            value="{{ $user->mName }}" required />
+
+                                    </div>
+                                </div>
+                                <!-- last Name -->
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="name">Last Name<span class="text-danger">*</span></label>
+                                        <input type="text" name="lName" id="lName" class="form-control"
+                                            value="{{ $user->lName }}" required />
+
+                                    </div>
+                                </div>
+                                <!-- Suffix Name -->
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="suffix">Suffix</label>
+                                        <input type="text" name="suffix" id="suffix" value="{{ $user->suffix }}"
+                                            class="form-control" />
+                                    </div>
+                                </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>Full Name</label>
+                                        <label>Professional Name</label>
                                         <input type="text" name="name" id="name" class="form-control"
                                             value="{{ $user->name }}">
                                     </div>
@@ -840,7 +359,44 @@
                                         </div>
                                     </div>
                                 </div>
+                                <!-- Position -->
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Position</label>
+                                        <input type="text" class="form-control" name="position" id="position"
+                                            value="{{ $user->position ? $user->position : '' }}" required>
+                                    </div>
+                                </div>
+                                <!-- Department -->
                                 <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Department</label>
+                                        <select class="form-control" name="department" id="department">
+                                            <option value="Website Development"
+                                                {{ $user->department == 'Website Development' ? 'selected' : '' }}>
+                                                Website Development
+                                            </option>
+                                            <option value="IT" {{ $user->department == 'IT' ? 'selected' : '' }}>
+                                                IT
+                                            </option>
+                                            <option value="SEO" {{ $user->department == 'SEO' ? 'selected' : '' }}>
+                                                SEO
+                                            </option>
+                                            <option value="Content"
+                                                {{ $user->department == 'Content' ? 'selected' : '' }}>
+                                                Content
+                                            </option>
+                                            <option value="Marketing"
+                                                {{ $user->department == 'Marketing' ? 'selected' : '' }}>
+                                                Marketing
+                                            </option>
+                                            <option value="HR" {{ $user->department == 'HR' ? 'selected' : '' }}>
+                                                HR
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
                                     <div class="form-group">
                                         <label>Type Of Contract</label>
                                         <select class="form-control" name="typeOfContract" id="typeOfContract">
@@ -850,114 +406,46 @@
                                             <option value="Contractual"
                                                 {{ $user->typeOfContract == 'Contractual' ? 'selected' : '' }}>
                                                 Contractual</option>
-                                            <option value="Freelancer"
-                                                {{ $user->typeOfContract == 'Freelancer' ? 'selected' : '' }}>Freelancer
+                                            <option value="Probationary"
+                                                {{ $user->typeOfContract == 'Probationary' ? 'selected' : '' }}>
+                                                Probationary
+                                            </option>
+                                            <option value="Intern"
+                                                {{ $user->typeOfContract == 'Intern' ? 'selected' : '' }}>Intern
                                             </option>
                                         </select>
 
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Position</label>
-                                        <select class="form-control" name="position" id="position">
-                                            <option value="CEO & Founder"
-                                                {{ $user->position == 'CEO & Founder' ? 'selected' : '' }}>CEO & Founder
-                                            </option>
-                                            <option value="Co-Founder"
-                                                {{ $user->position == 'Co-Founder' ? 'selected' : '' }}>
-                                                Co-Founder</option>
-                                            <option value="Operations Supervisor"
-                                                {{ $user->position == 'Operations Supervisor' ? 'selected' : '' }}>
-                                                Operations Supervisor
-                                            </option>
-                                            <option value="IT Supervisor"
-                                                {{ $user->position == 'IT Supervisor' ? 'selected' : '' }}>
-                                                IT Supervisor
-                                            </option>
-                                            <option value="Marketing Supervisor"
-                                                {{ $user->position == 'Marketing Supervisor' ? 'selected' : '' }}>
-                                                Marketing Supervisor
-                                            </option>
-                                            <option value="Website Team Leader "
-                                                {{ $user->position == 'Website Team Leader' ? 'selected' : '' }}>
-                                                Website Team Leader
-                                            </option>
-                                            <option value="Senior Website Developer"
-                                                {{ $user->position == 'Senior Website Developer' ? 'selected' : '' }}>
-                                                Senior Website Developer
-                                            </option>
-                                            <option value="Junior Website Developer"
-                                                {{ $user->position == 'Junior Website Developer' ? 'selected' : '' }}>
-                                                Junior Website Developer
-                                            </option>
-                                            <option value="Associate Website Developer"
-                                                {{ $user->position == 'Associate Website Developer' ? 'selected' : '' }}>
-                                                Associate Website Developer
-                                            </option>
-                                            <option value="Cloud Specialist"
-                                                {{ $user->position == 'Cloud Specialist' ? 'selected' : '' }}>
-                                                Cloud Specialist
-                                            </option>
-                                            <option value="SEO Team Leader"
-                                                {{ $user->position == 'SEO Team Leader' ? 'selected' : '' }}>
-                                                SEO Team Leader
-                                            </option>
-                                            <option value="Senior SEO"
-                                                {{ $user->position == 'Senior SEO' ? 'selected' : '' }}>
-                                                Senior SEO
-                                            </option>
-                                            <option value="Junior SEO"
-                                                {{ $user->position == 'Junior SEO' ? 'selected' : '' }}>
-                                                Junior SEO
-                                            </option>
-                                            <option value="Graphic Artist"
-                                                {{ $user->position == 'Graphic Artist' ? 'selected' : '' }}>
-                                                Graphic Artist
-                                            </option>
-                                            <option value="Digital Marketing Associate"
-                                                {{ $user->position == 'Digital Marketing Associate' ? 'selected' : '' }}>
-                                                Digital Marketing Associate
-                                            </option>
-                                            <option value="Content Writer"
-                                                {{ $user->position == 'Content Writer' ? 'selected' : '' }}>
-                                                Content Writer
-                                            </option>
-                                            <option value="Event Coordinator"
-                                                {{ $user->position == 'Event Coordinator' ? 'selected' : '' }}>
-                                                Event Coordinator
-                                            </option>
-                                            <option value="HR Generalist"
-                                                {{ $user->position == 'HR Generalist' ? 'selected' : '' }}>
-                                                HR Generalist
-                                            </option>
-                                            <option value="Admin Staff"
-                                                {{ $user->position == 'Admin Staff' ? 'selected' : '' }}>
-                                                Admin Staff
-                                            </option>
-                                        </select>
-                                    </div>
-                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <!-- Vac leave -->
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label>Vacation Leave</label>
+                                <input type="number" class="form-control" name="vacLeave" id="vacLeave"
+                                    value="{{ $user->vacLeave ?? 0 }}" required>
+                            </div>
+                        </div>
 
-                                <!-- Vac leave -->
-                                <div class="col-sm-6">
-                                    <div class="form-group">
-                                        <label>Vacation Leave</label>
-                                        <input type="number" class="form-control" name="vacLeave" id="vacLeave"
-                                            value="{{ $user->vacLeave ?? 0 }}" required>
-                                    </div>
-                                </div>
-                                <!-- /Vac leave -->
 
-                                <!-- Sick leave -->
-                                <div class="col-sm-6">
-                                    <div class="form-group">
-                                        <label>Sick Leave</label>
-                                        <input type="number" class="form-control" name="sickLeave" id="sickLeave"
-                                            value="{{ $user->sickLeave ?? 0 }}" required>
-                                    </div>
-                                </div>
-                                <!-- /Sick leave -->
+                        <!-- Sick leave -->
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label>Sick Leave</label>
+                                <input type="number" class="form-control" name="sickLeave" id="sickLeave"
+                                    value="{{ $user->sickLeave ?? 0 }}" required>
+                            </div>
+                        </div>
+
+                        <!-- Bday Leave -->
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label>Bday Leave</label>
+                                <input type="number" class="form-control" name="bdayLeave" id="bdayLeave"
+                                    value="{{ $user->bdayLeave ?? 0 }}" required>
                             </div>
                         </div>
                     </div>
@@ -985,9 +473,9 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label> Hourly Rate </label>
-                                <input type="text" name="hourlyRate" id="hourlyRate" class="form-control"
-                                    value="{{ $user->hourlyRate }}">
+                                <label> Monthly Salary </label>
+                                <input type="text" name="mSalary" id="mSalary" class="form-control"
+                                    value="{{ $user->mSalary }}">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -1010,29 +498,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label>Department</label>
-                                <select class="form-control" name="department" id="department">
-                                    <option value="Website Development"
-                                        {{ $user->department == 'Website Development' ? 'selected' : '' }}>
-                                        Website Development
-                                    </option>
-                                    <option value="IT" {{ $user->department == 'IT' ? 'selected' : '' }}>
-                                        IT
-                                    </option>
-                                    <option value="SEO" {{ $user->department == 'SEO' ? 'selected' : '' }}>
-                                        SEO
-                                    </option>
-                                    <option value="Content" {{ $user->department == 'Content' ? 'selected' : '' }}>
-                                        Content
-                                    </option>
-                                    <option value="Marketing" {{ $user->department == 'Marketing' ? 'selected' : '' }}>
-                                        Marketing
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
+
                     </div>
                     <div class="submit-section">
                         <button class="btn btn-primary submit-btn" type="submit">Save Changes</button>
@@ -1063,13 +529,6 @@
                                 <label>Religion</label>
                                 <input type="text" class="form-control" name="religion" id="religion"
                                     value="{{ $info->religion ?? '' }}" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Age</label>
-                                <input class="form-control" type="text" name="age" id="age"
-                                    value="{{ $info->age ?? '' }}" required>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -1106,7 +565,7 @@
                                     value="{{ $info->numChildren ?? '' }}" required>
                             </div>
                         </div>
-                        <div class="col-md-12">
+                        <div class="col-md-6">
                             <div class="form-group">
                                 <label>Personal Email Adress </label>
                                 <input class="form-control" type="email" name="personalEmail" id="personalEmail"

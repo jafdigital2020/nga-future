@@ -117,8 +117,8 @@
     <div class="row">
         <div class="col-md-12">
             <div class="table-responsive">
-                <table class="table table-striped custom-table mb-0 datatable">
-                    <thead>
+                <table class="table table-hover table-nowrap custom-table mb-0 datatable">
+                    <thead class="thead-light">
                         <tr>
                             <th>Employee</th>
                             <th>Leave Type</th>
@@ -135,14 +135,20 @@
                         <tr>
                             <td>
                                 <h2 class="table-avatar">
-                                    <a href="profile.html" class="avatar">
+                                    <a href="{{ url('hr/employee/edit/'.$leave->user->id) }}" class="avatar">
                                         @if ($leave->user->image)
                                         <img src="{{ asset('images/' . $leave->user->image) }}" alt="Profile Image" />
                                         @else
                                         <img src="{{ asset('images/default.png') }}" alt="Profile Image" /></a>
                                     @endif
-                                    <a href="#">{{ $leave->name }}<span>{{ $leave->user->department }}</span></a>
-                                </h2>
+                                    <a href="{{ url('hr/employee/edit/'.$leave->user->id) }}">@if ($leave->user->fName
+                                        || $leave->user->lName)
+                                        {{ $leave->user->fName }} {{ $leave->user->lName }}
+                                        @else
+                                        {{ $leave->user->name }}
+                                        @endif
+                                        <span>{{ $leave->user->department }}</span>
+                                    </a>
                             </td>
                             <td>{{ $leave->type }}</td>
                             <td>{{ $leave->start_date }}</td>

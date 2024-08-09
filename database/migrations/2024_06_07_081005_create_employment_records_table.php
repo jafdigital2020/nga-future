@@ -20,7 +20,6 @@ class CreateEmploymentRecordsTable extends Migration
             $table->string('hiredDate')->nullable();
             $table->string('supervisor')->nullable();
             $table->string('jobTitle')->nullable();
-            $table->string('department')->nullable();
             $table->string('location')->nullable();
             $table->timestamps();
         });

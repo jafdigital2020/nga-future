@@ -22,10 +22,12 @@ class AddRoleAsToUsersTable extends Migration
             $table->string('birthday')->nullable()->after('dateHired');
             $table->string('completeAddress')->nullable()->after('birthday');
             $table->string('position')->nullable()->after('completeAddress');
-            $table->string('image')->nullable()->after('position');
+            $table->string('department')->nullable()->after('position');
+            $table->string('image')->nullable()->after('department');
             $table->string('sss')->nullable()->after('image');
             $table->string('pagIbig')->nullable()->after('sss');
             $table->string('philHealth')->nullable()->after('pagIbig');
+            $table->string('tin')->nullable()->after('philHealth');
         });
     }
 

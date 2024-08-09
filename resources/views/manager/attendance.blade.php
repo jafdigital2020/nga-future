@@ -195,7 +195,8 @@
                                         @else
                                         <img src="{{ asset('images/default.png') }}" alt="Profile Image" /></a>
                                     @endif
-                                    <a href="#">{{ $att->name }}<span>{{ $att->department }}</span></a>
+                                    <a href="#">{{ $att->user->fName }}
+                                        {{ $att->user->lName }}<span>{{ $att->department }}</span></a>
                                 </h2>
                             </td>
                             <td>{{ $att->month }}</td>

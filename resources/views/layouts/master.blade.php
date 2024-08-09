@@ -59,8 +59,9 @@
         <div class="header">
             <!-- Logo -->
             <div class="header-left">
-                <a href="index.html" class="logo">
-                    <img src="{{ asset('assets/img/Long.png') }}" alt="OneJAF Logo" width="100%" />
+                <a href="{{ url('admin/dashboard') }}" class="logo">
+                    <img class="logoSide" id="logo-img" src="{{ asset('assets/img/OneJAFwhite.png') }}"
+                        alt="OneJAF Logo" width="100%" />
                 </a>
             </div>
             <!-- /Logo -->
@@ -362,7 +363,7 @@
                         <span>{{ Auth::user()->name }}</span>
                     </a>
                     <div class="dropdown-menu">
-                        <a class="dropdown-item" href="{{ url('hr/profile') }}">My Profile</a>
+                        <a class="dropdown-item" href="{{ url('admin/profile') }}">My Profile</a>
                         <a class="dropdown-item" href="settings.html">Settings</a>
                         <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">
@@ -447,18 +448,14 @@
                                 <span class="menu-arrow"></span></a>
                             <ul style="display: none">
                                 <li>
-                                    <a href="salary.html">
+                                    <a href="{{ url('admin/approve') }}">
                                         Approved Timesheet
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="salary-view.html"> Payslip </a>
+                                    <a href="{{ url('admin/payslip') }}"> Payslip </a>
                                 </li>
-                                <li>
-                                    <a href="payroll-items.html">
-                                        Payroll Items
-                                    </a>
-                                </li>
+
                             </ul>
                         </li>
                         <li>
@@ -483,10 +480,6 @@
     @include('sweetalert::alert')
 
     <!-- /Main Wrapper -->
-
-    <!-- <script src="{{
-                asset('assets/js/jquery-3.3.1.slim.min.js')
-            }}"></script> -->
 
     <!-- jQuery -->
     <script src="{{ asset('assets/js/jquery-3.5.1.min.js') }}"></script>
@@ -529,27 +522,6 @@
                 asset('assets/js/dataTables.bootstrap4.min.js')
             }}"></script>
 
-    <!-- <script src="{{ asset('assets/js/main.js') }}"></script>
-        <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
-        <script src="{{ asset('assets/js/custom.js') }}"></script>
-        <script src="{{ asset('assets/js/customtable.js') }}"></script>
-        <script src="{{ asset('assets/js/datatables.min.js') }}"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
-        <script src="https://unpkg.com/ionicons@5.4.0/dist/ionicons.js"></script> -->
-
-    <!-- <script type="text/javascript">
-            $(document).ready(function () {
-                $("#sidebarCollapse").on("click", function () {
-                    $("#sidebar").toggleClass("active");
-                    $("#content").toggleClass("active");
-                });
-
-                $(".more-button,.body-overlay").on("click", function () {
-                    $("#sidebar,.body-overlay").toggleClass("show-nav");
-                });
-            });
-        </script> -->
     <!-- EditTable -->
     <script src="{{asset('assets/js/edittable.js')}}"></script>
 
@@ -558,6 +530,17 @@
         $(".datetimepicker").datetimepicker({
             format: "YYYY-MM-DD",
             // Additional options if needed
+        });
+
+    </script>
+
+    <script>
+        document.getElementById('toggle_btn').addEventListener('click', function () {
+            var logoImg = document.getElementById('logo-img');
+            var currentSrc = logoImg.getAttribute('src');
+            var newSrc = currentSrc.includes('OneJAFwhite.png') ? "{{ url('assets/img/togglelogo.png') }}" :
+                "{{ asset('assets/img/OneJAFwhite.png') }}";
+            logoImg.setAttribute('src', newSrc);
         });
 
     </script>

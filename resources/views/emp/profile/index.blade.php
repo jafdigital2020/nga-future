@@ -38,7 +38,8 @@
                             <div class="row">
                                 <div class="col-md-5">
                                     <div class="profile-info-left">
-                                        <h3 class="user-name m-t-0 mb-0">{{ $user->name }}</h3>
+                                        <h3 class="user-name m-t-0 mb-0">{{ $user->lName }}, {{ $user->fName }}
+                                            {{ $user->mName }} ({{ $user->name }})</h3>
                                         <h6 class="text-muted">{{ $user->position }}</h6>
                                         <small
                                             class="text-muted">{{ $user->department ?? 'No department record' }}</small>
@@ -95,8 +96,8 @@
                 <ul class="nav nav-tabs nav-tabs-bottom">
                     <li class="nav-item"><a href="#emp_profile" data-toggle="tab" class="nav-link active">Profile</a>
                     </li>
-                    <li class="nav-item"><a href="#emp_projects" data-toggle="tab" class="nav-link">Projects</a>
-                    </li>
+                    <!-- <li class="nav-item"><a href="#emp_projects" data-toggle="tab" class="nav-link">Projects</a>
+                    </li> -->
 
                 </ul>
             </div>
@@ -122,10 +123,6 @@
                                     <div class="text">{{ $info->religion }}</div>
                                 </li>
                                 <li>
-                                    <div class="title">Age</div>
-                                    <div class="text">{{ $info->age }}</div>
-                                </li>
-                                <li>
                                     <div class="title">Education</div>
                                     <div class="text">{{ $info->education }}</div>
                                 </li>
@@ -140,6 +137,10 @@
                                 <li>
                                     <div class="title">No. of children</div>
                                     <div class="text">{{ $info->numChildren }}</div>
+                                </li>
+                                <li>
+                                    <div class="title">Personal Email</div>
+                                    <div class="text">{{ $info->personalEmail }}</div>
                                 </li>
                             </ul>
                             @endforeach
@@ -200,8 +201,7 @@
                 <div class="col-md-6 d-flex">
                     <div class="card profile-box flex-fill">
                         <div class="card-body">
-                            <h3 class="card-title">Goverment Mandates <a href="#" class="edit-icon" data-toggle="modal"
-                                    data-target="#family_info_modal"><i class="fa fa-pencil"></i></a></h3>
+                            <h3 class="card-title">Government Mandates</h3>
                             <ul class="personal-info">
                                 <li>
                                     <div class="title">SSS</div>
@@ -801,9 +801,43 @@
                                 </div>
                             </div>
                             <div class="row">
+                                <!-- First Name -->
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="name">First Name<span class="text-danger">*</span></label>
+                                        <input type="text" name="fName" id="fName" class="form-control"
+                                            value="{{ $user->fName }}" required />
+                                    </div>
+                                </div>
+                                <!-- Middle Name -->
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="name">Middle Name<span class="text-danger">*</span></label>
+                                        <input type="text" name="mName" id="mName" class="form-control"
+                                            value="{{ $user->mName }}" required />
+
+                                    </div>
+                                </div>
+                                <!-- last Name -->
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="name">Last Name<span class="text-danger">*</span></label>
+                                        <input type="text" name="lName" id="lName" class="form-control"
+                                            value="{{ $user->lName }}" required />
+
+                                    </div>
+                                </div>
+                                <!-- Suffix Name -->
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="suffix">Suffix</label>
+                                        <input type="text" name="suffix" id="suffix" value="{{ $user->suffix }}"
+                                            class="form-control" />
+                                    </div>
+                                </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>Full Name</label>
+                                        <label>Professional Name</label>
                                         <input type="text" name="name" id="name" class="form-control"
                                             value="{{ $user->name }}">
                                     </div>
@@ -888,13 +922,6 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Age</label>
-                                <input class="form-control" type="text" name="age" id="age"
-                                    value="{{ $info->age ?? '' }}">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
                                 <label>Education</label>
                                 <input class="form-control" type="text" name="education" id="education"
                                     value="{{ $info->education ?? '' }}">
@@ -925,6 +952,13 @@
                                 <label>No. of children </label>
                                 <input class="form-control" type="text" name="numChildren" id="numChildren"
                                     value="{{ $info->numChildren ?? ''}}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Personal Email</label>
+                                <input class="form-control" type="text" name="personalEmail" id="personalEmail"
+                                    value="{{ $info->personalEmail ?? '' }}">
                             </div>
                         </div>
                     </div>

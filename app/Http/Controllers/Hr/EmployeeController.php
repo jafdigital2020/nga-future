@@ -27,42 +27,48 @@ class EmployeeController extends Controller
     {
         $name = $request->input('name');
         $empNumber = $request->input('empNumber');
-        $department  = $request->input('department');
-
+        $department = $request->input('department');
+        $department = $request->get('department');
+    
         $data = User::query();
-
+    
+        // Filter by name-related fields if 'name' is provided
         if ($name) {
-            $data->where('name', 'like', "%$name%");
+            $data->where(function ($query) use ($name) {
+                $query->where('name', 'like', "%$name%")
+                      ->orWhere('fName', 'like', "%$name%")
+                      ->orWhere('mName', 'like', "%$name%")
+                      ->orWhere('lName', 'like', "%$name%");
+            });
         }
-
+    
+        // Filter by employee number if 'empNumber' is provided
         if ($empNumber) {
             $data->where('empNumber', 'like', "%$empNumber%");
         }
-
-        if($department) {
+    
+        // Filter by department if 'department' is provided
+        if ($department) {
             $data->where('department', 'like', "%$department%");
         }
-
+    
         $emp = $data->get();
-
+    
         return view('hr.employee.index', compact('emp'));
     }
-
+    
     public function store(Request $request)
     {
         try {
             $validated = $request->validate([
-                'name' => ['required', 'string', 'max:255', 'unique:users'],
                 'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
                 'password' => ['required', 'string', 'min:8'],
                 'empNumber' => ['required', 'string', 'max:255'],
                 'typeOfContract' => ['required', 'string', 'max:255'],
-                'phoneNumber' => ['required', 'string', 'max:255'],
                 'dateHired' => ['required', 'string', 'max:255'],
                 'birthday' => ['required', 'string', 'max:255'],
                 'completeAddress' => ['required', 'string', 'max:255'],
                 'position' => ['required', 'string', 'max:255'],
-                'hourlyRate' => ['required', 'string', 'max:255'],
                 'role_as' => ['required', 'integer'],
                 'sss' => ['required', 'string', 'max:255'],
                 'pagIbig' => ['required', 'string', 'max:255'],
@@ -77,6 +83,10 @@ class EmployeeController extends Controller
 
             DB::table('users')->insert([
                 'name' => $request->input('name'),
+                'fName' => $request->input('fName'),
+                'mName' => $request->input('mName'),
+                'lName' => $request->input('lName'),
+                'suffix' => $request->input('suffix'),
                 'email' => $request->input('email'),
                 'password' => Hash::make($request->password),
                 'empNumber' => $request->input('empNumber'),
@@ -145,16 +155,20 @@ class EmployeeController extends Controller
         $user = User::findOrFail($user_id);
 
         $user->name = $request->input('name');
+        $user->fName = $request->input('fName');
+        $user->mName = $request->input('mName');
+        $user->lName = $request->input('lName');
+        $user->suffix = $request->input('suffix');
         $user->empNumber = $request->input('empNumber');
         $user->typeOfContract = $request->input('typeOfContract');
         $user->phoneNumber = $request->input('phoneNumber');
         $user->completeAddress = $request->input('completeAddress');
         $user->position = $request->input('position');
         $user->email = $request->input('email');
-        $user->hourlyRate = $request->input('hourlyRate');
+        $user->mSalary = $request->input('mSalary');
         $user->vacLeave = $request->input('vacLeave');
         $user->sickLeave = $request->input('sickLeave');
-        $user->department = $request->input('department');
+
 
         if ($request->filled('password')) {
             $user->password = Hash::make($request->input('password'));
@@ -269,6 +283,7 @@ class EmployeeController extends Controller
             $info->nationality = $request->input('nationality');
             $info->mStatus = $request->input('mStatus');
             $info->numChildren = $request->input('numChildren');
+            $info->personalEmail = $request->input('personalEmail');
 
             $info->save();
 
@@ -284,6 +299,7 @@ class EmployeeController extends Controller
             $info->nationality = $request->input('nationality');
             $info->mStatus = $request->input('mStatus');
             $info->numChildren = $request->input('numChildren');
+            $info->personalEmail = $request->input('personalEmail');
 
             $info->save();
 

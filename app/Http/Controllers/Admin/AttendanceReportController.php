@@ -35,8 +35,12 @@ class AttendanceReportController extends Controller
             }
         }])
         ->when($employeeName, function ($query) use ($employeeName) {
-            $query->where('name', 'like', '%' . $employeeName . '%');
+            $query->where(function ($subQuery) use ($employeeName) {
+                $subQuery->where('fName', 'like', '%' . $employeeName . '%')
+                         ->orWhere('lName', 'like', '%' . $employeeName . '%');
+            });
         });
+        
     
         // Apply department filter directly on the users query
         if ($department) {

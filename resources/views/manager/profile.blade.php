@@ -38,7 +38,8 @@
                             <div class="row">
                                 <div class="col-md-5">
                                     <div class="profile-info-left">
-                                        <h3 class="user-name m-t-0 mb-0">{{ $user->name }}</h3>
+                                        <h3 class="user-name m-t-0 mb-0">{{ $user->lName }}, {{ $user->fName }}
+                                            {{ $user->mName }} ({{ $user->name }})</h3>
                                         <h6 class="text-muted">{{ $user->position }}</h6>
                                         <small
                                             class="text-muted">{{ $user->department ?? 'No department record' }}</small>
@@ -124,10 +125,6 @@
                                     <div class="text">{{ $info->religion }}</div>
                                 </li>
                                 <li>
-                                    <div class="title">Age</div>
-                                    <div class="text">{{ $info->age }}</div>
-                                </li>
-                                <li>
                                     <div class="title">Education</div>
                                     <div class="text">{{ $info->education }}</div>
                                 </li>
@@ -142,6 +139,10 @@
                                 <li>
                                     <div class="title">No. of children</div>
                                     <div class="text">{{ $info->numChildren }}</div>
+                                </li>
+                                <li>
+                                    <div class="title">Personal Email</div>
+                                    <div class="text">{{ $info->personalEmail }}</div>
                                 </li>
                             </ul>
                             @endforeach
@@ -215,6 +216,11 @@
                                 <li>
                                     <div class="title">PhilHealth</div>
                                     <div class="text">{{ isset($user->philHealth) ? $user->philHealth : 'No Data' }}
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="title">TIN</div>
+                                    <div class="text">{{ isset($user->tin) ? $user->tin : 'No Data' }}
                                     </div>
                                 </li>
                             </ul>
@@ -782,7 +788,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="{{ route('emp.update') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('manager.update') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="row">
                         <div class="col-md-12">
@@ -800,9 +806,43 @@
                                 </div>
                             </div>
                             <div class="row">
+                                <!-- First Name -->
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="name">First Name<span class="text-danger">*</span></label>
+                                        <input type="text" name="fName" id="fName" class="form-control"
+                                            value="{{ $user->fName }}" required />
+                                    </div>
+                                </div>
+                                <!-- Middle Name -->
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="name">Middle Name<span class="text-danger">*</span></label>
+                                        <input type="text" name="mName" id="mName" class="form-control"
+                                            value="{{ $user->mName }}" required />
+
+                                    </div>
+                                </div>
+                                <!-- last Name -->
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="name">Last Name<span class="text-danger">*</span></label>
+                                        <input type="text" name="lName" id="lName" class="form-control"
+                                            value="{{ $user->lName }}" required />
+
+                                    </div>
+                                </div>
+                                <!-- Suffix Name -->
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label for="suffix">Suffix</label>
+                                        <input type="text" name="suffix" id="suffix" value="{{ $user->suffix }}"
+                                            class="form-control" />
+                                    </div>
+                                </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>Full Name</label>
+                                        <label>Professional Name</label>
                                         <input type="text" name="name" id="name" class="form-control"
                                             value="{{ $user->name }}">
                                     </div>

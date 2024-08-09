@@ -19,26 +19,40 @@ class AdminLeaveController extends Controller
         $status = $request->input('status');
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
-
+        
         $data = LeaveRequest::query();
-
+        
+        // Determine the departments and roles for managers
+        $departmentManagerRoles = [
+            'IT' => User::ROLE_IT_MANAGER,
+            'Website Development' => User::ROLE_IT_MANAGER,
+            'SEO' => User::ROLE_OPERATIONS_MANAGER,
+            'Content' => User::ROLE_OPERATIONS_MANAGER,
+            'Marketing' => User::ROLE_MARKETING_MANAGER,
+        ];
+    
+        // Determine manager role based on user's department
+        $departments = [];
+        $managerRole = $departmentManagerRoles[$user->department] ?? null;
+    
         // Apply filters based on the user's role
         if ($user->isAdmin() || $user->isHR()) {
             // Admin and HR can see all leave requests
             $pendingCount = LeaveRequest::where('status', 'Pending')->count();
         } elseif ($user->isSupervisor()) {
-            // Supervisors can only see leave requests from their department
-            $data->whereHas('user', function ($query) use ($user) {
-                $query->where('department', $user->department)
-                      ->where('role_as', '!=', User::ROLE_HR) // Not HR
-                      ->where('role_as', '!=', User::ROLE_ADMIN); // Not Admin
+            // Supervisors can only see leave requests from their department(s)
+            $departments = array_keys($departmentManagerRoles, $user->role_as);
+            $data->whereHas('user', function ($query) use ($departments) {
+                $query->whereIn('department', $departments)
+                      ->where('role_as', '!=', User::ROLE_HR) // Exclude HR
+                      ->where('role_as', '!=', User::ROLE_ADMIN); // Exclude Admin
             });
             $pendingCount = LeaveRequest::where('status', 'Pending')
-                                ->whereHas('user', function ($query) use ($user) {
-                                    $query->where('department', $user->department)
-                                          ->where('role_as', '!=', User::ROLE_HR) // Not HR
-                                          ->where('role_as', '!=', User::ROLE_ADMIN); // Not Admin
-                                })->count();
+                                    ->whereHas('user', function ($query) use ($departments) {
+                                        $query->whereIn('department', $departments)
+                                              ->where('role_as', '!=', User::ROLE_HR)
+                                              ->where('role_as', '!=', User::ROLE_ADMIN);
+                                    })->count();
         } else {
             // Employees can only see their own leave requests
             $data->where('users_id', $user->id);
@@ -46,22 +60,22 @@ class AdminLeaveController extends Controller
                                 ->where('users_id', $user->id)
                                 ->count();
         }
-
+    
         // Apply search filters independently
         if (!empty($name)) {
             $data->whereHas('user', function ($query) use ($name) {
                 $query->where('name', 'like', "%$name%");
             });
         }
-
+    
         if (!empty($type)) {
             $data->where('type', 'like', "%$type%");
         }
-
+    
         if (!empty($status)) {
             $data->where('status', 'like', "%$status%");
         }
-
+    
         // Apply date range filter on start_date
         if (!empty($startDate) && !empty($endDate)) {
             $data->where(function($query) use ($startDate, $endDate) {
@@ -73,68 +87,43 @@ class AdminLeaveController extends Controller
                       });
             });
         }
-
+    
         $leaveRequests = $data->get();
-
+    
         // Fetch login count for today
-        $todayLoginCount = 0;
-        $attendanceQuery = EmployeeAttendance::query();
-
-        if ($user->isSupervisor()) {
-            $attendanceQuery->whereHas('user', function ($query) use ($user) {
-                $query->where('department', $user->department);
-            });
-        }
-
-        $attendanceQuery->whereDate('date', today());
-
-        $todayLoginCount = $attendanceQuery->distinct('users_id')->count('users_id');
-
-        // Leave Counts
-        $vacationLeaveCountToday = LeaveRequest::where('type', 'Vacation Leave')
-                                    ->where(function($query) {
-                                        $query->whereDate('start_date', today())
-                                              ->orWhereDate('end_date', today())
-                                              ->orWhere(function($query) {
-                                                  $query->where('start_date', '<=', today())
-                                                        ->where('end_date', '>=', today());
-                                              });
-                                    })
-                                    ->count();
-
-        $sickLeaveCountToday = LeaveRequest::where('type', 'Sick Leave')
-                                    ->where(function($query) {
-                                        $query->whereDate('start_date', today())
-                                              ->orWhereDate('end_date', today())
-                                              ->orWhere(function($query) {
-                                                  $query->where('start_date', '<=', today())
-                                                        ->where('end_date', '>=', today());
-                                              });
-                                    })
-                                    ->count();
-
-        $birthdayLeaveCountToday = LeaveRequest::where('type', 'Birthday Leave')
-                                    ->where(function($query) {
-                                        $query->whereDate('start_date', today())
-                                              ->orWhereDate('end_date', today())
-                                              ->orWhere(function($query) {
-                                                  $query->where('start_date', '<=', today())
-                                                        ->where('end_date', '>=', today());
-                                              });
-                                    })
-                                    ->count();
-
-        $unpaidLeaveCountToday = LeaveRequest::where('type', 'Unpaid Leave')
-                                    ->where(function($query) {
-                                        $query->whereDate('start_date', today())
-                                              ->orWhereDate('end_date', today())
-                                              ->orWhere(function($query) {
-                                                  $query->where('start_date', '<=', today())
-                                                        ->where('end_date', '>=', today());
-                                              });
-                                    })
-                                    ->count();
-
+        $todayLoginCount = EmployeeAttendance::query()
+            ->when($managerRole, function ($query) use ($managerRole) {
+                $query->whereHas('user', function ($query) use ($managerRole) {
+                    $query->where('role_as', $managerRole);
+                });
+            })
+            ->whereDate('date', today())
+            ->distinct('users_id')
+            ->count('users_id');
+    
+        // Filter leave counts based on manager's department(s)
+        $leaveCountQuery = function($type) use ($departments) {
+            return LeaveRequest::where('type', $type)
+                        ->where('status', 'Approved')
+                        ->when(!empty($departments), function($query) use ($departments) {
+                            $query->whereHas('user', function($query) use ($departments) {
+                                $query->whereIn('department', $departments);
+                            });
+                        })
+                        ->where(function($query) {
+                            $query->whereDate('start_date', today())
+                                  ->orWhereDate('end_date', today())
+                                  ->orWhere(function($query) {
+                                      $query->where('start_date', '<=', today())
+                                            ->where('end_date', '>=', today());
+                                  });
+                        });
+        };
+    
+        $vacationLeaveCountToday = $leaveCountQuery('Vacation Leave')->count();
+        $sickLeaveCountToday = $leaveCountQuery('Sick Leave')->count();
+        $birthdayLeaveCountToday = $leaveCountQuery('Birthday Leave')->count();
+        $unpaidLeaveCountToday = $leaveCountQuery('Unpaid Leave')->count();
         return view('admin.leave', compact(
             'leaveRequests', 
             'pendingCount', 

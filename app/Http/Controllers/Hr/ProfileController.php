@@ -31,6 +31,9 @@ class ProfileController extends Controller
             }
 
         $user->name = $request->input('name');
+        $user->fName = $request->input('fName');
+        $user->mName = $request->input('mName');
+        $user->lName = $request->input('lName');
         $user->birthday = $request->input('birthday');
         $user->phoneNumber = $request->input('phoneNumber');
         $user->completeAddress = $request->input('completeAddress');
@@ -98,6 +101,7 @@ class ProfileController extends Controller
             $info->nationality = $request->input('nationality');
             $info->mStatus = $request->input('mStatus');
             $info->numChildren = $request->input('numChildren');
+            $info->personalEmail = $request->input('personalEmail');
 
             $info->save();
 
@@ -113,6 +117,7 @@ class ProfileController extends Controller
             $info->nationality = $request->input('nationality');
             $info->mStatus = $request->input('mStatus');
             $info->numChildren = $request->input('numChildren');
+            $info->personalEmail = $request->input('personalEmail');
 
             $info->save();
 

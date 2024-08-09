@@ -48,8 +48,17 @@
                                                 asset('images/default.png')
                                             }}" alt="Profile Image" />
                                         @endif</a>
-                                    <a href="profile.html">{{ $employee->name }}
-                                        <span>{{ $employee->position }}</span></a>
+                                    <a href="{{ url('manager/department-record/'.$employee->id) }}">
+                                        @if ( $employee->fName || $employee->lName )
+                                        {{ $employee->fName }} {{ $employee->lName }}
+                                        @else
+                                        {{ $employee->name }}
+                                        @endif
+                                        <span>@if($employee->position)
+                                            {{ $employee->position }}
+                                            @else
+                                            Please set the position.
+                                            @endif</span></a>
                                 </h2>
                             </td>
                             <td>{{ $employee->empNumber }}</td>

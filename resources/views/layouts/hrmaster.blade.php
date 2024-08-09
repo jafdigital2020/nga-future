@@ -59,8 +59,9 @@
         <div class="header">
             <!-- Logo -->
             <div class="header-left">
-                <a href="index.html" class="logo">
-                    <img id="logo-img" src="{{ asset('assets/img/Long.png') }}" alt="OneJAF Logo" width="100%" />
+                <a href="{{ url('hr/dashboard') }}" class="logo">
+                    <img class="logoSide" id="logo-img" src="{{ asset('assets/img/OneJAFwhite.png') }}"
+                        alt="OneJAF Logo" width="100%" />
                 </a>
             </div>
             <!-- /Logo -->
@@ -447,18 +448,14 @@
                                 <span class="menu-arrow"></span></a>
                             <ul style="display: none">
                                 <li>
-                                    <a href="salary.html">
+                                    <a href="{{ url('hr/approve') }}">
                                         Approved Timesheet
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="salary-view.html"> Payslip </a>
+                                    <a href="{{ url('hr/payslip') }}"> Payslip </a>
                                 </li>
-                                <li>
-                                    <a href="payroll-items.html">
-                                        Payroll Items
-                                    </a>
-                                </li>
+
                             </ul>
                         </li>
                         <li>
@@ -558,6 +555,17 @@
         $(".datetimepicker").datetimepicker({
             format: "YYYY-MM-DD",
             // Additional options if needed
+        });
+
+    </script>
+
+    <script>
+        document.getElementById('toggle_btn').addEventListener('click', function () {
+            var logoImg = document.getElementById('logo-img');
+            var currentSrc = logoImg.getAttribute('src');
+            var newSrc = currentSrc.includes('OneJAFwhite.png') ? "{{ url('assets/img/togglelogo.png') }}" :
+                "{{ asset('assets/img/OneJAFwhite.png') }}";
+            logoImg.setAttribute('src', newSrc);
         });
 
     </script>

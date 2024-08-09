@@ -52,6 +52,7 @@
                         <option value="Marketing">Marketing</option>
                         <option value="Graphics">Graphics</option>
                         <option value="Content">Content</option>
+                        <option value="HR">HR</option>
                     </select>
                     <label class="focus-label">Department</label>
                 </div>
@@ -66,8 +67,8 @@
     <div class="row">
         <div class="col-md-12">
             <div class="table-responsive">
-                <table class="table table-striped custom-table datatable" id="dataTable">
-                    <thead>
+                <table class="table table-hover table-nowrap custom-table datatable" id="dataTable">
+                    <thead class="thead-light">
                         <tr>
                             <th>Name</th>
                             <th>Employee ID</th>
@@ -93,8 +94,16 @@
                                                 asset('images/default.png')
                                             }}" alt="Profile Image" />
                                         @endif</a>
-                                    <a href="#">{{ $employee->name }}
-                                        <span>{{ $employee->position }}</span></a>
+                                    <a href="{{ url('hr/employee/edit/'.$employee->id) }}">
+                                        @if($employee->fName || $employee->mName || $employee->lName)
+                                        {{ $employee->fName ?? '' }}
+                                        {{ $employee->mName ?? '' }}
+                                        {{ $employee->lName ?? '' }}
+                                        @else
+                                        {{ $employee->name }}
+                                        @endif
+                                        <span>{{ $employee->position }}</span>
+                                    </a>
                                 </h2>
                             </td>
                             <td>{{ $employee->empNumber }}</td>
@@ -117,11 +126,6 @@
                                     <div class="dropdown-menu dropdown-menu-right">
                                         <a class="dropdown-item" href="{{ url('hr/employee/edit/'.$employee->id) }}"><i
                                                 class="fa fa-pencil m-r-5"></i> Edit</a>
-
-                                        <!-- <a class="dropdown-item edit-employee" data-id="'.$employee->id.'" href="#"
-                                            data-toggle="modal" data-target="#edit_user"><i
-                                                class="fa fa-pencil m-r-5"></i> Edit</a> -->
-
                                         <button type="button" data-toggle="modal" data-target="#delete_user"
                                             class="dropdown-item deleteBtn" value="{{ $employee->id }}"><i
                                                 class="fa fa-trash-o m-r-5"></i>Delete</button>
@@ -178,7 +182,15 @@
                         <!-- Suffix Name -->
                         <div class="col-sm-3">
                             <div class="form-group">
-                                <label for="name">Suffix</label>
+                                <label for="suffix">Suffix</label>
+                                <input type="text" name="suffix" class="form-control" />
+                            </div>
+                        </div>
+
+                        <!-- Professional / Nick Name -->
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">Professional Name</label>
                                 <input type="text" name="name" class="form-control" />
                             </div>
                         </div>
@@ -192,6 +204,7 @@
                                     }}@enderror</span>
                             </div>
                         </div>
+
                         <!-- Type Of Contract -->
                         <div class="col-sm-6">
                             <div class="form-group">
@@ -251,6 +264,18 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Phone Number -->
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Contact Number<span class="text-danger">*</span></label>
+                                <input type="text" name="phoneNumber" class="form-control" required />
+                                <span style="color: red">@error('phoneNumber'){{
+                                        $message
+                                    }}@enderror</span>
+                            </div>
+                        </div>
+
                         <!-- Birthday -->
                         <div class="col-sm-6">
                             <div class="form-group">
@@ -305,17 +330,6 @@
                             </div>
                         </div>
 
-                        <!-- Phone Number -->
-                        <!-- <div class="col-sm-6">
-                            <div class="form-group">
-                                <label>Phone Number<span class="text-danger">*</span></label>
-                                <input type="text" name="phoneNumber" class="form-control" required />
-                                <span style="color: red">@error('phoneNumber'){{
-                                        $message
-                                    }}@enderror</span>
-                            </div>
-                        </div> -->
-
                         <!-- Role -->
                         <div class="col-sm-6">
                             <div class="form-group">
@@ -369,7 +383,7 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label for="">Sick Leave <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" name="sickcLeave" required>
+                                <input type="number" class="form-control" name="sickLeave" required>
                             </div>
                         </div>
                         <!-- /Sick leave -->
@@ -388,7 +402,7 @@
                         <div class="col-sm-12">
                             <div class="goverment">
                                 <h5 class="modal-title" id="exampleModalLabel">
-                                    Goverment Mandates
+                                    Government Mandates
                                 </h5>
                             </div>
                         </div>

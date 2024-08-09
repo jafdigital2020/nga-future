@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
 
     <link href="{{ asset('assets/css/login.css') }}" rel="stylesheet" />
+    <link rel="icon" href="{{ url('assets/img/jaffavicon.png') }}" />
     <link href="{{ asset('assets/css/line-awesome.min.css') }}" rel="stylesheet" />
 
 </head>
@@ -75,9 +76,6 @@
                     jpaguiap@jafdigital.co</span>
             </div>
         </div>
-
-
-
     </form>
     <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
     <script src="{{ asset('assets/js/popper.min.js') }}"></script>
@@ -105,8 +103,6 @@
         });
 
     </script>
-
-
 </body>
 
 </html>
