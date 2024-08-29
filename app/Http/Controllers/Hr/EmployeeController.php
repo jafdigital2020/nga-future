@@ -4,6 +4,7 @@ namespace App\Http\Controllers\HR;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Models\ShiftSchedule;
 use App\Models\BankInformation;
 use Illuminate\Validation\Rule;
 use App\Models\ContactEmergency;
@@ -162,6 +163,7 @@ class EmployeeController extends Controller
         $user->empNumber = $request->input('empNumber');
         $user->typeOfContract = $request->input('typeOfContract');
         $user->phoneNumber = $request->input('phoneNumber');
+        $user->department = $request->input('department');
         $user->completeAddress = $request->input('completeAddress');
         $user->position = $request->input('position');
         $user->email = $request->input('email');
@@ -174,7 +176,6 @@ class EmployeeController extends Controller
             $user->password = Hash::make($request->input('password'));
         }
 
-        $user->hourlyRate = $request['hourlyRate'];
         $user->role_as = $request['role_as'];
         if ($request->has('image')) {
             $imageName = time().'.'.$request->image->extension();  
@@ -337,6 +338,59 @@ class EmployeeController extends Controller
         $user->update([
             'password' => Hash::make($newPassword),
         ]);
+    }
+
+    public function shiftSchedule(Request $request, $user_id)
+    {
+        // Find the user and their shift schedule
+        $user = User::with('shiftSchedule')->findOrFail($user_id);
+        $shift = ShiftSchedule::where('users_id', $user->id)->first();
+    
+        // Determine if flexible time is enabled
+        $flexibleTime = $request->input('flexibleTime') == '1';
+    
+        if ($flexibleTime) {
+            // If flexible time is enabled, save this state
+            if ($shift) {
+                $shift->isFlexibleTime = true;
+                $shift->save();
+                Alert::success('Flexible Time Set');
+            } else {
+                // Create new shift schedule with flexible time
+                $shift = new ShiftSchedule();
+                $shift->users_id = $user->id;
+                $shift->isFlexibleTime = true;
+                $shift->save();
+                Alert::success('Added Schedule with Flexible Time');
+            }
+        } else {
+            // If flexible time is not enabled, save shift details
+            $shiftStart = Carbon::parse($request->input('shiftStart'))->format('H:i:s');
+            $lateThreshold = Carbon::parse($request->input('lateThreshold'))->format('H:i:s');
+            $shiftEnd = Carbon::parse($request->input('shiftEnd'))->format('H:i:s');
+    
+            if ($shift) {
+                // Update existing shift
+                $shift->shiftStart = $shiftStart;
+                $shift->lateThreshold = $lateThreshold;
+                $shift->shiftEnd = $shiftEnd;
+                $shift->isFlexibleTime = false;
+                $shift->save();
+                Alert::success('Shift Successfully Changed');
+            } else {
+                // Create new shift
+                $shift = new ShiftSchedule();
+                $shift->users_id = $user->id;
+                $shift->shiftStart = $shiftStart;
+                $shift->lateThreshold = $lateThreshold;
+                $shift->shiftEnd = $shiftEnd;
+                $shift->isFlexibleTime = false;
+                $shift->save();
+                Alert::success('Added Schedule');
+            }
+        }
+    
+        return redirect()->back();
     }
 
 }

@@ -93,7 +93,8 @@
                                                 asset('images/default.png')
                                             }}" alt="Profile Image" />
                                         @endif</a>
-                                    <a href="#">{{ $employee->fName }} {{ $employee->lName }}
+                                    <a href="{{ url('admin/employee/edit/'.$employee->id) }}">{{ $employee->fName }}
+                                        {{ $employee->lName }}
                                         <span>{{ $employee->position }}</span></a>
                                 </h2>
                             </td>
@@ -135,8 +136,12 @@
             </div>
         </div>
     </div>
+
 </div>
 <!-- /Page Content -->
+
+
+
 
 <!-- Add Employee Modal -->
 <div id="add_employee" class="modal custom-modal fade" role="dialog">

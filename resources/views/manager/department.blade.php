@@ -72,6 +72,9 @@
                                         aria-expanded="false"><i class="material-icons">more_vert</i></a>
                                     <div class="dropdown-menu dropdown-menu-right">
                                         <a class="dropdown-item"
+                                            href="{{ url('manager/department-record/'.$employee->id) }}"><i
+                                                class="fa fa-clock m-r-5"></i>Shift Schedule</a>
+                                        <a class="dropdown-item"
                                             href="{{ url('manager/department-record/'.$employee->id) }}?tab=emp_record"><i
                                                 class="fa fa-address-book m-r-5"></i>Employee
                                             Record</a>

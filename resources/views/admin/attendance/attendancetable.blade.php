@@ -99,6 +99,7 @@
                             <th>Status</th>
                             <th>Total Late</th>
                             <th>Total Hours</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -139,6 +140,26 @@
                             </td>
                             <td>{{ $attendance->totalLate }}</td>
                             <td>{{ $attendance->timeTotal }}</td>
+                            <td class="text-right">
+                                <div class="dropdown dropdown-action">
+                                    <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown"
+                                        aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                                    <div class="dropdown-menu dropdown-menu-right">
+                                        <a class="dropdown-item edit-attendance" href="#"
+                                            data-id="{{ $attendance->id }}" data-date="{{ $attendance->date }}"
+                                            data-time_in="{{ $attendance->timeIn }}"
+                                            data-break_in="{{ $attendance->breakIn }}"
+                                            data-break_out="{{ $attendance->breakOut }}"
+                                            data-time_out="{{ $attendance->timeOut }}"
+                                            data-total_hours="{{ $attendance->totalHours }}"
+                                            data-total_late="{{ $attendance->totalLate }}">
+                                            <i class="fa fa-pencil m-r-5"></i> Edit</a>
+                                        <a class="dropdown-item delete-attendance" href="#"
+                                            data-id="{{ $attendance->id }}">
+                                            <i class="fa fa-trash-o m-r-5"></i> Delete</a>
+                                    </div>
+                                </div>
+                            </td>
                         </tr>
                         @endforeach
                         @endforeach
@@ -156,9 +177,116 @@
         </div>
     </div>
 </div>
+
+<!-- Edit attendance Modal -->
+<div id="edit_attendance" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Attendance</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editAttendanceForm" method="POST">
+                    @csrf
+                    <input type="hidden" name="attendance_id" id="attendance_id">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input class="form-control" type="text" name="date" id="date" readonly>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Time In <span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" name="timeIn" id="timeIn">
+
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Time Out <span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" name="timeOut" id="timeOut">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Break Out<span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" name="breakIn" id="breakIn">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Break In<span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" name="breakOut" id="breakOut">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Total Late</label>
+                        <input class="form-control" type="text" name="totalLate" id="totalLate">
+                    </div>
+                    <div class="form-group">
+                        <label>Total Hours</label>
+                        <input class="form-control" type="text" name="totalHours" id="totalHours">
+                    </div>
+                    <div class="submit-section">
+                        <button type="submit" class="btn btn-primary submit-btn">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Edit attendance Modal -->
 @endsection
 
 @section('scripts')
 
+<script>
+    // Edit attendance request
+    $('.edit-attendance').on('click', function () {
+        var attId = $(this).data('id');
+        var date = $(this).data('date');
+        var timeIn = $(this).data('time_in');
+        var breakOut = $(this).data('break_out');
+        var breakIn = $(this).data('break_in');
+        var timeOut = $(this).data('time_out');
+        var totalHours = $(this).data('total_hours');
+        var totalLate = $(this).data('total_late');
+
+        if (status === 'Approved') {
+            alert('This leave request has already been approved and cannot be edited.');
+            return;
+        }
+
+        $('#attendance_id').val(attId);
+        $('#date').val(date);
+        $('#timeIn').val(timeIn);
+        $('#breakOut').val(breakOut);
+        $('#breakIn').val(breakIn);
+        $('#timeOut').val(timeOut);
+        $('#totalHours').val(totalHours);
+        $('#totalLate').val(totalLate);
+
+        $('#editAttendanceForm').attr('action', '/admin/attendance/edit/' +
+            attId);
+        $('#edit_attendance').modal('show');
+    });
+
+    // Delete attendance request
+    $('.delete-attendance').on('click', function () {
+        var attId = $(this).data('id');
+
+
+        $('#delete_attendance_id').val(attId);
+        $('#deleteAttendanceForm').attr('action', '/admin/attendance/delete/' + attId);
+        $('#delete_approve').modal('show');
+    });
+
+</script>
 
 @endsection

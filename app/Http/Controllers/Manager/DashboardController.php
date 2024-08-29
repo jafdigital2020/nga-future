@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 
 class DashboardController extends Controller
 {
@@ -22,6 +23,7 @@ class DashboardController extends Controller
         $authUserId = $user->id;
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
+
 
         $record = EmploymentRecord::where('users_id', $user->id)->get();
         $salrecord = EmployementSalary::where('users_id', $user->id)->get();
@@ -143,9 +145,10 @@ class DashboardController extends Controller
             // Create a new ApprovedAttendance record
             $attendance = new ApprovedAttendance();
             $attendance->users_id = Auth::id(); 
-            $attendance->name = Auth::user()->name;
+            $attendance->name = Auth::user()->fName . ' ' . Auth::user()->lName;
             $attendance->department = Auth::user()->department;
             $attendance->month = date('F'); 
+            $attendance->year = $request->input('year');
             $attendance->totalHours = $request->input('total_worked');
             $attendance->totalLate = $request->input('total_late');
             $attendance->cut_off = $request->input('cutoff');
@@ -183,4 +186,6 @@ class DashboardController extends Controller
 
         return response()->json(['status' => 'New']);
     }
+
+
 }

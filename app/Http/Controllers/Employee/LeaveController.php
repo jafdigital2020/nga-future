@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
+use App\Notifications\LeaveRequestNotification;
 
 
 class LeaveController extends Controller
@@ -81,8 +82,32 @@ class LeaveController extends Controller
         $leaveRequest->reason = $request->input('reason');
         $leaveRequest->type = $leaveType;
         $leaveRequest->status = 'Pending';
-
         $leaveRequest->save();
+
+          // Get the supervisor for the user's department
+        $supervisor = User::getSupervisorForDepartment($user->department, $user);
+
+        // Get all HR users
+        $hrUsers = User::where('role_as', User::ROLE_HR)->get();
+
+        // Get all Admin users
+        $adminUsers = User::where('role_as', User::ROLE_ADMIN)->get();
+
+        // Notify the supervisor
+        if ($supervisor && $supervisor != 'Management') {
+            $supervisor->notify(new LeaveRequestNotification($leaveRequest, $user));  // Pass the leave request and user to the notification
+        }
+
+        // Notify all HR users
+        foreach ($hrUsers as $hr) {
+            $hr->notify(new LeaveRequestNotification($leaveRequest, $user));  // Pass the leave request and user to the notification
+        }
+
+        // Notify all Admin users
+        foreach ($adminUsers as $admin) {
+            $admin->notify(new LeaveRequestNotification($leaveRequest, $user));  // Pass the leave request and user to the notification
+        }
+
 
         Alert::success('Leave Request Sent');
 

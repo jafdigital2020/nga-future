@@ -137,6 +137,12 @@ class DashboardController extends Controller
 
         $totalUsers = User::where('role_as', '!=', 1)->count();
         
+        $today = now()->format('Y-m-d');
+
+        $hasTimeIn = $user->employeeAttendance()->whereDate('date', $today)->exists();
+        $hasBreakOut = $user->employeeAttendance()->whereDate('date', $today)->whereNotNull('breakOut')->exists();
+        $hasBreakIn = $user->employeeAttendance()->whereDate('date', $today)->whereNotNull('breakIn')->exists();
+        
         return view('admin.dashboard', compact(
         'user', 
         'empatt', 
@@ -156,7 +162,10 @@ class DashboardController extends Controller
         'users',
         'year',
         'month',
-        'departments'
+        'departments',
+        'hasTimeIn',
+        'hasBreakOut',
+        'hasBreakIn',
         ));
     }
 

@@ -915,7 +915,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="{{ route('personal.info') }}" method="POST">
+                <form action="{{ route('personal.infom') }}" method="POST">
                     @csrf
                     <div class="row">
                         <div class="col-md-6">
@@ -926,8 +926,8 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Age</label>
-                                <input class="form-control" type="text" name="age" id="age">
+                                <label>Personal Email</label>
+                                <input class="form-control" type="email" name="personalEmail" id="personalEmail">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -980,7 +980,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="{{ url('hr/employee/update/mandates/'. $user->id) }}" method="POST"
+                <form action="{{ url('manager/employee/update/mandates/'. $user->id) }}" method="POST"
                     enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
@@ -1032,7 +1032,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form method="POST" action="{{ route('profile.econtact') }}">
+                <form method="POST" action="{{ route('profile.econtactm') }}">
                     @csrf
                     <div class="card">
                         <div class="card-body">

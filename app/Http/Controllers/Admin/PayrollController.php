@@ -31,14 +31,7 @@ class PayrollController extends Controller
         $status = $request->input('status', 'approved'); // Default to "approved" if no status is specified
         $selectedYear = $request->input('year', now()->year); // Get the year from the request or default to the current year
     
-        // Get the current date
-        $currentDate = now();
-    
-        // Calculate the current cutoff period and year if not provided
-        $currentYear = $currentDate->year;
-        if (!$cutoffPeriod) {
-            $cutoffPeriod = $this->calculateCurrentCutoff($currentDate);
-        }
+
     
         $data = ApprovedAttendance::query();
     
@@ -59,15 +52,12 @@ class PayrollController extends Controller
     
         // Add filter for year if provided
         if ($selectedYear) {
-            $data->whereYear('created_at', $selectedYear);
+            $data->where('year', $selectedYear);
         }
     
         // Add filter for cutoff_period if provided
         if ($cutoffPeriod) {
-            $data->where(function ($query) use ($cutoffPeriod, $selectedYear) {
-                $cutoffDates = $this->getCutoffPeriodDates($cutoffPeriod, $selectedYear);
-                $query->whereBetween('created_at', [$cutoffDates['start'], $cutoffDates['end']]);
-            });
+            $data->where('cut_off', $cutoffPeriod); // Search the cut_off column
         }
     
         $approved = $data->get();
@@ -78,8 +68,9 @@ class PayrollController extends Controller
         // Assuming you have a list of possible statuses
         $statuses = ApprovedAttendance::select('status')->distinct()->get();
     
-        return view('admin.payroll.approve', compact('approved', 'departments', 'statuses', 'cutoffPeriod', 'currentYear', 'status', 'selectedYear'));
+        return view('admin.payroll.approve', compact('approved', 'departments', 'statuses', 'cutoffPeriod', 'status', 'selectedYear'));
     }
+    
     
     private function calculateCurrentCutoff($date)
     {
@@ -225,7 +216,7 @@ class PayrollController extends Controller
 
        // Create a new payroll record for payslip
        $payroll = new Payroll();
-       $payroll->users_id = $approvedAttendance->users_id;
+       $payroll->users_id = $approved->users_id;
        $payroll->ename = $request->input('ename');
        $payroll->position = $request->input('position');
        $payroll->department = $request->input('department');
@@ -268,6 +259,7 @@ class PayrollController extends Controller
        return redirect()->route('approvedTime');
    }
 
+
    public function payslipView(Request $request)
    {
 
@@ -276,38 +268,23 @@ class PayrollController extends Controller
     $cutoffPeriod = $request->input('cutoff_period'); 
     $selectedYear = $request->input('year', now()->year);
 
-     // Get the current date
-    $currentDate = now();
-    
-    // Calculate the current cutoff period and year if not provided
-    $currentYear = $currentDate->year;
-    if (!$cutoffPeriod) {
-        $cutoffPeriod = $this->calculateCurrentCutoff($currentDate);
-    }   
-
     $data = Payroll::query();
-    
-    // Add filter for employee name if provided
-    if ($employeeName) {
-        $data->where('name', 'like', "%$employeeName%");
+
+    // Apply filters independently
+    if (!empty($employeeName)) {
+        $data->where('ename', 'like', "%$employeeName%");
     }
 
-    // Add filter for department if provided
-    if ($department) {
+    if (!empty($department)) {
         $data->where('department', $department);
     }
 
-    // Add filter for year if provided
-    if ($selectedYear) {
-        $data->whereYear('created_at', $selectedYear);
+    if (!empty($selectedYear)) {
+        $data->where('year', $selectedYear);
     }
 
-    // Add filter for cutoff_period if provided
-    if ($cutoffPeriod) {
-        $data->where(function ($query) use ($cutoffPeriod, $selectedYear) {
-            $cutoffDates = $this->getCutoffPeriodDates($cutoffPeriod, $selectedYear);
-            $query->whereBetween('created_at', [$cutoffDates['start'], $cutoffDates['end']]);
-        });
+    if (!empty($cutoffPeriod)) {
+        $data->where('cut_off', $cutoffPeriod); // Search the cut_off column
     }
 
     $payslip = $data->get();
@@ -316,7 +293,7 @@ class PayrollController extends Controller
     $departments = Payroll::select('department')->distinct()->get();
 
 
-        return view('admin.payroll.payslip', compact('payslip', 'departments', 'cutoffPeriod', 'currentYear', 'selectedYear'));
+        return view('admin.payroll.payslip', compact('payslip', 'departments', 'cutoffPeriod', 'selectedYear'));
    }
 
    public function viewPayslip($id)

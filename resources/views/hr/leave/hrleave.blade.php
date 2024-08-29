@@ -21,6 +21,10 @@
                             class="fa fa-paper-plane"></i></a>
                 </div>
             </div>
+            <div class="col-auto float-right ml-auto">
+                <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_leave"><i class="fa fa-plus"></i>
+                    Request Leave</a>
+            </div>
         </div>
     </div>
     <!-- /Page Header -->
@@ -29,189 +33,117 @@
     <div class="row">
         <div class="col-md-3">
             <div class="stats-info">
-                <h6>Today Presents</h6>
-                <h4>{{ $todayLoginCount }}</h4>
+                <h6>Vacation Leave</h6>
+                @if(isset($user->vacLeave))
+                <h4>{{ $user->vacLeave }}</h4>
+                @else
+                <h4>0</h4>
+                @endif
             </div>
         </div>
         <div class="col-md-3">
             <div class="stats-info">
-                <h6>Planned Leaves</h6>
-                <h4>{{ $vacationLeaveCountToday + $sickLeaveCountToday + $birthdayLeaveCountToday }} <span>Today</span>
-                </h4>
+                <h6>Sick Leave</h6>
+                @if(isset($user->sickLeave))
+                <h4>{{ $user->sickLeave }}</h4>
+                @else
+                <h4>0</h4>
+                @endif
             </div>
         </div>
         <div class="col-md-3">
             <div class="stats-info">
-                <h6>Unpaid Leaves</h6>
-                <h4>{{ $unpaidLeaveCountToday }} <span>Today</span></h4>
+                <h6>Birthday Leave</h6>
+                @if(isset($user->bdayLeave))
+                <h4>{{ $user->bdayLeave }}</h4>
+                @else
+                <h4>0</h4>
+                @endif
             </div>
         </div>
         <div class="col-md-3">
             <div class="stats-info">
-                <h6>Pending Requests</h6>
-                <h4>{{ $pendingCount }}</h4>
+                <h6>Remaining Leave</h6>
+                <h4>{{ $user->vacLeave + $user->sickLeave + $user->bdayLeave }}</h4>
             </div>
         </div>
     </div>
     <!-- /Leave Statistics -->
 
-    <!-- Search Filter -->
-    <form action="{{ route('leave.searchr') }}" method="GET">
-        <div class="row filter-row">
-            <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
-                <div class="form-group form-focus">
-                    <input type="text" class="form-control floating" name="name">
-                    <label class="focus-label">Employee Name</label>
-                </div>
-            </div>
-            <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
-                <div class="form-group form-focus select-focus">
-                    <select class="select floating" name="type">
-                        <option value=""> -- Select -- </option>
-                        <option value="Vacation Leave" {{ request('type') == 'Vacation Leave' ? 'selected' : '' }}>
-                            Vacation Leave</option>
-                        <option value="Sick Leave" {{ request('type') == 'Sick Leave' ? 'selected' : '' }}>Sick Leave
-                        </option>
-                        <option value="Birthday Leave" {{ request('type') == 'Birthday Leave' ? 'selected' : '' }}>
-                            Birthday Leave</option>
-                        <option value="Unpaid Leave" {{ request('type') == 'Unpaid Leave' ? 'selected' : '' }}>Unpaid
-                            Leave</option>
-                    </select>
-
-                    <label class="focus-label">Leave Type</label>
-                </div>
-            </div>
-            <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
-                <div class="form-group form-focus select-focus">
-                    <select class="select floating" name="status">
-                        <option value=""> -- Select -- </option>
-                        <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="Approved" {{ request('status') == 'Approved' ? 'selected' : '' }}>Approved
-                        </option>
-                        <option value="Declined" {{ request('status') == 'Declined' ? 'selected' : '' }}>Declined
-                        </option>
-                    </select>
-                    <label class="focus-label">Leave Status</label>
-                </div>
-            </div>
-            <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
-                <div class="form-group form-focus">
-                    <div class="cal-icon">
-                        <input class="form-control floating datetimepicker" type="text" name="start_date">
-                    </div>
-                    <label class="focus-label">From</label>
-                </div>
-            </div>
-            <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
-                <div class="form-group form-focus">
-                    <div class="cal-icon">
-                        <input class="form-control floating datetimepicker" type="text" name="end_date">
-                    </div>
-                    <label class="focus-label">To</label>
-                </div>
-            </div>
-            <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
-                <button type="submit" class="btn btn-success btn-block">Search</button>
-            </div>
-        </div>
-    </form>
-    <!-- /Search Filter -->
-
     <div class="row">
         <div class="col-md-12">
             <div class="table-responsive">
-                <table class="table table-hover table-nowrap custom-table mb-0 datatable">
-                    <thead class="thead-light">
+                <table class="table table-striped custom-table mb-0 datatable">
+                    <thead>
                         <tr>
-                            <th>Employee</th>
                             <th>Leave Type</th>
                             <th>From</th>
                             <th>To</th>
-                            <th>No of Days</th>
+                            <th>Days</th>
                             <th>Reason</th>
                             <th class="text-center">Status</th>
+                            <th>Approved by</th>
                             <th class="text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($leaveRequests as $leave)
+                        @foreach($request as $req)
                         <tr>
-                            <td>
-                                <h2 class="table-avatar">
-                                    <a href="{{ url('hr/employee/edit/'.$leave->user->id) }}" class="avatar">
-                                        @if ($leave->user->image)
-                                        <img src="{{ asset('images/' . $leave->user->image) }}" alt="Profile Image" />
-                                        @else
-                                        <img src="{{ asset('images/default.png') }}" alt="Profile Image" /></a>
-                                    @endif
-                                    <a href="{{ url('hr/employee/edit/'.$leave->user->id) }}">@if ($leave->user->fName
-                                        || $leave->user->lName)
-                                        {{ $leave->user->fName }} {{ $leave->user->lName }}
-                                        @else
-                                        {{ $leave->user->name }}
-                                        @endif
-                                        <span>{{ $leave->user->department }}</span>
-                                    </a>
-                            </td>
-                            <td>{{ $leave->type }}</td>
-                            <td>{{ $leave->start_date }}</td>
-                            <td>{{ $leave->end_date }}</td>
-                            <td>{{ $leave->days }}</td>
-                            <td>{{ $leave->reason }}</td>
+                            <td>{{ $req->type }}</td>
+                            <td>{{ $req->start_date }}</td>
+                            <td>{{ $req->end_date }}</td>
+                            <td>{{ $req->days }}</td>
+                            <td>{{ $req->reason }}</td>
                             <td class="text-center">
-                                <div class="dropdown action-label">
-                                    <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#"
-                                        data-toggle="dropdown" aria-expanded="false">
-                                        @if($leave->status == 'New')
+                                <div class="action-label">
+                                    <a class="btn btn-white btn-sm btn-rounded" href="#">
+                                        @if($req->status == 'New')
                                         <i class="fa fa-dot-circle-o text-purple"></i> New
-                                        @elseif($leave->status == 'Pending')
+                                        @elseif($req->status == 'Pending')
                                         <i class="fa fa-dot-circle-o text-info"></i> Pending
-                                        @elseif($leave->status == 'Approved')
+                                        @elseif($req->status == 'Approved')
                                         <i class="fa fa-dot-circle-o text-success"></i> Approved
-                                        @elseif($leave->status == 'Declined')
+                                        @elseif($req->status == 'Declined')
                                         <i class="fa fa-dot-circle-o text-danger"></i> Declined
                                         @else
                                         <i class="fa fa-dot-circle-o"></i> Unknown
                                         @endif
                                     </a>
-                                    <div class="dropdown-menu dropdown-menu-right">
-                                        <a class="dropdown-item" href="#"><i class="fa fa-dot-circle-o text-info"></i>
-                                            Pending</a>
-
-                                        <form id="approve-form-{{ $leave->id }}"
-                                            action="{{ route('leave.approver', $leave->id) }}" method="POST"
-                                            style="display:inline;">
-                                            @csrf
-                                            <button type="button" class="dropdown-item approve-button"
-                                                data-leave-id="{{ $leave->id }}">
-                                                <i class="fa fa-dot-circle-o text-success"></i> Approved
-                                            </button>
-                                        </form>
-
-
-                                        <form id="decline-form-{{ $leave->id }}"
-                                            action="{{ route('leave.decliner', $leave->id) }}" method="POST"
-                                            style="display:inline;">
-                                            @csrf
-                                            <button type="button" class="dropdown-item decline-button"
-                                                data-leave-id="{{ $leave->id }}">
-                                                <i class="fa fa-dot-circle-o text-danger"></i> Declined
-                                            </button>
-                                        </form>
-                                    </div>
                                 </div>
+                            </td>
+                            <td>
+                                <h2 class="table-avatar">
+                                    <a href="#" class="avatar avatar-xs">
+                                        @if ($req->approver)
+                                        @if ($req->approver->image)
+                                        <img src="{{ asset('images/' . $req->approver->image) }}" alt="Profile Image" />
+                                        @else
+                                        <img src="{{ asset('images/default.png') }}" alt="Profile Image" />
+                                        @endif
+                                        @else
+                                        <img src="{{ asset('images/default.png') }}" alt="Profile Image" />
+                                        @endif
+                                    </a>
+                                    {{ $req->approver 
+                                    ? ($req->approver->fName || $req->approver->lName 
+                                        ? $req->approver->fName . ' ' . $req->approver->lName 
+                                        : $req->approver->name) 
+                                    : 'Not Approved Yet' 
+                                }}
+
+                                </h2>
                             </td>
                             <td class="text-right">
                                 <div class="dropdown dropdown-action">
                                     <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown"
                                         aria-expanded="false"><i class="material-icons">more_vert</i></a>
                                     <div class="dropdown-menu dropdown-menu-right">
-                                        <a class="dropdown-item edit-leave" href="#" data-id="{{ $leave->id }}"
-                                            data-type="{{ $leave->type }}" data-start_date="{{ $leave->start_date }}"
-                                            data-end_date="{{ $leave->end_date }}" data-days="{{ $leave->days }}"
-                                            data-reason="{{ $leave->reason }}" data-status="{{ $leave->status }}">
+                                        <a class="dropdown-item edit-leave" href="#" data-id="{{ $req->id }}"
+                                            data-type="{{ $req->type }}" data-start_date="{{ $req->start_date }}"
+                                            data-end_date="{{ $req->end_date }}" data-days="{{ $req->days }}"
+                                            data-reason="{{ $req->reason }}" data-status="{{ $req->status }}">
                                             <i class="fa fa-pencil m-r-5"></i> Edit</a>
-                                        <a class="dropdown-item delete-leave" href="#" data-id="{{ $leave->id }}">
+                                        <a class="dropdown-item delete-leave" href="#" data-id="{{ $req->id }}">
                                             <i class="fa fa-trash-o m-r-5"></i> Delete</a>
                                     </div>
                                 </div>
@@ -237,7 +169,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="{{ route('mstore.leaver') }}" method="POST">
+                <form action="{{ route('store.leavehr') }}" method="POST">
                     @csrf
                     <div class="form-group">
                         <label>Leave Type <span class="text-danger">*</span></label>
@@ -371,47 +303,13 @@
 </div>
 <!-- /Delete Leave Modal -->
 
+</div>
+
+
 @endsection
 
 @section('scripts')
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var approveButtons = document.querySelectorAll('.approve-button');
-        var declineButtons = document.querySelectorAll('.decline-button');
-
-        approveButtons.forEach(function (button) {
-            button.addEventListener('click', function () {
-                var leaveId = button.getAttribute('data-leave-id');
-                confirmApproval(leaveId);
-            });
-        });
-
-        declineButtons.forEach(function (button) {
-            button.addEventListener('click', function () {
-                var leaveId = button.getAttribute('data-leave-id');
-                confirmDecline(leaveId);
-            });
-        });
-    });
-
-    function confirmApproval(leaveId) {
-        var form = document.getElementById('approve-form-' + leaveId);
-        var confirmAction = confirm("Are you sure you want to approve this leave request?");
-        if (confirmAction) {
-            form.submit();
-        }
-    }
-
-    function confirmDecline(leaveId) {
-        var form = document.getElementById('decline-form-' + leaveId);
-        var confirmAction = confirm("Are you sure you want to decline this leave request?");
-        if (confirmAction) {
-            form.submit();
-        }
-    }
-
-</script>
 
 <script>
     $(document).ready(function () {
@@ -425,6 +323,11 @@
 
         $('#start_datee').on('focus', function () {
             $('#end_datee').val('');
+        });
+
+        $('#end_datee').on('focus', function () {
+            $('#start_datee').val('');
+            alert('Select "from" date first');
         });
 
         $('#start_datee, #end_datee').on('dp.change', function () {
@@ -465,7 +368,7 @@
             $('#dayse').val(days);
             $('#reasone').val(reason);
 
-            $('#editLeaveForm').attr('action', '/hr/leave/' +
+            $('#editLeaveForm').attr('action', '/hr/leave/update/' +
                 leaveId); // Ensure the form action URL is correct
             $('#edit_leave').modal('show');
         });
@@ -481,11 +384,10 @@
             }
 
             $('#delete_leave_id').val(leaveId);
-            $('#deleteLeaveForm').attr('action', '/hr/leave/' + leaveId);
+            $('#deleteLeaveForm').attr('action', '/hr/leave/delete/' + leaveId);
             $('#delete_approve').modal('show');
         });
     });
 
 </script>
-
 @endsection

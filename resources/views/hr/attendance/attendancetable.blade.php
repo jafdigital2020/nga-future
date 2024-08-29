@@ -87,7 +87,7 @@
         <div class="col-lg-12">
             <div class="table-responsive">
                 @csrf
-                <table class="table table-hover table-nowrapdatatable" id="edittable">
+                <table class="table table-hover table-nowrap datatable" id="edittable">
                     <thead class="thead-light">
                         <tr>
                             <th>Name</th>
@@ -115,7 +115,7 @@
                                             asset('images/default.png')
                                         }}" alt="Profile Image" />
                                         @endif</a>
-                                    <a href="#">{{ $user->name }}
+                                    <a href="#">{{ $user->fName }} {{ $user->lName }}
                                         <span>{{ $user->department }}</span></a>
                                 </h2>
                             </td>

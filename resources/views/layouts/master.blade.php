@@ -14,6 +14,8 @@
         content="admin, estimates, bootstrap, business, corporate, creative, management, minimal, modern, accounts, invoice, html5, responsive, CRM, Projects" />
     <meta name="author" />
     <meta name="robots" content="noindex, nofollow" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <title>@yield('title')</title>
 
     <!-- Bootstrap CSS -->
@@ -26,6 +28,7 @@
     <link href="{{ asset('assets/plugins/morris/morris.css') }}" rel="stylesheet" />
     <!-- Main CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" />
+
 
     <!----FAVICON---->
     <link rel="icon" href="{{ url('assets/img/jaffavicon.png') }}" />
@@ -100,138 +103,69 @@
                 <li class="nav-item dropdown">
                     <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
                         <i class="fa fa-bell-o"></i>
-                        <span class="badge badge-pill">3</span>
+                        <span class="badge badge-pill"
+                            id="notification-count">{{ auth()->user()->unreadNotifications->count() }}</span>
                     </a>
                     <div class="dropdown-menu notifications">
                         <div class="topnav-dropdown-header">
                             <span class="notification-title">Notifications</span>
-                            <a href="javascript:void(0)" class="clear-noti">
-                                Clear All
-                            </a>
+                            <a href="{{ route('notifications.clear') }}" class="clear-noti">Clear All</a>
                         </div>
                         <div class="noti-content">
                             <ul class="notification-list">
+                                @foreach(auth()->user()->unreadNotifications as $notification)
                                 <li class="notification-message">
-                                    <a href="activities.html">
+                                    <a href="{{ isset($notification->data['leave_type']) ? route('leave.searchadmin') : (isset($notification->data['total_worked']) ? route('approvedTime') : '#') }}"
+                                        class="notification-link" data-id="{{ $notification->id }}">
                                         <div class="media">
                                             <span class="avatar">
-                                                <img alt="" src="assets/img/profiles/avatar-02.jpg" />
+                                                <img alt="Profile Image"
+                                                    src="{{ asset('images/' . auth()->user()->image) }}" />
                                             </span>
                                             <div class="media-body">
+                                                @if(isset($notification->data['leave_type']))
+                                                <!-- Leave Request Notification -->
                                                 <p class="noti-details">
-                                                    <span class="noti-title">John Doe</span>
-                                                    added new task
-                                                    <span class="noti-title">Patient appointment
-                                                        booking</span>
+                                                    <span
+                                                        class="noti-title">{{ $notification->data['employee_name'] }}</span>
+                                                    requested a leave:
+                                                    <span
+                                                        class="noti-title">{{ $notification->data['leave_type'] }}</span>
+                                                    from <span>{{ $notification->data['start_date'] }}</span> to
+                                                    <span>{{ $notification->data['end_date'] }}</span>.
                                                 </p>
+                                                @elseif(isset($notification->data['total_worked']))
+                                                <!-- Attendance Submission Notification -->
+                                                <p class="noti-details">
+                                                    <span
+                                                        class="noti-title">{{ $notification->data['employee_name'] }}</span>
+                                                    submitted attendance for
+                                                    <span class="noti-title">{{ $notification->data['cutoff'] }}</span>.
+                                                    Worked Hours:
+                                                    <span>{{ $notification->data['total_worked'] }}</span>,
+                                                    Late Hours: <span>{{ $notification->data['total_late'] }}</span>.
+                                                </p>
+                                                @endif
                                                 <p class="noti-time">
-                                                    <span class="notification-time">4 mins ago</span>
+                                                    <span
+                                                        class="notification-time">{{ $notification->created_at->diffForHumans() }}</span>
                                                 </p>
                                             </div>
                                         </div>
                                     </a>
                                 </li>
-                                <li class="notification-message">
-                                    <a href="activities.html">
-                                        <div class="media">
-                                            <span class="avatar">
-                                                <img alt="" src="assets/img/profiles/avatar-03.jpg" />
-                                            </span>
-                                            <div class="media-body">
-                                                <p class="noti-details">
-                                                    <span class="noti-title">Tarah
-                                                        Shropshire</span>
-                                                    changed the task name
-                                                    <span class="noti-title">Appointment booking
-                                                        with payment
-                                                        gateway</span>
-                                                </p>
-                                                <p class="noti-time">
-                                                    <span class="notification-time">6 mins ago</span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li class="notification-message">
-                                    <a href="activities.html">
-                                        <div class="media">
-                                            <span class="avatar">
-                                                <img alt="" src="assets/img/profiles/avatar-06.jpg" />
-                                            </span>
-                                            <div class="media-body">
-                                                <p class="noti-details">
-                                                    <span class="noti-title">Misty Tison</span>
-                                                    added
-                                                    <span class="noti-title">Domenic
-                                                        Houston</span>
-                                                    and
-                                                    <span class="noti-title">Claire Mapes</span>
-                                                    to project
-                                                    <span class="noti-title">Doctor available
-                                                        module</span>
-                                                </p>
-                                                <p class="noti-time">
-                                                    <span class="notification-time">8 mins ago</span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li class="notification-message">
-                                    <a href="activities.html">
-                                        <div class="media">
-                                            <span class="avatar">
-                                                <img alt="" src="assets/img/profiles/avatar-17.jpg" />
-                                            </span>
-                                            <div class="media-body">
-                                                <p class="noti-details">
-                                                    <span class="noti-title">Rolland
-                                                        Webber</span>
-                                                    completed task
-                                                    <span class="noti-title">Patient and Doctor
-                                                        video
-                                                        conferencing</span>
-                                                </p>
-                                                <p class="noti-time">
-                                                    <span class="notification-time">12 mins ago</span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li class="notification-message">
-                                    <a href="activities.html">
-                                        <div class="media">
-                                            <span class="avatar">
-                                                <img alt="" src="assets/img/profiles/avatar-13.jpg" />
-                                            </span>
-                                            <div class="media-body">
-                                                <p class="noti-details">
-                                                    <span class="noti-title">Bernardo
-                                                        Galaviz</span>
-                                                    added new task
-                                                    <span class="noti-title">Private chat
-                                                        module</span>
-                                                </p>
-                                                <p class="noti-time">
-                                                    <span class="notification-time">2 days ago</span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>
+                                @endforeach
                             </ul>
                         </div>
                         <div class="topnav-dropdown-footer">
-                            <a href="activities.html">View all Notifications</a>
+                            <a href="#">View all Notifications</a>
                         </div>
                     </div>
                 </li>
                 <!-- /Notifications -->
 
                 <!-- Message Notifications -->
-                <li class="nav-item dropdown">
+                <!-- <li class="nav-item dropdown">
                     <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
                         <i class="fa fa-comment-o"></i>
                         <span class="badge badge-pill">8</span>
@@ -351,7 +285,7 @@
                             <a href="chat.html">View all Messages</a>
                         </div>
                     </div>
-                </li>
+                </li> -->
                 <!-- /Message Notifications -->
 
                 <li class="nav-item dropdown has-arrow main-drop">
@@ -420,6 +354,10 @@
                         <li class="{{ Request::is('admin/attendance') ? 'active':'' }}">
                             <a href="{{ url('admin/attendance') }}"><i class="la la-calendar"></i>
                                 <span>Attendance</span></a>
+                        </li>
+                        <li class="{{ Request::is('admin/timesheet') ? 'active':'' }}">
+                            <a href="{{ url('admin/timesheet') }}"><i class="las la-calendar-check"></i>
+                                <span>Timesheet Approval</span></a>
                         </li>
 
                         <li class="menu-title">
@@ -533,19 +471,6 @@
         });
 
     </script>
-
-    <script>
-        document.getElementById('toggle_btn').addEventListener('click', function () {
-            var logoImg = document.getElementById('logo-img');
-            var currentSrc = logoImg.getAttribute('src');
-            var newSrc = currentSrc.includes('OneJAFwhite.png') ? "{{ url('assets/img/togglelogo.png') }}" :
-                "{{ asset('assets/img/OneJAFwhite.png') }}";
-            logoImg.setAttribute('src', newSrc);
-        });
-
-    </script>
-
-
 </body>
 
 </html>

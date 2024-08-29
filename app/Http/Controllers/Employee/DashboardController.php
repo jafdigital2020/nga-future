@@ -201,7 +201,7 @@ class DashboardController extends Controller
     {
         // Log the incoming request data for debugging
         Log::info('Saving attendance:', $request->all());
-
+    
         // Validate the request data
         $request->validate([
             'total_worked' => 'required|regex:/^\d{2}:\d{2}:\d{2}$/',
@@ -215,7 +215,18 @@ class DashboardController extends Controller
             'birthday_leave' => 'required|integer',
             'status' => 'required|string|in:pending,approved,rejected,sent'
         ]);
-
+    
+        // Check if the attendance record already exists for the same user and cutoff
+        $existingAttendance = ApprovedAttendance::where('users_id', Auth::id())
+            ->where('cut_off', $request->input('cutoff'))
+            ->where('start_date', $request->input('start_date'))
+            ->where('end_date', $request->input('end_date'))
+            ->first();
+    
+        if ($existingAttendance) {
+            return response()->json(['message' => 'Attendance record already exists for this cutoff.'], 409);
+        }
+    
         try {
             // Create a new ApprovedAttendance record
             $attendance = new ApprovedAttendance();
@@ -223,6 +234,7 @@ class DashboardController extends Controller
             $attendance->name = Auth::user()->fName . ' ' . Auth::user()->lName;
             $attendance->department = Auth::user()->department;
             $attendance->month = date('F'); 
+            $attendance->year = $request->input('year');
             $attendance->totalHours = $request->input('total_worked');
             $attendance->totalLate = $request->input('total_late');
             $attendance->cut_off = $request->input('cutoff');
@@ -233,20 +245,21 @@ class DashboardController extends Controller
             $attendance->sickLeave = $request->input('sick_leave');
             $attendance->bdayLeave = $request->input('birthday_leave');
             $attendance->status = $request->input('status');
-
+    
             // Save the record to the database
             $attendance->save();
-
+    
             // Return a success response
             return response()->json(['message' => 'Attendance saved successfully.'], 200);
         } catch (\Exception $e) {
             // Log the error message
             Log::error('Error saving attendance:', ['error' => $e->getMessage()]);
-
+    
             // Return an error response
             return response()->json(['message' => 'Error saving attendance.', 'error' => $e->getMessage()], 500);
         }
-    } 
+    }
+    
 
     public function getStatus(Request $request)
     {

@@ -1,5 +1,6 @@
 @extends('layouts.managermaster') @section('title', 'One JAF')
 <meta name="csrf-token" content="{{ csrf_token() }}">
+
 @section('content')
 
 <div class="content container-fluid">
@@ -58,17 +59,36 @@
                         <form action="{{ url('manager/dashboard') }}" method="POST">
                             @csrf
                             <div class="punch-btn-section">
-                                <button type="submit" class="btn btn-primary punch-btn">
-                                    Time In
+                                <button type="submit" class="btn1">
+                                    Clock In
                                 </button>
                             </div>
                         </form>
-                        <!-- Time Out -->
 
+                        <!-- Break Buttons -->
+
+                        <form action="{{ url('manager/dashboard/breakin/') }}" method="POST">
+                            @csrf @method('PUT')
+                            <div class="punch-btn-section">
+                                <button class="btn2" type="submit" id="startButton">
+                                    Start Break
+                                </button>
+                            </div>
+                        </form>
+
+                        <form action="{{ url('manager/dashboard/breakout/') }}" method="POST">
+                            @csrf @method('PUT')
+                            <div class="punch-btn-section">
+                                <button class="btn1" type="submit" id="resetButton">
+                                    End Break
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Time Out -->
                         <div class="punch-btn-section">
-                            <button type="submit" class="btn btn-outline-danger punch-btn" data-toggle="modal"
-                                data-target="#exampleModal">
-                                Time Out
+                            <button type="submit" class="btn2" data-toggle="modal" data-target="#exampleModal">
+                                Clock Out
                             </button>
                         </div>
                     </div>
@@ -103,36 +123,25 @@
                             </div>
                         </div>
                     </div>
-
                     <!-- Modal -->
-
-                    <!-- Break Buttons -->
-
                     <div class="statistics">
                         <div class="row">
                             <div class="col-md-6 col-6 text-center">
-                                <form action="{{ url('manager/dashboard/breakin') }}" method="POST">
-                                    @csrf @method('PUT')
-                                    <div class="stats-box">
-                                        <button class="breakOut">
-                                            Break Out
-                                        </button>
-                                    </div>
-                                </form>
+                                <div class="stats-box">
+                                    <p>Break</p>
+                                    <h6>1 hr</h6>
+                                </div>
                             </div>
                             <div class="col-md-6 col-6 text-center">
-                                <form action="{{ url('manager/dashboard/breakout') }}" method="POST">
-                                    @csrf @method('PUT')
-                                    <div class="stats-box">
-                                        <button class="breakOut" data-toggle="modal" data-target="#exampleModalCenter">
-                                            Break In
-                                        </button>
-                                    </div>
-                                </form>
+                                <div class="stats-box">
+                                    <p>Break Timer</p>
+                                    <h6 id="countdown">01:00:00</h6>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
         <div class="col-md-4">
@@ -584,7 +593,7 @@
                     const leaveTypeDiv = document.createElement('div');
                     leaveTypeDiv.className =
                         'calendar-text leave-type-button';
-                    leaveTypeDiv.innerText = "Leave Type: " + leave.type;
+                    leaveTypeDiv.innerText = leave.type;
                     dayDiv.appendChild(leaveTypeDiv);
 
                     if (leave.type === 'Unpaid Leave') {
@@ -821,7 +830,7 @@
             const yearSelect = document.getElementById('yearSelect');
             const selectedOptionText = monthSelect.options[monthSelect.selectedIndex].text;
             const year = parseInt(yearSelect.value);
-            const cutoff = `${selectedOptionText} ${year}`;
+            const cutoff = `${selectedOptionText}`;
 
             const {
                 startDate,
@@ -846,6 +855,7 @@
                 vacation_leave: vacationLeaveCount,
                 sick_leave: sickLeaveCount,
                 birthday_leave: bdayLeaveCount,
+                year: year,
                 status: 'pending'
             };
 
@@ -939,5 +949,87 @@
     });
 
 </script>
+
+<script>
+    const countdownElement = document.getElementById('countdown');
+    const startButton = document.getElementById('startButton');
+    const resetButton = document.getElementById('resetButton');
+    const countdownKey = 'countdownEndTime';
+    const lastStartKey = 'lastCountdownDate';
+
+    function formatTime(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function updateCountdown() {
+        const endTime = localStorage.getItem(countdownKey);
+        if (endTime) {
+            const now = new Date().getTime();
+            const timeRemaining = Math.max(Math.floor((endTime - now) / 1000), 0);
+
+            countdownElement.textContent = `Time remaining: ${formatTime(timeRemaining)}`;
+
+            if (timeRemaining > 0) {
+                setTimeout(updateCountdown, 1000);
+            } else {
+                countdownElement.textContent = "Time's up!";
+                localStorage.removeItem(countdownKey);
+            }
+        }
+    }
+
+    function startCountdown() {
+        const now = new Date().getTime();
+        const oneHourInMillis = 3600 * 1000;
+        const endTime = now + oneHourInMillis;
+        localStorage.setItem(countdownKey, endTime);
+
+        updateCountdown();
+    }
+
+    function checkIfNewDay() {
+        const lastStartDate = localStorage.getItem(lastStartKey);
+        const today = new Date().toDateString();
+
+        if (lastStartDate !== today) {
+            localStorage.setItem(lastStartKey, today);
+            return true;
+        }
+        return false;
+    }
+
+    startButton.addEventListener('click', function () {
+        if (checkIfNewDay()) {
+            startCountdown();
+        } else {
+            countdownElement.textContent = "Countdown can only be started once per day.";
+        }
+    });
+
+    resetButton.addEventListener('click', function () {
+        localStorage.removeItem(countdownKey);
+        localStorage.removeItem(lastStartKey);
+        countdownElement.textContent = "Time remaining: 1:00:00";
+    });
+
+    // Initialize the countdown if it's already set
+    updateCountdown();
+
+</script>
+
+<script>
+    // Function to refresh the page
+    function refreshPage() {
+        window.location.reload();
+    }
+
+    // Set timeout to refresh the page every 30 minutes (1800000 milliseconds)
+    setTimeout(refreshPage, 1800000); // 30 minutes = 1800000 milliseconds
+
+</script>
+
 
 @endsection

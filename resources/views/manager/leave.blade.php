@@ -10,13 +10,16 @@
             <div class="col">
                 <h3 class="page-title">Leaves</h3>
                 <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url('manager/dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item active">Leaves</li>
                 </ul>
             </div>
             <div class="col-auto float-right ml-auto">
-                <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_leave"><i class="fa fa-plus"></i>
-                    Request Leave</a>
+                <div class="view-icons">
+                    <a href="{{ url('manager/leave') }}" class="grid-view btn btn-link"><i class="fa fa-th"></i></a>
+                    <a href="{{ url('manager/leave/manager') }}" class="list-view btn btn-link active"><i
+                            class="fa fa-paper-plane"></i></a>
+                </div>
             </div>
         </div>
     </div>
@@ -51,7 +54,6 @@
         </div>
     </div>
     <!-- /Leave Statistics -->
-
     <!-- Search Filter -->
     <form action="{{ route('leave.search') }}" method="GET">
         <div class="row filter-row">

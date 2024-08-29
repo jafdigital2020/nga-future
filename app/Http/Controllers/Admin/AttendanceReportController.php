@@ -7,11 +7,13 @@ use App\Models\User;
 use App\Models\Attendance;
 use Carbon\CarbonInterval;
 use Illuminate\Http\Request;
+use App\Models\ApprovedAttendance;
 use App\Models\EmployeeAttendance;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class AttendanceReportController extends Controller
 {
@@ -192,5 +194,177 @@ class AttendanceReportController extends Controller
     {
         $monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         return array_search($monthName, $monthNames) + 1;
+    }
+
+    public function timesheet(Request $request)
+    {
+        $user = auth()->user();
+        $name = $request->input('name');
+        $type = $request->input('type');
+        $status = $request->input('status');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $cutOff = $request->input('cut_off');
+    
+        // Initialize the query
+        $data = ApprovedAttendance::query();
+    
+        // If no status is selected, default to showing pending requests
+        if (empty($status)) {
+            $data->where('status', 'Pending');
+        }
+    
+        if ($user->isAdmin() || $user->isHR()) {
+            
+            $pendingCount = ApprovedAttendance::where('status', 'Pending')->count();
+            $approvedCount = ApprovedAttendance::where('status', 'Approved')->count();
+            $declinedCount = ApprovedAttendance::where('status', 'Declined')->count();
+        } elseif ($user->isSupervisor()) {
+            // Supervisors can only see leave requests from their department but not their own requests
+            $data->whereHas('user', function ($query) use ($user) {
+                $query->where('department', $user->department)
+                      ->where('role_as', '!=', User::ROLE_HR) // Not HR
+                      ->where('role_as', '!=', User::ROLE_ADMIN) // Not Admin
+                      ->where('id', '!=', $user->id); // Not their own requests
+            });
+    
+            $pendingCount = ApprovedAttendance::where('status', 'Pending')
+                                ->whereHas('user', function ($query) use ($user) {
+                                    $query->where('department', $user->department)
+                                          ->where('role_as', '!=', User::ROLE_HR) // Not HR
+                                          ->where('role_as', '!=', User::ROLE_ADMIN) // Not Admin
+                                          ->where('id', '!=', $user->id); // Not their own requests
+                                })->count();
+    
+            $approvedCount = ApprovedAttendance::where('status', 'Approved')
+                                ->whereHas('user', function ($query) use ($user) {
+                                    $query->where('department', $user->department)
+                                          ->where('role_as', '!=', User::ROLE_HR) // Not HR
+                                          ->where('role_as', '!=', User::ROLE_ADMIN) // Not Admin
+                                          ->where('id', '!=', $user->id); // Not their own requests
+                                })->count();
+
+            $declinedCount = ApprovedAttendance::where('status', 'Declined')
+                                ->whereHas('user', function ($query) use ($user) {
+                                    $query->where('department', $user->department)
+                                          ->where('role_as', '!=', User::ROLE_HR) // Not HR
+                                          ->where('role_as', '!=', User::ROLE_ADMIN) // Not Admin
+                                          ->where('id', '!=', $user->id); // Not their own requests
+                                })->count();
+        } else {
+           
+            $data->where('users_id', $user->id);
+    
+            $pendingCount = ApprovedAttendance::where('status', 'Pending')
+                                ->where('users_id', $user->id)
+                                ->count();
+    
+            $approvedCount = ApprovedAttendance::where('status', 'Approved')
+                                ->where('users_id', $user->id)
+                                ->count();
+           $declinedCount = ApprovedAttendance::where('status', 'Declined')
+                                ->where('users_id', $user->id)
+                                ->count();
+        }
+    
+        // Apply search filters independently
+        if (!empty($name)) {
+            $data->whereHas('user', function ($query) use ($name) {
+                $query->where('name', 'like', "%$name%");
+            });
+        }
+    
+        if (!empty($cutOff)) {
+            $data->where('cut_off', 'like', "%$cutOff%");
+        }
+    
+        if (!empty($status)) {
+            $data->where('status', 'like', "%$status%");
+        }
+    
+        // Apply date range filter on start_date
+        if (!empty($startDate) && !empty($endDate)) {
+            $data->where(function($query) use ($startDate, $endDate) {
+                $query->whereBetween('start_date', [$startDate, $endDate])
+                      ->orWhereBetween('end_date', [$startDate, $endDate])
+                      ->orWhere(function($query) use ($startDate, $endDate) {
+                          $query->where('start_date', '<=', $startDate)
+                                ->where('end_date', '>=', $endDate);
+                      });
+            });
+        }
+    
+        $attendance = $data->get();
+    
+        return view('admin.timesheet', compact('attendance', 'pendingCount', 'user', 'approvedCount', 'declinedCount'));
+    }
+
+    public function approve($id)
+    {
+        $att = ApprovedAttendance::findOrFail($id);
+        $user = $att->user;
+        $currentUser = auth()->user();
+
+        $user->save();
+
+        $att->status = 'Approved';
+        $att->approved_by = $currentUser->id;
+        $att->save();
+
+        Alert::success('Attendance Approved');
+        return redirect()->back();
+    }
+
+    public function decline($id)
+    {
+        $att = ApprovedAttendance::findOrFail($id);
+        $user = $att->user;
+    
+        $att->status = 'Declined';
+        $att->save();
+    
+        Alert::success('Attendance Declined');
+        return redirect()->back();
+    }
+
+    public function updateAttendance(Request $request, $id)
+
+    {
+        $approved = ApprovedAttendance::findOrFail($id);
+
+        $approved->start_date = $request->input('start_date');
+        $approved->end_date = $request->input('end_date');
+        $approved->totalHours = $request->input('totalHours');
+        $approved->totalLate = $request->input('totalLate');
+        $approved->save();
+
+        Alert::success('Attendance Updated');
+        return redirect()->back();
+    }
+    
+    public function destroyAttendance($id)
+    {
+        $appr = ApprovedAttendance::findOrFail($id);
+
+        $appr->delete();
+
+        Alert::success('Attendance deleted successfully');
+        return redirect()->back();
+    }
+
+    public function updateTableAttendance(Request $request, $id)
+    {
+        $attupdate = EmployeeAttendance::findOrFail($id);
+
+        $attupdate->timeIn = $request->input('timeIn');
+        $attupdate->breakIn = $request->input('breakIn');
+        $attupdate->breakOut = $request->input('breakOut');
+        $attupdate->timeOut = $request->input('timeOut');
+        $attupdate->totalLate = $request->input('totalLate');
+        $attupdate->timeTotal = $request->input('totalHours');
+        $attupdate->save();
+
+        Alert::success('Attendance Updated');
+        return redirect()->back();
     }
 }

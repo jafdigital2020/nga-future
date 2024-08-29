@@ -1,4 +1,4 @@
-@extends('layouts.managermaster') @section('title', 'Attendance') @section('content')
+@extends('layouts.master') @section('title', 'Timesheet') @section('content')
 @include('sweetalert::alert')
 
 <!-- Page Content -->
@@ -11,16 +11,16 @@
                 <h3 class="page-title">Timesheet Approval</h3>
                 <ul class="breadcrumb">
                     <li class="breadcrumb-item">
-                        <a href="{{ url('manager/dashboard') }}">Dashboard</a>
+                        <a href="{{ url('admin/dashboard') }}">Dashboard</a>
                     </li>
                     <li class="breadcrumb-item active">Timesheet Approval</li>
                 </ul>
             </div>
             <div class="col-auto float-right ml-auto">
                 <div class="view-icons">
-                    <a href="{{ url('manager/attendance') }}" class="grid-view btn btn-link"><i
+                    <a href="{{ url('admin/timesheet') }}" class="grid-view btn btn-link"><i
                             class="las la-calendar-check"></i></a>
-                    <a href="{{ url('manager/attendance/record') }}" class="list-view btn btn-link active"><i
+                    <a href="{{ url('admin/attendance') }}" class="list-view btn btn-link active"><i
                             class="la la-calendar"></i></a>
                 </div>
             </div>
@@ -52,7 +52,7 @@
     <!-- /Attendance Statistics -->
 
     <!-- Search Filter -->
-    <form action="{{ route('attendance.search') }}" method="GET">
+    <form action="{{ route('attendance.searchadmin') }}" method="GET">
         <div class="row filter-row">
             <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
                 <div class="form-group form-focus">
@@ -241,7 +241,7 @@
                                             Pending</a>
 
                                         <form id="approve-form-{{ $att->id }}"
-                                            action="{{ route('att.approve', $att->id) }}" method="POST"
+                                            action="{{ route('att.approveadmin', $att->id) }}" method="POST"
                                             style="display:inline;">
                                             @csrf
                                             <button type="button" class="dropdown-item approve-button"
@@ -251,7 +251,7 @@
                                         </form>
 
                                         <form id="decline-form-{{ $att->id }}"
-                                            action="{{ route('att.decline', $att->id) }}" method="POST"
+                                            action="{{ route('att.declineadmin', $att->id) }}" method="POST"
                                             style="display:inline;">
                                             @csrf
                                             <button type="button" class="dropdown-item decline-button"
@@ -412,7 +412,7 @@
 </script>
 
 <script>
-    // Edit leave request
+    // Edit attendance request
     $('.edit-attendance').on('click', function () {
         var attId = $(this).data('id');
         var cutOff = $(this).data('type');
@@ -433,18 +433,18 @@
         $('#totalHours').val(totalHours);
         $('#totalLate').val(totalLate);
 
-        $('#editAttendanceForm').attr('action', '/manager/attendance/approve/' +
+        $('#editAttendanceForm').attr('action', '/admin/timesheet/approve/' +
             attId); // Ensure the form action URL is correct
         $('#edit_attendance').modal('show');
     });
 
-    // Delete leave request
+    // Delete attendance request
     $('.delete-attendance').on('click', function () {
         var attId = $(this).data('id');
 
 
         $('#delete_attendance_id').val(attId);
-        $('#deleteAttendanceForm').attr('action', '/manager/attendance/delete/' + attId);
+        $('#deleteAttendanceForm').attr('action', '/admin/timesheet/delete/' + attId);
         $('#delete_approve').modal('show');
     });
 

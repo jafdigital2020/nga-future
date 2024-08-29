@@ -788,7 +788,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="{{ route('admin.update') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('admin.updateprofile') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="row">
                         <div class="col-md-12">

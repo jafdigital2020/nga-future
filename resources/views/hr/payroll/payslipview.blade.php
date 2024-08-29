@@ -1,4 +1,4 @@
-@extends('layouts.hrmaster') @section('title', 'Payroll')
+@extends('layouts.hrmaster') @section('title', 'Payslip')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
 @section('content')

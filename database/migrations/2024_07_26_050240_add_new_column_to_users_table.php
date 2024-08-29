@@ -14,11 +14,26 @@ class AddNewColumnToUsersTable extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('fName')->nullable()->after('name');
-            $table->string('mName')->nullable()->after('fName');
-            $table->string('lName')->nullable()->after('mName');
-            $table->string('suffix')->nullable()->after('lName');
-            $table->string('tin')->nullable()->after('philHealth');
+            // Add columns only if they do not already exist
+            if (!Schema::hasColumn('users', 'fName')) {
+                $table->string('fName')->nullable()->after('name');
+            }
+    
+            if (!Schema::hasColumn('users', 'mName')) {
+                $table->string('mName')->nullable()->after('fName');
+            }
+    
+            if (!Schema::hasColumn('users', 'lName')) {
+                $table->string('lName')->nullable()->after('mName');
+            }
+    
+            if (!Schema::hasColumn('users', 'suffix')) {
+                $table->string('suffix')->nullable()->after('lName');
+            }
+    
+            if (!Schema::hasColumn('users', 'tin')) {
+                $table->string('tin')->nullable()->after('philHealth');
+            }
         });
     }
 

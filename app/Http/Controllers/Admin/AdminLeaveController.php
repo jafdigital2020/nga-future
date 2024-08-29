@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\EmployeeAttendance;
 use App\Http\Controllers\Controller;
 use RealRashid\SweetAlert\Facades\Alert;
+use App\Notifications\RequestApprovedNotification;
 
 class AdminLeaveController extends Controller
 {
@@ -242,6 +243,9 @@ class AdminLeaveController extends Controller
         $leave->status = 'Approved';
         $leave->approved_by = $currentUser->id;
         $leave->save();
+
+        // Send a notification to the employee who requested the leave
+        $user->notify(new RequestApprovedNotification($leave));
 
         Alert::success('Leave request approved');
         return redirect()->back();

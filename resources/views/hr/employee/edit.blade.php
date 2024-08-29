@@ -6,13 +6,19 @@
 
     <!-- Page Header -->
     <div class="page-header">
-        <div class="row">
-            <div class="col-sm-12">
-                <h3 class="page-title">Employee Profile</h3>
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="page-title">Employee</h3>
                 <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url('hr/dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ url('hr/dashboard') }}">Dashboard</a>
+                    </li>
                     <li class="breadcrumb-item active">Employee</li>
                 </ul>
+            </div>
+            <div class="col-auto float-right ml-auto">
+                <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_shift"><i class="fa fa-plus"></i>
+                    Shift Schedule</a>
             </div>
         </div>
     </div>
@@ -491,9 +497,9 @@
                                     </option>
                                     <option value="4" {{ $user->role_as == '4' ? 'selected' : '' }}>Operations Manager
                                     </option>
-                                    <option value="5" {{ $user->role_as == '4' ? 'selected' : '' }}>IT Manager
+                                    <option value="5" {{ $user->role_as == '5' ? 'selected' : '' }}>IT Manager
                                     </option>
-                                    <option value="6" {{ $user->role_as == '4' ? 'selected' : '' }}>Marketing Manager
+                                    <option value="6" {{ $user->role_as == '6' ? 'selected' : '' }}>Marketing Manager
                                     </option>
                                 </select>
                             </div>
@@ -770,7 +776,6 @@
 <!-- /Bank Information Modal -->
 
 <!-- Changepassword Info Modal -->
-
 <div id="change_password" class="modal custom-modal fade" role="dialog">
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
@@ -823,8 +828,113 @@
         </div>
     </div>
 </div>
-
 <!-- /Changepassword Info Modal -->
+
+<!--  Shift Schedule Modal -->
+<div id="add_shift" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"> Shift Schedule </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url('hr/employee/shift/' . $user->id) }}" method="POST">
+                    @csrf
+                    <div class="row">
+                        <div class="col-md-12">
+                            @forelse ($user->shiftSchedule as $shift)
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <label class="col-form-label">Flexible Time</label>
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" onchange="toggleShiftFields(this)"
+                                                class="custom-control-input" id="flexibleTime{{ $shift->id }}"
+                                                name="flexibleTime" value="1"
+                                                {{ $shift->flexibleTime ? 'checked' : '' }}>
+                                            <!-- Checked if flexibleTime is true -->
+                                            <label class="custom-control-label"
+                                                for="flexibleTime{{ $shift->id }}"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Shift Start</label>
+                                        <input type="time" name="shiftStart" id="shiftStart{{ $shift->id }}"
+                                            class="form-control"
+                                            value="{{ $shift->flexibleTime ? '' : $shift->shiftStart }}"
+                                            {{ $shift->flexibleTime ? 'disabled' : '' }} required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Late Threshold</label>
+                                        <input type="time" name="lateThreshold" id="lateThreshold{{ $shift->id }}"
+                                            class="form-control"
+                                            value="{{ $shift->flexibleTime ? '' : $shift->lateThreshold }}"
+                                            {{ $shift->flexibleTime ? 'disabled' : '' }} required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Shift End</label>
+                                        <input type="time" name="shiftEnd" id="shiftEnd{{ $shift->id }}"
+                                            class="form-control"
+                                            value="{{ $shift->flexibleTime ? '' : $shift->shiftEnd }}"
+                                            {{ $shift->flexibleTime ? 'disabled' : '' }} required>
+                                    </div>
+                                </div>
+                            </div>
+                            @empty
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <label class="col-form-label">Flexible Time</label>
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" onchange="toggleShiftFields(this)"
+                                                class="custom-control-input" id="flexibleTime" name="flexibleTime"
+                                                value="1"> <!-- Default is off -->
+                                            <label class="custom-control-label" for="flexibleTime"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Shift Start</label>
+                                        <input type="time" name="shiftStart" id="shiftStart" class="form-control"
+                                            required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Late Threshold</label>
+                                        <input type="time" name="lateThreshold" id="lateThreshold" class="form-control"
+                                            required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Shift End</label>
+                                        <input type="time" name="shiftEnd" id="shiftEnd" class="form-control" required>
+                                    </div>
+                                </div>
+                            </div>
+                            @endforelse
+                        </div>
+                        <div class="submit-section">
+                            <button class="btn btn-primary submit-btn" type="submit"> Submit </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Shift Schedule Modal -->
 @endsection
 
 @section('scripts')
@@ -867,6 +977,44 @@
             this.innerHTML = '<i class="la la-eye"></i>';
         }
     });
+
+</script>
+
+<script>
+    const timeInput = document.getElementById('shiftStart');
+
+    timeInput.addEventListener('input', function () {
+        let [hours, minutes] = this.value.split(':');
+        const suffix = hours >= 12 ? "PM" : "AM";
+        hours = (hours % 12) || 12;
+        console.log(`${hours}:${minutes} ${suffix}`);
+    });
+
+</script>
+
+<script>
+    function toggleShiftFields(checkbox) {
+        // Get the current shift ID from the checkbox's ID
+        const shiftId = $(checkbox).attr('id').replace('flexibleTime', '');
+
+        // Determine the input fields related to this shift
+        const shiftStart = $('#shiftStart' + shiftId);
+        const lateThreshold = $('#lateThreshold' + shiftId);
+        const shiftEnd = $('#shiftEnd' + shiftId);
+
+        // Toggle the disabled property based on the checkbox state
+        const isDisabled = $(checkbox).is(':checked');
+        shiftStart.prop('disabled', isDisabled);
+        lateThreshold.prop('disabled', isDisabled);
+        shiftEnd.prop('disabled', isDisabled);
+
+        // Optionally, clear the values of the disabled fields
+        if (isDisabled) {
+            shiftStart.val('');
+            lateThreshold.val('');
+            shiftEnd.val('');
+        }
+    }
 
 </script>
 

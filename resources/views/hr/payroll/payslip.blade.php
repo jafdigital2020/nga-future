@@ -21,17 +21,17 @@
 
     <!-- Search Filter -->
     <form action="{{ route('hr.payslipView') }}" method="GET">
-        <div class="row filter-row float-right ml-auto">
-            <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
+        <div class="row filter-row">
+            <div class="col-sm-6 col-md-2">
                 <div class="form-group form-focus">
-                    <input type="text" class="form-control floating" name="name" value="{{ request('name') }}">
+                    <input type="text" class="form-control floating" name="name" value="{{ request('ename') }}">
                     <label class="focus-label">Employee Name</label>
                 </div>
             </div>
-            <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
+            <div class="col-sm-6 col-md-2">
                 <div class="form-group form-focus select-focus">
                     <select class="select floating" name="department">
-                        <option value="">--Select Department--</option>
+                        <option value="">--Department--</option>
                         @foreach($departments as $dept)
                         <option value="{{ $dept->department }}"
                             {{ $dept->department == $departments ? 'selected' : '' }}>
@@ -42,49 +42,18 @@
                     <label class="focus-label">Select Department</label>
                 </div>
             </div>
-            <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
+            <div class="col-sm-6 col-md-2">
                 <div class="form-group form-focus select-focus">
                     <select class="select floating" id="monthSelect" name="cutoff_period">
-                        <option value="0" {{ $cutoffPeriod == '0' ? 'selected' : '' }}>December - January 1st Cut-off
+                        <option value="" {{ $cutoffPeriod == '' ? 'selected' : '' }}>-- Select Cut-off
+                            Period --
                         </option>
-                        <option value="1" {{ $cutoffPeriod == '1' ? 'selected' : '' }}>January 2nd Cut-off</option>
-                        <option value="2" {{ $cutoffPeriod == '2' ? 'selected' : '' }}>January - February 1st Cut-off
-                        </option>
-                        <option value="3" {{ $cutoffPeriod == '3' ? 'selected' : '' }}>February 2nd Cut-off</option>
-                        <option value="4" {{ $cutoffPeriod == '4' ? 'selected' : '' }}>February - March 1st Cut-off
-                        </option>
-                        <option value="5" {{ $cutoffPeriod == '5' ? 'selected' : '' }}>March 2nd Cut-off</option>
-                        <option value="6" {{ $cutoffPeriod == '6' ? 'selected' : '' }}>March - April 1st Cut-off
-                        </option>
-                        <option value="7" {{ $cutoffPeriod == '7' ? 'selected' : '' }}>April 2nd Cut-off</option>
-                        <option value="8" {{ $cutoffPeriod == '8' ? 'selected' : '' }}>April - May 1st Cut-off</option>
-                        <option value="9" {{ $cutoffPeriod == '9' ? 'selected' : '' }}>May 2nd Cut-off</option>
-                        <option value="10" {{ $cutoffPeriod == '10' ? 'selected' : '' }}>May - June 1st Cut-off</option>
-                        <option value="11" {{ $cutoffPeriod == '11' ? 'selected' : '' }}>June 2nd Cut-off</option>
-                        <option value="12" {{ $cutoffPeriod == '12' ? 'selected' : '' }}>June - July 1st Cut-off
-                        </option>
-                        <option value="13" {{ $cutoffPeriod == '13' ? 'selected' : '' }}>July 2nd Cut-off</option>
-                        <option value="14" {{ $cutoffPeriod == '14' ? 'selected' : '' }}>July - August 1st Cut-off
-                        </option>
-                        <option value="15" {{ $cutoffPeriod == '15' ? 'selected' : '' }}>August 2nd Cut-off</option>
-                        <option value="16" {{ $cutoffPeriod == '16' ? 'selected' : '' }}>August - September 1st Cut-off
-                        </option>
-                        <option value="17" {{ $cutoffPeriod == '17' ? 'selected' : '' }}>September 2nd Cut-off</option>
-                        <option value="18" {{ $cutoffPeriod == '18' ? 'selected' : '' }}>September - October 1st Cut-off
-                        </option>
-                        <option value="19" {{ $cutoffPeriod == '19' ? 'selected' : '' }}>October 2nd Cut-off</option>
-                        <option value="20" {{ $cutoffPeriod == '20' ? 'selected' : '' }}>October - November 1st Cut-off
-                        </option>
-                        <option value="21" {{ $cutoffPeriod == '21' ? 'selected' : '' }}>November 2nd Cut-off</option>
-                        <option value="22" {{ $cutoffPeriod == '22' ? 'selected' : '' }}>November - December 1st Cut-off
-                        </option>
-                        <option value="23" {{ $cutoffPeriod == '23' ? 'selected' : '' }}>December 2nd Cut-off</option>
+                        <!-- Add more options here -->
                     </select>
-
                     <label class="focus-label">Cut-off Period</label>
                 </div>
             </div>
-            <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
+            <div class="col-sm-6 col-md-2">
                 <div class="form-group form-focus select-focus">
                     <select class="select floating" name="year">
                         <option value="">--Select Year--</option>
@@ -93,13 +62,14 @@
                     </select>
                     <label class="focus-label">Year</label>
                 </div>
+
             </div>
-            <div class="col-sm-6 col-md-4 col-lg-4 col-xl-4 col-12">
-                <button type="submit" class="btn btn-primary btn-block">Search</button>
+            <div class="col-sm-6 col-md-4"><button type="submit" class="btn btn-primary btn-block ml-2">Search</button>
             </div>
         </div>
     </form>
     <!-- /Search Filter -->
+
 
     <div class="row">
         <div class="col-md-12">
@@ -156,6 +126,8 @@
                                     <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown"
                                         aria-expanded="false"><i class="material-icons">more_vert</i></a>
                                     <div class="dropdown-menu dropdown-menu-right">
+                                        <a class="dropdown-item" href="{{ url('hr/payslip/edit/'.$pay->id) }}"><i
+                                                class="fa fa-pencil m-r-5"></i>Edit</a>
                                         <a class="dropdown-item" href="{{ url('hr/payslip/view/'.$pay->id) }}"><i
                                                 class="fa fa-eye m-r-5"></i>View</a>
                                         <a class="dropdown-item edit-attendance" href="#">

@@ -28,17 +28,10 @@ class PayrollController extends Controller
         $employeeName = $request->input('name');
         $department = $request->input('department');
         $cutoffPeriod = $request->input('cutoff_period'); // Get cutoff_period from request
-        $status = $request->input('status', 'approved'); // Default to "approved" if no status is specified
+        $status = $request->input('status', 'approved'); 
         $selectedYear = $request->input('year', now()->year); // Get the year from the request or default to the current year
     
-        // Get the current date
-        $currentDate = now();
-    
-        // Calculate the current cutoff period and year if not provided
-        $currentYear = $currentDate->year;
-        if (!$cutoffPeriod) {
-            $cutoffPeriod = $this->calculateCurrentCutoff($currentDate);
-        }
+
     
         $data = ApprovedAttendance::query();
     
@@ -59,15 +52,12 @@ class PayrollController extends Controller
     
         // Add filter for year if provided
         if ($selectedYear) {
-            $data->whereYear('created_at', $selectedYear);
+            $data->where('year', $selectedYear);
         }
     
         // Add filter for cutoff_period if provided
         if ($cutoffPeriod) {
-            $data->where(function ($query) use ($cutoffPeriod, $selectedYear) {
-                $cutoffDates = $this->getCutoffPeriodDates($cutoffPeriod, $selectedYear);
-                $query->whereBetween('created_at', [$cutoffDates['start'], $cutoffDates['end']]);
-            });
+            $data->where('cut_off', $cutoffPeriod); // Search the cut_off column
         }
     
         $approved = $data->get();
@@ -78,8 +68,9 @@ class PayrollController extends Controller
         // Assuming you have a list of possible statuses
         $statuses = ApprovedAttendance::select('status')->distinct()->get();
     
-        return view('hr.payroll.approve', compact('approved', 'departments', 'statuses', 'cutoffPeriod', 'currentYear', 'status', 'selectedYear'));
+        return view('hr.payroll.approve', compact('approved', 'departments', 'statuses', 'cutoffPeriod', 'status', 'selectedYear'));
     }
+    
     
     private function calculateCurrentCutoff($date)
     {
@@ -225,7 +216,7 @@ class PayrollController extends Controller
 
        // Create a new payroll record for payslip
        $payroll = new Payroll();
-       $payroll->users_id = $approvedAttendance->users_id;
+       $payroll->users_id = $approved->users_id;
        $payroll->ename = $request->input('ename');
        $payroll->position = $request->input('position');
        $payroll->department = $request->input('department');
@@ -270,60 +261,94 @@ class PayrollController extends Controller
 
    public function payslipView(Request $request)
    {
-
-    $employeeName = $request->input('name');
-    $department = $request->input('department');
-    $cutoffPeriod = $request->input('cutoff_period'); 
-    $selectedYear = $request->input('year', now()->year);
-
-     // Get the current date
-    $currentDate = now();
-    
-    // Calculate the current cutoff period and year if not provided
-    $currentYear = $currentDate->year;
-    if (!$cutoffPeriod) {
-        $cutoffPeriod = $this->calculateCurrentCutoff($currentDate);
-    }   
-
-    $data = Payroll::query();
-    
-    // Add filter for employee name if provided
-    if ($employeeName) {
-        $data->where('name', 'like', "%$employeeName%");
-    }
-
-    // Add filter for department if provided
-    if ($department) {
-        $data->where('department', $department);
-    }
-
-    // Add filter for year if provided
-    if ($selectedYear) {
-        $data->whereYear('created_at', $selectedYear);
-    }
-
-    // Add filter for cutoff_period if provided
-    if ($cutoffPeriod) {
-        $data->where(function ($query) use ($cutoffPeriod, $selectedYear) {
-            $cutoffDates = $this->getCutoffPeriodDates($cutoffPeriod, $selectedYear);
-            $query->whereBetween('created_at', [$cutoffDates['start'], $cutoffDates['end']]);
-        });
-    }
-
-    $payslip = $data->get();
-
-    // Assuming you have a list of departments to pass to the view
-    $departments = Payroll::select('department')->distinct()->get();
-
-
-        return view('hr.payroll.payslip', compact('payslip', 'departments', 'cutoffPeriod', 'currentYear', 'selectedYear'));
+       $employeeName = $request->input('name');
+       $department = $request->input('department');
+       $cutoffPeriod = $request->input('cutoff_period'); 
+       $selectedYear = $request->input('year', now()->year);
+   
+       $data = Payroll::query();
+   
+       // Apply filters independently
+       if (!empty($employeeName)) {
+           $data->where('ename', 'like', "%$employeeName%");
+       }
+   
+       if (!empty($department)) {
+           $data->where('department', $department);
+       }
+   
+       if (!empty($selectedYear)) {
+           $data->where('year', $selectedYear);
+       }
+   
+       if (!empty($cutoffPeriod)) {
+           $data->where('cut_off', $cutoffPeriod); // Search the cut_off column
+       }
+   
+       $payslip = $data->get();
+   
+       // Assuming you have a list of departments to pass to the view
+       $departments = Payroll::select('department')->distinct()->get();
+   
+       return view('hr.payroll.payslip', compact('payslip', 'departments', 'cutoffPeriod', 'selectedYear'));
    }
+   
 
    public function viewPayslip($id)
    {
        $view = Payroll::findOrFail($id);
 
        return view('hr.payroll.payslipview', compact('view'));
+   }
+
+   public function editPayslip($id)
+   {
+        $edit = Payroll::findOrFail($id);
+
+        return view('hr.payroll.editPayslip', compact('edit'));
+   }
+
+   public function updatePayslip(Request $request, $id)
+   {
+        $edit = Payroll::findOrFail($id);
+
+        $edit->ename = $request->input('ename');
+        $edit->position = $request->input('position');
+        $edit->department = $request->input('department');
+        $edit->cut_off = $request->input('cut_off');
+        $edit->year = $request->input('year');
+        $edit->transactionDate = $request->input('transactionDate');
+        $edit->start_date = $request->input('start_date');
+        $edit->end_date = $request->input('end_date');
+        $edit->month = $request->input('month');
+        $edit->totalHours = $request->input('totalHours');
+        $edit->totalLate = $request->input('tLate');
+        $edit->sss = $request->input('sss');
+        $edit->pagIbig = $request->input('pagIbig');
+        $edit->philHealth = $request->input('philHealth');
+        $edit->withHolding = $request->input('withHolding');
+        $edit->late = $request->input('late');
+        $edit->loan = $request->input('loan');
+        $edit->advance = $request->input('advance');
+        $edit->others = $request->input('others');
+        $edit->bdayLeave = $request->input('bdayLeave');
+        $edit->vacLeave = $request->input('vacLeave');
+        $edit->sickLeave = $request->input('sickLeave');
+        $edit->regHoliday = $request->input('regHoliday');
+        $edit->otTotal = $request->input('otTotal');
+        $edit->nightDiff = $request->input('nightDiff');
+        $edit->bonus = $request->input('bonus');
+        $edit->totalDeduction = $request->input('totalDeduction');
+        $edit->totalEarning = $request->input('totalEarning');
+        $edit->grossMonthly = $request->input('grossMonthly');
+        $edit->grossBasic = $request->input('grossBasic');
+        $edit->dailyRate = $request->input('dailyRate');
+        $edit->hourlyRate = $request->input('hourlyRate');
+        $edit->netPayTotal = $request->input('netPayTotal');
+        $edit->save();
+
+        Alert::success('Payslip Updated');
+        return redirect()->back();
    }
 
    public function download()

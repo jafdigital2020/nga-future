@@ -72,7 +72,7 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col">
-                                <span class="h6 font-semibold text-muted text-sm d-block mb-2">Attendance Today</span>
+                                <span class="h6 font-semibold text-muted text-sm d-block mb-2">Attendance</span>
                                 <span class="h3 font-bold mb-0">{{ $todayLoginCount }}</span>
                             </div>
                             <div class="col-auto">
@@ -522,81 +522,79 @@
                             @csrf
                             <div class="punch-btn-section">
                                 <button type="submit" class="btn btn-primary punch-btn">
-                                    Time In
+                                    Clock In
                                 </button>
                             </div>
                         </form>
                         <!-- Time Out -->
 
                         <div class="punch-btn-section">
-                            <button type="submit" class="btn btn-primary punch-btn" data-toggle="modal"
+                            <button type="submit" class="btn btn-outline-danger punch-btn" data-toggle="modal"
                                 data-target="#exampleModal">
-                                Time Out
+                                Clock Out
                             </button>
                         </div>
                     </div>
 
-                    <!-- Modal -->
-                    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
-                        aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel">
-                                        Warning!
-                                    </h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
+                    <!-- Break Buttons -->
+
+
+                    <div class="row">
+                        <div class="col-md-6 col-6 text-center">
+                            <form action="{{ url('admin/dashboard/breakin') }}" method="POST">
+                                @csrf @method('PUT')
+                                <div class="stats-box">
+                                    <button class="breakOut">
+                                        Start Break
                                     </button>
                                 </div>
-                                <div class="modal-body">
-                                    Are you sure you want to time out?
-                                </div>
-                                <div class="modal-footer">
-                                    <form action="{{ url('admin/dashboard/') }}" method="POST">
-                                        @csrf @method('PUT')
-                                        <button type="submit" class="btn btn-primary">
-                                            Yes
-                                        </button>
-                                    </form>
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                                        No
+                            </form>
+                        </div>
+                        <div class="col-md-6 col-6 text-center">
+                            <form action="{{ url('admin/dashboard/breakout') }}" method="POST">
+                                @csrf @method('PUT')
+                                <div class="stats-box">
+                                    <button class="breakOut" data-toggle="modal" data-target="#exampleModalCenter">
+                                        End Break
                                     </button>
                                 </div>
-                            </div>
+                            </form>
                         </div>
                     </div>
 
-                    <!-- Modal -->
-
-                    <!-- Break Buttons -->
-
-                    <div class="statistics">
-                        <div class="row">
-                            <div class="col-md-6 col-6 text-center">
-                                <form action="{{ url('admin/dashboard/breakin') }}" method="POST">
-                                    @csrf @method('PUT')
-                                    <div class="stats-box">
-                                        <button class="breakOut">
-                                            Break Out
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                            <div class="col-md-6 col-6 text-center">
-                                <form action="{{ url('admin/dashboard/breakout') }}" method="POST">
-                                    @csrf @method('PUT')
-                                    <div class="stats-box">
-                                        <button class="breakOut" data-toggle="modal" data-target="#exampleModalCenter">
-                                            Break In
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
+                </div>
+            </div>
+            <!-- Modal -->
+            <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">
+                                Warning!
+                            </h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to time out?
+                        </div>
+                        <div class="modal-footer">
+                            <form action="{{ url('admin/dashboard/') }}" method="POST">
+                                @csrf @method('PUT')
+                                <button type="submit" class="btn btn-primary">
+                                    Yes
+                                </button>
+                            </form>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                No
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
+            <!-- Modal -->
         </div>
         <div class="col-md-4">
             <div class="card att-statistics">
@@ -869,91 +867,93 @@
 
 <!-- Employee Tabs -->
 
-<div class="row">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title"></h4>
-                <ul class="nav nav-tabs nav-tabs-top">
-                    <li class="nav-item"><a class="nav-link active" href="#top-tab1" data-toggle="tab">Employement
-                            Record</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#top-tab2" data-toggle="tab">Salary Record</a>
-                    </li>
-                </ul>
-                <div class="tab-content">
-                    <div class="tab-pane show active" id="top-tab1">
-                        <div class="col-lg-12">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="mb-0">Employment Record</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover table-nowrap">
-                                            <thead class="thead-light">
-                                                <tr>
-                                                    <th>Name</th>
-                                                    <th>Hired Date</th>
-                                                    <th>Job Title</th>
-                                                    <th>Department</th>
-                                                    <th>Location</th>
-                                                </tr>
-                                            </thead>
-                                            @foreach ($record as $rec)
-                                            <tbody>
-                                                <tr>
-                                                    <td>{{ $rec->name }}</td>
-                                                    <td>{{ $rec->hiredDate }}</td>
-                                                    <td>{{ $rec->jobTitle }}</td>
-                                                    <td>{{ $rec->department }}</td>
-                                                    <td>{{ $rec->location }}</td>
-                                                </tr>
-                                            </tbody>
-                                            @endforeach
-                                        </table>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title"></h4>
+                    <ul class="nav nav-tabs nav-tabs-top">
+                        <li class="nav-item"><a class="nav-link active" href="#top-tab1" data-toggle="tab">Employement
+                                Record</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#top-tab2" data-toggle="tab">Salary Record</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane show active" id="top-tab1">
+                            <div class="col-lg-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Employment Record</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover table-nowrap">
+                                                <thead class="thead-light">
+                                                    <tr>
+                                                        <th>Name</th>
+                                                        <th>Hired Date</th>
+                                                        <th>Job Title</th>
+                                                        <th>Department</th>
+                                                        <th>Location</th>
+                                                    </tr>
+                                                </thead>
+                                                @foreach ($record as $rec)
+                                                <tbody>
+                                                    <tr>
+                                                        <td>{{ $rec->name }}</td>
+                                                        <td>{{ $rec->hiredDate }}</td>
+                                                        <td>{{ $rec->jobTitle }}</td>
+                                                        <td>{{ $rec->department }}</td>
+                                                        <td>{{ $rec->location }}</td>
+                                                    </tr>
+                                                </tbody>
+                                                @endforeach
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="tab-pane" id="top-tab2">
-                        <div class="col-lg-12">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="mb-0">Salary Record</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover table-nowrap">
-                                            <thead class="thead-light">
-                                                <tr>
-                                                    <th>Name</th>
-                                                    <th>Annual Salary</th>
-                                                    <th>Salary Frequency Monthly</th>
-                                                    <th>Salary Rate</th>
-                                                    <th>Currency</th>
-                                                    <th>Proposal Reason</th>
-                                                </tr>
-                                            </thead>
-                                            @foreach ($salrecord as $sal)
-                                            <tbody>
-                                                <tr>
-                                                    <td>{{ $sal->name }}</td>
-                                                    <td>{{ $sal->annSalary }}</td>
-                                                    <td>{{ $sal->salFreqMonthly }}</td>
-                                                    <td>{{ $sal->salRate }}</td>
-                                                    <td>{{ $sal->currency }}</td>
-                                                    <td>{{ $sal->proposalReason }}</td>
-                                                </tr>
-                                            </tbody>
-                                            @endforeach
-                                        </table>
+                        <div class="tab-pane" id="top-tab2">
+                            <div class="col-lg-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Salary Record</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover table-nowrap">
+                                                <thead class="thead-light">
+                                                    <tr>
+                                                        <th>Name</th>
+                                                        <th>Annual Salary</th>
+                                                        <th>Salary Frequency Monthly</th>
+                                                        <th>Salary Rate</th>
+                                                        <th>Currency</th>
+                                                        <th>Proposal Reason</th>
+                                                    </tr>
+                                                </thead>
+                                                @foreach ($salrecord as $sal)
+                                                <tbody>
+                                                    <tr>
+                                                        <td>{{ $sal->name }}</td>
+                                                        <td>{{ $sal->annSalary }}</td>
+                                                        <td>{{ $sal->salFreqMonthly }}</td>
+                                                        <td>{{ $sal->salRate }}</td>
+                                                        <td>{{ $sal->currency }}</td>
+                                                        <td>{{ $sal->proposalReason }}</td>
+                                                    </tr>
+                                                </tbody>
+                                                @endforeach
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
+                    </div>
                 </div>
             </div>
         </div>

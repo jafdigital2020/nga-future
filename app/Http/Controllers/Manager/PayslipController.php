@@ -23,15 +23,6 @@ class PayslipController extends Controller
         $cutoffPeriod = $request->input('cutoff_period');
         $selectedYear = $request->input('year', now()->year);
     
-        // Get the current date
-        $currentDate = now();
-    
-        // Calculate the current cutoff period and year if not provided
-        $currentYear = $currentDate->year;
-        if (!$cutoffPeriod) {
-            $cutoffPeriod = $this->calculateCurrentCutoff($currentDate);
-        }
-    
         $data = Payroll::query();
     
         // Filter by authenticated user
@@ -39,22 +30,19 @@ class PayslipController extends Controller
     
     
         // Add filter for year if provided
-        if ($selectedYear) {
-            $data->whereYear('created_at', $selectedYear);
+        if (!empty($selectedYear)) {
+            $data->where('year', $selectedYear);
         }
     
         // Add filter for cutoff_period if provided
-        if ($cutoffPeriod) {
-            $data->where(function ($query) use ($cutoffPeriod, $selectedYear) {
-                $cutoffDates = $this->getCutoffPeriodDates($cutoffPeriod, $selectedYear);
-                $query->whereBetween('created_at', [$cutoffDates['start'], $cutoffDates['end']]);
-            });
+        if (!empty($cutoffPeriod)) {
+            $data->where('cut_off', $cutoffPeriod); // Search the cut_off column
         }
     
         $payslip = $data->get();
     
 
-        return view('manager.payslip.index', compact('payslip', 'cutoffPeriod', 'currentYear', 'selectedYear'));
+        return view('manager.payslip.index', compact('payslip', 'cutoffPeriod', 'selectedYear'));
     }
 
     private function calculateCurrentCutoff($date)
