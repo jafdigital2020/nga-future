@@ -211,7 +211,7 @@ class PayrollController extends Controller
 
            if ($existingPayroll) {
             Alert::error('Error', 'Payslip already existed.');
-            return redirect()->route('approvedTime');
+            return redirect()->route('approvedTimeAdmin');
         }
 
        // Create a new payroll record for payslip
@@ -256,7 +256,7 @@ class PayrollController extends Controller
        $approved->save();
 
        Alert::success('Payroll Generated!');
-       return redirect()->route('approvedTime');
+       return redirect()->route('approvedTimeAdmin');
    }
 
 

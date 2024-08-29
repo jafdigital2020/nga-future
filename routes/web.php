@@ -64,7 +64,7 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::get('/timesheet', [App\Http\Controllers\Admin\AttendanceReportController::class, 'timesheet'])->name('attendance.searchadmin');
     Route::post('/timesheet/{id}/approve', [\App\Http\Controllers\Admin\AttendanceReportController::class, 'approve'])->name('att.approveadmin');
     Route::post('/timesheet/{id}/decline', [\App\Http\Controllers\Admin\AttendanceReportController::class, 'decline'])->name('att.declineadmin');
-    Route::post('/timesheet/approve/{id}', [App\Http\Controllers\Admin\AttendanceReportController::class, 'updateAttendance'])->name('admin.updateAttendance');
+    Route::post('/timesheet/approve/{id}', [App\Http\Controllers\Admin\AttendanceReportController::class, 'updateAttendance'])->name('adminTimesheet.updateAttendance');
     Route::delete('/timesheet/delete/{id}', [App\Http\Controllers\Admin\AttendanceReportController::class, 'destroyAttendance'])->name('admin.deleteAttendance');
     Route::post('/attendance/edit/{id}', [App\Http\Controllers\Admin\AttendanceReportController::class, 'updateTableAttendance'])->name('admin.updateTable');
     Route::get('/notifications/mark-as-read/{id}', function ($id) {
@@ -172,7 +172,7 @@ Route::prefix('hr')->middleware(['auth','isHr', 'sessionTimeout'])->group(functi
     Route::get('/timesheet', [App\Http\Controllers\Hr\HRAttendanceController::class, 'timesheet'])->name('attendance.searchr');
     Route::post('/timesheet/{id}/approve', [\App\Http\Controllers\Hr\HRAttendanceController::class, 'approve'])->name('att.approvehr');
     Route::post('/timesheet/{id}/decline', [\App\Http\Controllers\Hr\HRAttendanceController::class, 'decline'])->name('att.declinehr');
-    Route::post('/timesheet/approve/{id}', [App\Http\Controllers\Hr\HRAttendanceController::class, 'updateAttendance'])->name('hr.updateAttendance');
+    Route::post('/timesheet/approve/{id}', [App\Http\Controllers\Hr\HRAttendanceController::class, 'updateAttendance'])->name('hrTimesheet.updateAttendance');
     Route::delete('/timesheet/delete/{id}', [App\Http\Controllers\Hr\HRAttendanceController::class, 'destroyAttendance'])->name('hr.deleteAttendance');
     Route::get('leave/hr', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'indexLeave']);
     Route::post('leave/hr/request', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'storeLeaveHr'])->name('store.leavehr');
