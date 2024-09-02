@@ -24,6 +24,9 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::put('dashboard/breakin', [App\Http\Controllers\Admin\DashboardController::class, 'breakIn']);
     Route::put('dashboard/breakout', [App\Http\Controllers\Admin\DashboardController::class, 'breakOut']);
     Route::get('employee', [App\Http\Controllers\Admin\EmployeeController::class, 'index']);
+    Route::get('employee-grid', [App\Http\Controllers\Admin\EmployeeController::class, 'gridView'])->name('admin.employeegrid');
+    Route::get('employee/create', [App\Http\Controllers\Admin\EmployeeController::class, 'createView'])->name('admin.employeeCreateView');
+    Route::post('employee/create', [App\Http\Controllers\Admin\EmployeeController::class, 'create'])->name('admin.employeecreate');
     Route::post('employee', [App\Http\Controllers\Admin\EmployeeController::class, 'store']);
     Route::get('employee/search', [App\Http\Controllers\Admin\EmployeeController::class, 'search'])->name('admin.search');
     Route::post('employee/delete', [App\Http\Controllers\Admin\EmployeeController::class, 'delete_function']);
@@ -98,7 +101,7 @@ Route::prefix('emp')->middleware(['auth','isEmployee', 'sessionTimeout'])->group
     Route::post('profile/personal-info', [\App\Http\Controllers\Employee\ProfileController::class, 'personalInfo']);
     Route::get('changepassword', [\App\Http\Controllers\Employee\ChangePasswordController::class, 'index'])->name('change.pass');
     Route::post('changepassword', [\App\Http\Controllers\Employee\ChangePasswordController::class, 'changePassword']);
-    Route::get('leave', [\App\Http\Controllers\Employee\LeaveController::class, 'index']);
+    Route::get('leave', [\App\Http\Controllers\Employee\LeaveController::class, 'index'])->name('leave.searchemp');
     Route::post('leave-request', [\App\Http\Controllers\Employee\LeaveController::class, 'storeLeave'])->name('store.leave');
     Route::post('/leave/{id}', [\App\Http\Controllers\Employee\LeaveController::class, 'update'])->name('leave.update');
     Route::delete('/leave/{id}', [\App\Http\Controllers\Employee\LeaveController::class, 'destroy'])->name('leave.destroy');
@@ -199,7 +202,7 @@ Route::prefix('manager')->middleware(['auth', 'isManager', 'sessionTimeout'])->g
     Route::get('/department-record/{user_id}', [\App\Http\Controllers\Manager\DepartmentController::class, 'edit']);
     Route::post('/department-record/update-record/{user_id}', [\App\Http\Controllers\Manager\DepartmentController::class , 'employmentStore'])->name('employment.store');
     Route::post('/department-record/update-salary/{user_id}', [\App\Http\Controllers\Manager\DepartmentController::class, 'employmentSalaryStore'])->name('employment.salary');
-    Route::get('/leave', [\App\Http\Controllers\Manager\LeaveController::class, 'index'])->name('leave.search');
+    Route::get('/leave', [\App\Http\Controllers\Manager\LeaveController::class, 'index'])->name('leave.searchmanager');
     Route::post('/leave/{id}/approve', [\App\Http\Controllers\Manager\LeaveController::class, 'approve'])->name('leave.approve');
     Route::post('/leave/{id}/decline', [\App\Http\Controllers\Manager\LeaveController::class, 'decline'])->name('leave.decline');
     Route::post('/leave-request', [App\Http\Controllers\Manager\LeaveController::class, 'storeLeave'])->name('mstore.leave');
@@ -224,7 +227,6 @@ Route::prefix('manager')->middleware(['auth', 'isManager', 'sessionTimeout'])->g
     Route::delete('/attendance/delete/{id}', [App\Http\Controllers\Manager\AttendanceApproveController::class, 'destroyAttendance'])->name('manager.deleteAttendance');
     Route::get('/attendance/record', [App\Http\Controllers\Manager\AttendanceApproveController::class, 'attendanceRecord'])->name('attendance.manager');
     Route::get('leave/manager', [\App\Http\Controllers\Manager\LeaveController::class, 'indexLeave']);
-    
     Route::post('leave/manager/request', [\App\Http\Controllers\Manager\LeaveController::class, 'storeLeaveManager'])->name('store.leavemanager');
     Route::post('/leave/update/{id}', [\App\Http\Controllers\Manager\LeaveController::class, 'updateManager'])->name('leave.updatemanager');
     Route::delete('/leave/delete/{id}', [\App\Http\Controllers\Manager\LeaveController::class, 'destroyManager'])->name('leave.destroymanager');

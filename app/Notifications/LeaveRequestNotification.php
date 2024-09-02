@@ -69,6 +69,7 @@ class LeaveRequestNotification extends Notification
             'start_date' => $this->leaveRequest->start_date,
             'end_date' => $this->leaveRequest->end_date,
             'status' => 'Pending',
+            'image' => $this->employee->image, // Add this line to include the image
         ];
-    }
+    } 
 }

@@ -113,7 +113,7 @@
                             <ul class="notification-list">
                                 @foreach(auth()->user()->unreadNotifications as $notification)
                                 <li class="notification-message">
-                                    <a href="{{ isset($notification->data['leave_type']) ? route('leave.searchr') : (isset($notification->data['total_worked']) ? route('approvedTime') : '#') }}"
+                                    <a href="{{ isset($notification->data['leave_type']) ? route('leave.searchmanager') : (isset($notification->data['total_worked']) ? route('approvedTime') : '#') }}"
                                         class="notification-link" data-id="{{ $notification->id }}">
                                         <div class="media">
                                             <span class="avatar">

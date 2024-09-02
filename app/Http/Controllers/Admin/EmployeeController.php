@@ -25,30 +25,75 @@ class EmployeeController extends Controller
         return view('admin.employee.index', compact('emp'));
     }
 
-    public function search(Request $request)
+    public function gridView(Request $request)
     {
-        $name = $request->input('name');
+        // Retrieve search inputs
+        $name = trim($request->input('name')); // Trim any whitespace
         $empNumber = $request->input('empNumber');
-        $department  = $request->input('department');
-
-        $data = User::query();
-
+        $department = $request->input('department');
+    
+        // Initialize the query
+        $data = User::query()->where('role_as', '!=', 1); // Exclude users with role_as = 1
+    
+        // Search by name (either first or last name)
         if ($name) {
-            $data->where('name', 'like', "%$name%");
+            $data->where(function ($query) use ($name) {
+                $query->whereRaw('LOWER(fName) like ?', ['%' . strtolower($name) . '%'])
+                      ->orWhereRaw('LOWER(lName) like ?', ['%' . strtolower($name) . '%']);
+            });
         }
-
+    
+        // Search by employee number
         if ($empNumber) {
             $data->where('empNumber', 'like', "%$empNumber%");
         }
-
-        if($department) {
+    
+        // Search by department
+        if ($department) {
             $data->where('department', 'like', "%$department%");
         }
-
+    
+        // Execute the query and get results
         $emp = $data->get();
+    
+        // Return the view with the search results
+        return view('admin.employee.grid', compact('emp'));
+    }
+    
 
+    public function search(Request $request)
+    {
+        $name = trim($request->input('name')); // Trim any whitespace
+        $empNumber = $request->input('empNumber');
+        $department = $request->input('department');
+    
+        $data = User::query();
+    
+        // Search by name (either first or last name)
+        if ($name) {
+            $data->where(function ($query) use ($name) {
+                $query->whereRaw('LOWER(fName) like ?', ['%' . strtolower($name) . '%'])
+                      ->orWhereRaw('LOWER(lName) like ?', ['%' . strtolower($name) . '%']);
+            });
+        }
+    
+        // Search by employee number
+        if ($empNumber) {
+            $data->where('empNumber', 'like', "%$empNumber%");
+        }
+    
+        // Search by department
+        if ($department) {
+            $data->where('department', 'like', "%$department%");
+        }
+    
+        // Execute the query and get results
+        $emp = $data->get();
+    
+        // Return the view with the search results
         return view('admin.employee.index', compact('emp'));
     }
+    
 
     public function store(Request $request)
     {
@@ -384,6 +429,75 @@ class EmployeeController extends Controller
     
         return redirect()->back();
     }
+
+    public function createView ()
+    {
+        return view('admin.employee.create');
+    }
     
+    public function create (Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+                'password' => ['required', 'string', 'min:8'],
+                'empNumber' => ['required', 'string', 'max:255'],
+                'typeOfContract' => ['required', 'string', 'max:255'],
+                'dateHired' => ['required', 'string', 'max:255'],
+                'birthday' => ['required', 'string', 'max:255'],
+                'completeAddress' => ['required', 'string', 'max:255'],
+                'position' => ['required', 'string', 'max:255'],
+                'role_as' => ['required', 'integer'],
+                'sss' => ['required', 'string', 'max:255'],
+                'pagIbig' => ['required', 'string', 'max:255'],
+                'philHealth' => ['required', 'string', 'max:255'],
+            ]);
+
+            $imageName = 'default.png';
+            if ($request->hasFile('image')) {
+                $imageName = time() . '.' . $request->image->extension();
+                $request->image->move(public_path('images'), $imageName);
+            }
+
+            DB::table('users')->insert([
+                'name' => $request->input('name'),
+                'fName' => $request->input('fName'),
+                'mName' => $request->input('mName'),
+                'lName' => $request->input('lName'),
+                'suffix' => $request->input('suffix'),
+                'email' => $request->input('email'),
+                'password' => Hash::make($request->password),
+                'empNumber' => $request->input('empNumber'),
+                'typeOfContract' => $request->input('typeOfContract'),
+                'phoneNumber' => $request->input('phoneNumber'),
+                'dateHired' => $request->input('dateHired'),
+                'birthday' => $request->input('birthday'),
+                'completeAddress' => $request->input('completeAddress'),
+                'mSalary' => $request->input('mSalary'),
+                'position' => $request->input('position'),
+                'role_as' => $request->input('role_as'),
+                'sss' => $request->input('sss'),
+                'pagIbig' => $request->input('pagIbig'),
+                'philHealth' => $request->input('philHealth'),
+                'tin' => $request->input('tin'),
+                'image' => $imageName,
+                'department' => $request->input('department'),
+                'bdayLeave' => $request->input('bdayLeave'),
+                'vacLeave' => $request->input('vacLeave'),
+                'sickLeave' => $request->input('sickLeave'),
+
+            ]);
+
+            Alert::success('Employee Added Successfully', 'Employee Added');
+            return view()->back();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Alert::error('Validation Error', $e->getMessage())->persistent(true);
+            return redirect()->back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            Alert::error('Error Occurred', $e->getMessage())->persistent(true);
+            return redirect()->back()->withInput();
+        }
+    }
 
 }

@@ -112,44 +112,44 @@
                             <ul class="notification-list">
                                 @foreach(auth()->user()->unreadNotifications as $notification)
                                 <li class="notification-message">
-                                    <a href="#">
+                                    <a href="{{ isset($notification->data['leave_type']) ? route('leave.searchemp') : (isset($notification->data['total_worked']) ? route('approvedTime') : '#') }}"
                                         <div class="media">
-                                            <span class="avatar">
-                                                <img alt="Profile Image"
-                                                    src="{{ asset('images/' . auth()->user()->image) }}" />
-                                            </span>
-                                            <div class="media-body">
-                                                @if(isset($notification->data['leave_type']))
-                                                <!-- Leave Request Approved Notification -->
-                                                <p class="noti-details">
-                                                    Your leave request for <span
-                                                        class="noti-title">{{ $notification->data['leave_type'] }}</span>
-                                                    from <span>{{ $notification->data['start_date'] }}</span> to
-                                                    <span>{{ $notification->data['end_date'] }}</span> has been
-                                                    approved.
-                                                </p>
-                                                @endif
-                                                <p class="noti-time">
-                                                    <span
-                                                        class="notification-time">{{ $notification->created_at->diffForHumans() }}</span>
-                                                </p>
-                                            </div>
+                                        <span class="avatar">
+                                            <img alt="Profile Image"
+                                                src="{{ asset('images/' . auth()->user()->image) }}" />
+                                        </span>
+                                        <div class="media-body">
+                                            @if(isset($notification->data['leave_type']))
+                                            <!-- Leave Request Approved Notification -->
+                                            <p class="noti-details">
+                                                Your leave request for <span
+                                                    class="noti-title">{{ $notification->data['leave_type'] }}</span>
+                                                from <span>{{ $notification->data['start_date'] }}</span> to
+                                                <span>{{ $notification->data['end_date'] }}</span> has been
+                                                approved.
+                                            </p>
+                                            @endif
+                                            <p class="noti-time">
+                                                <span
+                                                    class="notification-time">{{ $notification->created_at->diffForHumans() }}</span>
+                                            </p>
                                         </div>
-                                    </a>
-                                </li>
-                                @endforeach
-                            </ul>
                         </div>
-                        <div class="topnav-dropdown-footer">
-                            <a href="#">View all Notifications</a>
-                        </div>
-                    </div>
+                        </a>
                 </li>
-                <!-- /Notifications -->
+                @endforeach
+            </ul>
+        </div>
+        <div class="topnav-dropdown-footer">
+            <a href="#">View all Notifications</a>
+        </div>
+    </div>
+    </li>
+    <!-- /Notifications -->
 
 
-                <!-- Message Notifications -->
-                <!-- <li class="nav-item dropdown">
+    <!-- Message Notifications -->
+    <!-- <li class="nav-item dropdown">
                     <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
                         <i class="fa fa-comment-o"></i>
                         <span class="badge badge-pill">8</span>
@@ -270,58 +270,58 @@
                         </div>
                     </div>
                 </li> -->
-                <!-- /Message Notifications -->
+    <!-- /Message Notifications -->
 
-                <li class="nav-item dropdown has-arrow main-drop">
-                    <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
-                        <span class="user-img"><img
-                                src="{{ Auth::user()->image ? asset('images/' . Auth::user()->image) : asset('images/default.png') }}"
-                                alt="Profile Image" />
-                            <span class="status online"></span></span>
-                        <span>{{ Auth::user()->name }}</span>
-                    </a>
-                    <div class="dropdown-menu">
-                        <a class="dropdown-item" href="{{ route('emp.profile') }}">My Profile</a>
-                        <!-- <a class="dropdown-item" href="settings.html">Settings</a> -->
-                        <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
+    <li class="nav-item dropdown has-arrow main-drop">
+        <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
+            <span class="user-img"><img
+                    src="{{ Auth::user()->image ? asset('images/' . Auth::user()->image) : asset('images/default.png') }}"
+                    alt="Profile Image" />
+                <span class="status online"></span></span>
+            <span>{{ Auth::user()->name }}</span>
+        </a>
+        <div class="dropdown-menu">
+            <a class="dropdown-item" href="{{ route('emp.profile') }}">My Profile</a>
+            <!-- <a class="dropdown-item" href="settings.html">Settings</a> -->
+            <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">
-                            {{ __("Logout") }}
-                        </a>
-                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                            @csrf
-                        </form>
-                    </div>
-                </li>
-            </ul>
-            <!-- /Header Menu -->
-
-            <!-- Mobile Menu -->
-            <div class="dropdown mobile-user-menu">
-                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i
-                        class="fa fa-ellipsis-v"></i></a>
-                <div class="dropdown-menu dropdown-menu-right">
-                    <a class="dropdown-item" href="profile.html">My Profile</a>
-                    <a class="dropdown-item" href="settings.html">Settings</a>
-                    <a class="dropdown-item" href="login.html">Logout</a>
-                </div>
-            </div>
-            <!-- /Mobile Menu -->
+                {{ __("Logout") }}
+            </a>
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                @csrf
+            </form>
         </div>
-        <!-- /Header -->
+    </li>
+    </ul>
+    <!-- /Header Menu -->
 
-        <!-- Sidebar -->
-        <div class="sidebar" id="sidebar">
-            <div class="sidebar-inner slimscroll">
-                <div id="sidebar-menu" class="sidebar-menu">
-                    <ul>
-                        <li class="menu-title">
-                            <span>Main</span>
-                        </li>
-                        <li class="{{ Request::is('emp/dashboard') ? 'active':'' }}">
-                            <a href="{{ url('emp/dashboard') }}"><i class="la la-home"></i>
-                                <span>Main</span></a>
-                        </li>
-                        <!-- <li class="submenu">
+    <!-- Mobile Menu -->
+    <div class="dropdown mobile-user-menu">
+        <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i
+                class="fa fa-ellipsis-v"></i></a>
+        <div class="dropdown-menu dropdown-menu-right">
+            <a class="dropdown-item" href="profile.html">My Profile</a>
+            <a class="dropdown-item" href="settings.html">Settings</a>
+            <a class="dropdown-item" href="login.html">Logout</a>
+        </div>
+    </div>
+    <!-- /Mobile Menu -->
+    </div>
+    <!-- /Header -->
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-inner slimscroll">
+            <div id="sidebar-menu" class="sidebar-menu">
+                <ul>
+                    <li class="menu-title">
+                        <span>Main</span>
+                    </li>
+                    <li class="{{ Request::is('emp/dashboard') ? 'active':'' }}">
+                        <a href="{{ url('emp/dashboard') }}"><i class="la la-home"></i>
+                            <span>Main</span></a>
+                    </li>
+                    <!-- <li class="submenu">
                             <a href="#"><i class="la la-cube"></i>
                                 <span> Apps</span>
                                 <span class="menu-arrow"></span></a>
@@ -355,10 +355,10 @@
                                 </li>
                             </ul>
                         </li> -->
-                        <li class="menu-title">
-                            <span>Employee</span>
-                        </li>
-                        <!-- <li class="submenu">
+                    <li class="menu-title">
+                        <span>Employee</span>
+                    </li>
+                    <!-- <li class="submenu">
                             <a href="#" class=""><i class="la la-user"></i>
                                 <span> Attendance</span>
                                 <span class="menu-arrow"></span></a>
@@ -372,27 +372,27 @@
                                 </li>
                             </ul>
                         </li> -->
-                        <li class="{{ Request::is('emp/leave') ? 'active':'' }}">
-                            <a href="{{ url('emp/leave') }}"><i class="la la-rocket"></i>
-                                <span>Leave</span></a>
-                        </li>
-                        <!-- <li>
+                    <li class="{{ Request::is('emp/leave') ? 'active':'' }}">
+                        <a href="{{ url('emp/leave') }}"><i class="la la-rocket"></i>
+                            <span>Leave</span></a>
+                    </li>
+                    <!-- <li>
                             <a href="tickets.html"><i class="la la-ticket"></i>
                                 <span>Tickets</span></a>
                         </li> -->
-                        <li class="menu-title">
-                            <span>Payroll</span>
-                        </li>
-                        <li>
-                            <a href="{{ url('emp/payslip') }}"><i class="la la-money"></i>
-                                <span>Payslip</span></a>
-                        </li>
-                        <li>
-                            <a href="policies.html"><i class="la la-file-pdf-o"></i>
-                                <span>Policies</span></a>
-                        </li>
+                    <li class="menu-title">
+                        <span>Payroll</span>
+                    </li>
+                    <li>
+                        <a href="{{ url('emp/payslip') }}"><i class="la la-money"></i>
+                            <span>Payslip</span></a>
+                    </li>
+                    <li>
+                        <a href="policies.html"><i class="la la-file-pdf-o"></i>
+                            <span>Policies</span></a>
+                    </li>
 
-                        <!-- <li class="menu-title">
+                    <!-- <li class="menu-title">
                             <span>Performance</span>
                         </li>
                         <li class="submenu">
@@ -461,19 +461,19 @@
                                 <span>Resignation</span></a> -->
 
 
-                    </ul>
-                </div>
+                </ul>
             </div>
         </div>
-        <!-- /Sidebar -->
+    </div>
+    <!-- /Sidebar -->
 
-        <!-- Page Wrapper -->
-        <div class="page-wrapper">
-            <!-- Page Content -->
-            @yield('content')
-            <!-- /Page Content -->
-        </div>
-        <!-- /Page Wrapper -->
+    <!-- Page Wrapper -->
+    <div class="page-wrapper">
+        <!-- Page Content -->
+        @yield('content')
+        <!-- /Page Content -->
+    </div>
+    <!-- /Page Wrapper -->
     </div>
     @include('sweetalert::alert')
 

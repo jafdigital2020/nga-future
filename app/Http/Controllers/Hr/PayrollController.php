@@ -305,7 +305,7 @@ class PayrollController extends Controller
    {
         $edit = Payroll::findOrFail($id);
 
-        return view('hr.payroll.editPayslip', compact('edit'));
+        return view('hr.payroll.editpayslip', compact('edit'));
    }
 
    public function updatePayslip(Request $request, $id)

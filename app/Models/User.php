@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Log;
+use Exception;
 use Carbon\Carbon;
 use App\Models\Salary;
 use App\Models\Payroll;
@@ -221,16 +223,18 @@ class User extends Authenticatable
 
     public function checkIn()
     {
-        $now = $this->freshTimestamp();
+        try {
+            $now = $this->freshTimestamp();
     
-        // Check if the user has already timed in for the day
-        $employeeAttendance = $this->employeeAttendance()
-                                    ->where('date', Carbon::now('Asia/Manila')->toDateString())
-                                    ->first();
+            // Check if the user has already timed in for the day
+            $employeeAttendance = $this->employeeAttendance()
+                                        ->where('date', Carbon::now('Asia/Manila')->toDateString())
+                                        ->first();
     
-        if ($employeeAttendance) {
-            return back()->with('error', 'You have already Timed in!');
-        } else {
+            if ($employeeAttendance) {
+                return back()->with('error', 'You have already timed in!');
+            }
+    
             // Get the user's shift schedule
             $shiftSchedule = ShiftSchedule::where('users_id', auth()->user()->id)->first();
     
@@ -241,28 +245,21 @@ class User extends Authenticatable
             $timeIn = Carbon::now('Asia/Manila');
     
             // Determine status and total late based on shift times if not flexible
+            $status = 'On Time';
+            $totalLate = '00:00:00';
+    
             if (!$shiftSchedule->isFlexibleTime) {
                 $shiftStart = Carbon::parse($shiftSchedule->shiftStart, 'Asia/Manila');
                 $lateThreshold = Carbon::parse($shiftSchedule->lateThreshold, 'Asia/Manila');
     
-                if ($timeIn->lt($shiftStart) || $timeIn->between($shiftStart, $lateThreshold)) {
-                    $status = 'On Time';
-                    $totalLate = '00:00:00';
-                } elseif ($timeIn->gt($lateThreshold)) {
+                if ($timeIn->gt($lateThreshold)) {
                     $status = 'Late';
                     $totalLateInSeconds = $timeIn->diffInSeconds($lateThreshold);
                     $hours = floor($totalLateInSeconds / 3600);
                     $minutes = floor(($totalLateInSeconds % 3600) / 60);
                     $seconds = $totalLateInSeconds % 60;
                     $totalLate = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
-                } else {
-                    $status = 'On Time';
-                    $totalLate = '00:00:00';
                 }
-            } else {
-                // Flexible time - ignore shift start and late threshold
-                $status = 'On Time';
-                $totalLate = '00:00:00';
             }
     
             // Create the attendance record
@@ -271,13 +268,19 @@ class User extends Authenticatable
                 'date' => Carbon::now('Asia/Manila')->toDateString(),
                 'timeIn' => $timeIn->format('h:i:s A'),
                 'status' => $status,
-                'totalLate' => $totalLate // Add total late to the employee attendance record
+                'totalLate' => $totalLate
             ]);
     
-            return back()->with('success', 'Time in Successfully! You are ' . $status . '. Welcome.');
+            return back()->with('success', 'Time in successfully! You are ' . $status . '. Welcome.');
+    
+        } catch (Exception $e) {
+            // Log the error for debugging purposes
+            Log::error('Check-in Error: ' . $e->getMessage(), ['exception' => $e]);
+    
+            // Return a generic error message to the user
+            return back()->with('error', 'An unexpected error occurred. Please try again later.');
         }
     }
-    
     
     public function breakIn()
     {
