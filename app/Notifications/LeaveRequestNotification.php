@@ -46,12 +46,14 @@ class LeaveRequestNotification extends Notification
     {
         return (new MailMessage)
             ->subject('New Leave Request from ' . $this->employee->name)
+            ->greeting('Hello,')
             ->line($this->employee->name . ' has requested a ' . $this->leaveRequest->type . '.')
             ->line('From: ' . $this->leaveRequest->start_date . ' to ' . $this->leaveRequest->end_date)
             ->line('Leave type: ' . $this->leaveRequest->type)
             ->line('Status: Pending')
             ->action('View Leave Request', url('/'))
-            ->line('Thank you for using our application!');
+            ->line('Thank you for using our application!')
+            ->salutation('Best regards, One JAF Automated Mail System ');
     }
 
     /**

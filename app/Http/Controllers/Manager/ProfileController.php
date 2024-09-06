@@ -16,10 +16,11 @@ class ProfileController extends Controller
     public function index ()
     {
         $user = Auth::user();
+        $supervisor = $user->supervisor;
         $contacts = ContactEmergency::where('users_id', $user->id)->get();
         $bankinfo = BankInformation::where('users_id', $user->id)->get();
         $personalInformation = PersonalInformation::where('users_id', $user->id)->get();
-        return view('manager.profile', compact('user', 'contacts', 'bankinfo', 'personalInformation'));
+        return view('manager.profile', compact('user', 'contacts', 'bankinfo', 'personalInformation', 'supervisor'));
     }
 
     public function update (Request $request) 

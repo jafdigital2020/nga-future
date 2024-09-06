@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\SettingsTheme;
+use App\Models\SettingsCompany;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use App\Http\ViewComposers\UserComposer;
-use Illuminate\Support\Facades\View;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,8 +27,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        // Register the UserComposer with the "layouts.app" view
-        View::composer('layouts.hrmaster', UserComposer::class);
+        $companySettings = SettingsCompany::first();
+        $themeSettings = SettingsTheme::first();
+
+        view()->share([
+            'companySettings' => $companySettings,
+            'themeSettings' => $themeSettings,
+        ]);
     }
 
 }

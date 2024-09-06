@@ -51,7 +51,19 @@
                                         <div class="staff-id">Department:
                                             {{ $user->department ?? 'No department record' }}</div>
                                         <div class="staff-id">Employee ID: {{ $user->empNumber }}</div>
-                                        <div class="staff-id">Date of Join: {{ $user->dateHired }}</div>
+                                        <div class="staff-id">Reporting To: @if ($supervisor === 'Management')
+                                            <strong>Management</strong>
+                                            @elseif ($supervisor)
+                                            <strong>
+                                                @if ($supervisor->fName || $supervisor->lName)
+                                                {{ $supervisor->fName }} {{ $supervisor->lName }}
+                                                @else
+                                                {{ $supervisor->name }}
+                                                @endif
+                                            </strong>
+                                            @else
+                                            <strong>No supervisor assigned.</strong>
+                                            @endif</div>
                                         <div class="staff-msg">
                                             <a class="btn btn-danger" href="#" data-toggle="modal"
                                                 data-target="#change_password">Change Password</a>
@@ -81,6 +93,10 @@
                                         <li>
                                             <div class="title">Type of contract:</div>
                                             <div class="text">{{ $user->typeOfContract }}</div>
+                                        </li>
+                                        <li>
+                                            <div class="title">Date of Join:</div>
+                                            <div class="text">{{ $user->dateHired }}</div>
                                         </li>
                                     </ul>
                                 </div>
@@ -501,6 +517,20 @@
                                     </option>
                                     <option value="6" {{ $user->role_as == '6' ? 'selected' : '' }}>Marketing Manager
                                     </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>Reporting to</label>
+                                <select class="form-control" name="reporting_to" id="reporting_to">
+                                    <option value="">--Select Supervisor--</option>
+                                    @foreach ($users as $supervisor)
+                                    <option value="{{ $supervisor->id }}"
+                                        {{ $user->reporting_to == $supervisor->id ? 'selected' : '' }}>
+                                        {{ $supervisor->fName }} {{ $supervisor->lName }}
+                                    </option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>

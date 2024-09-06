@@ -10300,13 +10300,7 @@ ul.comment-list li ul.children {
     background-color: red;
 }
 
-.sticky-column {
-    position: sticky;
-    left: 0;
-    background-color: #fff;
-    z-index: 9999;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-}
+
 
 
 @media (max-width: 767px) {
@@ -10465,8 +10459,10 @@ ul.comment-list li ul.children {
 }
 
 #msform input,
+#msform select,
 #msform textarea {
-    padding: 8px 15px 8px 15px;
+    padding: 8px 15px;
+    /* Simplified padding */
     border: 1px solid #ccc;
     border-radius: 0px;
     margin-bottom: 25px;
@@ -10476,16 +10472,18 @@ ul.comment-list li ul.children {
     color: #2C3E50;
     background-color: #ECEFF1;
     font-size: 16px;
-    letter-spacing: 1px
+    letter-spacing: 1px;
+    /* Added cursor to indicate that it is selectable */
+    cursor: pointer;
 }
 
 #msform input:focus,
+#msform select:focus,
 #msform textarea:focus {
-    -moz-box-shadow: none !important;
-    -webkit-box-shadow: none !important;
     box-shadow: none !important;
-    border: 1px solid #673AB7;
-    outline-width: 0
+    border: 1px solid #ad3939;
+    outline: none;
+    /* Changed outline-width to outline: none for better compatibility */
 }
 
 #msform .action-button {
@@ -10660,11 +10658,25 @@ ul.comment-list li ul.children {
 }
 
 
-
 .toggle-password {
     position: absolute;
     right: 20px;
     margin-top: 10px;
     transform: translateX(-50%);
     cursor: pointer;
+}
+
+
+.notification {
+    position: fixed;
+    margin-top: 80px;
+    right: 20px;
+    background-color: #f44336;
+    /* Red */
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    z-index: 1000;
+    display: none;
+    /* Initially hidden */
 }

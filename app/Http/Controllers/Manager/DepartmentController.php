@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Manager;
 
+use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Http\Request;
-use App\Models\EmploymentRecord;
-use App\Http\Controllers\Controller;
+use App\Models\ShiftSchedule;
 use App\Models\EmployeeSalary;
+use App\Models\EmploymentRecord;
 use App\Models\EmployementSalary;
+use App\Http\Controllers\Controller;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class DepartmentController extends Controller
@@ -15,35 +17,19 @@ class DepartmentController extends Controller
     public function index()
     {
         $loggedInUser = auth()->user();
-        $departments = [];
-
-        switch ($loggedInUser->role_as) {
-            case User::ROLE_IT_MANAGER:
-                $departments = ['IT', 'Website Development'];
-                break;
-            case User::ROLE_MARKETING_MANAGER:
-                $departments = ['Marketing'];
-                break;
-            case User::ROLE_OPERATIONS_MANAGER:
-                $departments = ['SEO', 'Content'];
-                break;
-            default:
-                // Handle other roles or return an error
-                return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        $users = User::getUsersByDepartments($departments);
-
-           
-        return view ('manager.department', compact('users','departments'));
+    
+        $users = User::where('reporting_to', $loggedInUser->id)->get();
+    
+        return view('manager.department', compact('users'));
     }
+    
 
     public function edit($user_id)
     {
         $user = User::with('employmentRecord','employmentSalary')->findOrFail($user_id);
 
         $department = $user->department;
-        $supervisor = User::getSupervisorForDepartment($department, $user);
+        $supervisor = $user->supervisor;
 
         return view('manager.record', compact('user','supervisor'));
     }
@@ -152,5 +138,57 @@ class DepartmentController extends Controller
         return redirect()->back();
     }
 
+    public function shiftSchedule(Request $request, $user_id)
+    {
+        // Find the user and their shift schedule
+        $user = User::with('shiftSchedule')->findOrFail($user_id);
+        $shift = ShiftSchedule::where('users_id', $user->id)->first();
+
+        // Determine if flexible time is enabled
+        $flexibleTime = $request->input('flexibleTime') == '1';
+
+        if ($flexibleTime) {
+            // If flexible time is enabled, save this state
+            if ($shift) {
+                $shift->isFlexibleTime = true;
+                $shift->save();
+                Alert::success('Flexible Time Set');
+            } else {
+                // Create new shift schedule with flexible time
+                $shift = new ShiftSchedule();
+                $shift->users_id = $user->id;
+                $shift->isFlexibleTime = true;
+                $shift->save();
+                Alert::success('Added Schedule with Flexible Time');
+            }
+        } else {
+            // If flexible time is not enabled, save shift details
+            $shiftStart = Carbon::parse($request->input('shiftStart'))->format('H:i:s');
+            $lateThreshold = Carbon::parse($request->input('lateThreshold'))->format('H:i:s');
+            $shiftEnd = Carbon::parse($request->input('shiftEnd'))->format('H:i:s');
+
+            if ($shift) {
+                // Update existing shift
+                $shift->shiftStart = $shiftStart;
+                $shift->lateThreshold = $lateThreshold;
+                $shift->shiftEnd = $shiftEnd;
+                $shift->isFlexibleTime = false;
+                $shift->save();
+                Alert::success('Shift Successfully Changed');
+            } else {
+                // Create new shift
+                $shift = new ShiftSchedule();
+                $shift->users_id = $user->id;
+                $shift->shiftStart = $shiftStart;
+                $shift->lateThreshold = $lateThreshold;
+                $shift->shiftEnd = $shiftEnd;
+                $shift->isFlexibleTime = false;
+                $shift->save();
+                Alert::success('Added Schedule');
+            }
+        }
+
+        return redirect()->back();
+    }
 
 }

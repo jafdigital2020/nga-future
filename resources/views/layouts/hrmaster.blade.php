@@ -74,7 +74,7 @@
             </a>
             <!-- Header Title -->
             <div class="page-title-box">
-                <!-- <h3>JAF Digital Marketing & IT Services</h3> -->
+                <h3>{{ $companySettings->company }}</h3>
             </div>
             <!-- /Header Title -->
             <a id="mobile_btn" class="mobile_btn" href="#sidebar"><i class="fa fa-bars"></i></a>
@@ -305,7 +305,7 @@
                                 src="{{ Auth::user()->image ? asset('images/' . Auth::user()->image) : asset('images/default.png') }}"
                                 alt="Profile Image" />
                             <span class="status online"></span></span>
-                        <span>{{ $user->name }}</span>
+                        <span>{{ Auth::user()->name }}</span>
                     </a>
                     <div class="dropdown-menu">
                         <a class="dropdown-item" href="{{ url('hr/profile') }}">My Profile</a>
@@ -327,9 +327,11 @@
                 <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i
                         class="fa fa-ellipsis-v"></i></a>
                 <div class="dropdown-menu dropdown-menu-right">
-                    <a class="dropdown-item" href="profile.html">My Profile</a>
-                    <a class="dropdown-item" href="settings.html">Settings</a>
-                    <a class="dropdown-item" href="login.html">Logout</a>
+                    <a class="dropdown-item" href="{{ url('hr/profile') }}">My Profile</a>
+                    <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
+                    document.getElementById('logout-form').submit();">
+                        {{ __("Logout") }}
+                    </a>
                 </div>
             </div>
             <!-- /Mobile Menu -->
@@ -353,12 +355,12 @@
                             <span>HR</span>
                         </li>
 
-                        <li class="{{ Request::is('hr/employee') ? 'active':'' }}">
-                            <a href="{{ url('hr/employee') }}" class="{{ Request::is('hr/employee') ? 'active':'' }}"><i
+                        <li class="{{ Request::is('hr/employee-grid') ? 'active':'' }}">
+                            <a href="{{ url('hr/employee-grid') }}"
+                                class="{{ Request::is('hr/employee-grid') ? 'active':'' }}"><i
                                     class="la la-user-secret"></i>
                                 <span>Employees</span></a>
                         </li>
-
                         <li class="submenu">
                             <a href="#"><i class="la la-rocket"></i>
                                 <span> Leave </span>
@@ -513,6 +515,9 @@
         </script> -->
     <!-- EditTable -->
     <script src="{{asset('assets/js/edittable.js')}}"></script>
+    <!-- Place jsPDF and any related scripts before the closing body tag -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     @yield('scripts')
     <script>

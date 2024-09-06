@@ -127,7 +127,26 @@ class HRAttendanceController extends Controller
                 }
             }])
             ->when($employeeName, function ($query) use ($employeeName) {
-                $query->where('name', 'like', '%' . $employeeName . '%');
+                // Split the input into parts
+                $names = explode(' ', $employeeName);
+            
+                // If the input contains more than one part, assume the last part is the last name
+                if (count($names) > 1) {
+                    $lName = array_pop($names); // Last part as the last name
+                    $fName = implode(' ', $names); // Combine the remaining parts as the first name
+            
+                    // Check for exact match of combined fName and lName
+                    $query->where(function ($query) use ($fName, $lName) {
+                        $query->where('fName', 'like', '%' . $fName . '%')
+                              ->where('lName', 'like', '%' . $lName . '%');
+                    });
+                } else {
+                    // If only one part is provided, search in both fields
+                    $query->where(function ($query) use ($employeeName) {
+                        $query->where('fName', 'like', '%' . $employeeName . '%')
+                              ->orWhere('lName', 'like', '%' . $employeeName . '%');
+                    });
+                }
             });
     
         // Apply department filter directly on the users query

@@ -16,10 +16,11 @@ class ProfileController extends Controller
     public function index ()
     {
         $user = Auth::user();
+        $supervisor = $user->supervisor;
         $contacts = ContactEmergency::where('users_id', $user->id)->get();
         $bankinfo = BankInformation::where('users_id', $user->id)->get();
         $personalInformation = PersonalInformation::where('users_id', $user->id)->get();
-        return view('hr.profile', compact('user', 'contacts', 'bankinfo', 'personalInformation'));
+        return view('hr.profile', compact('user', 'contacts', 'bankinfo', 'personalInformation', 'supervisor'));
     }
 
     public function update (Request $request) 
@@ -135,8 +136,8 @@ class ProfileController extends Controller
     public function changePassword(Request $request)
     {
         $request->validate([
-            'current_password' => ['required', 'string', 'min:8'],
-            'password' => ['required', 'string', 'min:8', 'confirmed']
+            'current_password' => ['required', 'string', 'min:6'],
+            'password' => ['required', 'string', 'min:6', 'confirmed']
         ]);
 
         if (Hash::check($request->current_password, auth()->user()->password)) {

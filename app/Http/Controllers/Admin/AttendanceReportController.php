@@ -122,11 +122,19 @@ class AttendanceReportController extends Controller
         $month = $request->get('month', date('m'));
         $year = $request->get('year', date('Y'));
         $department = $request->get('department');
+        $date = $request->get('date'); // New date filter
     
-        // Query users with their attendance records filtered by month, year, and optionally department
+        // Query users with their attendance records filtered by month, year, date, and optionally department
         $usersQuery = User::query()
-            ->with(['employeeAttendance' => function ($query) use ($month, $year, $department) {
-                $query->whereMonth('date', $month)->whereYear('date', $year);
+            ->with(['employeeAttendance' => function ($query) use ($month, $year, $date, $department) {
+                if ($date) {
+                    // If a specific date is selected, filter attendance by that exact date
+                    $query->whereDate('date', $date);
+                } else {
+                    // Otherwise, filter by the selected month and year
+                    $query->whereMonth('date', $month)->whereYear('date', $year);
+                }
+    
                 if ($department) {
                     $query->whereHas('user', function ($query) use ($department) {
                         $query->where('department', $department);
@@ -134,9 +142,29 @@ class AttendanceReportController extends Controller
                 }
             }])
             ->when($employeeName, function ($query) use ($employeeName) {
-                $query->where('name', 'like', '%' . $employeeName . '%');
+                // Split the input into parts
+                $names = explode(' ', $employeeName);
+            
+                // If the input contains more than one part, assume the last part is the last name
+                if (count($names) > 1) {
+                    $lName = array_pop($names); // Last part as the last name
+                    $fName = implode(' ', $names); // Combine the remaining parts as the first name
+            
+                    // Check for exact match of combined fName and lName
+                    $query->where(function ($query) use ($fName, $lName) {
+                        $query->where('fName', 'like', '%' . $fName . '%')
+                              ->where('lName', 'like', '%' . $lName . '%');
+                    });
+                } else {
+                    // If only one part is provided, search in both fields
+                    $query->where(function ($query) use ($employeeName) {
+                        $query->where('fName', 'like', '%' . $employeeName . '%')
+                              ->orWhere('lName', 'like', '%' . $employeeName . '%');
+                    });
+                }
             });
-    
+            
+        
         // Apply department filter directly on the users query
         if ($department) {
             $usersQuery->where('department', $department);
@@ -179,16 +207,18 @@ class AttendanceReportController extends Controller
         $departments = User::select('department')->distinct()->get();
     
         return view('admin.attendance.attendancetable', [
-            'filteredData' => $users, // Assuming your Blade template expects 'filteredData'
+            'filteredData' => $users,
             'month' => $month,
             'year' => $year,
             'departments' => $departments,
             'selectedEmployeeName' => $employeeName,
             'selectedDepartment' => $department,
             'totalLate' => $totalLate,
-            'total' => $totalTime, // Assuming 'total' represents total time worked
+            'total' => $totalTime,
+            'selectedDate' => $date, // Pass the selected date to the view
         ]);
     }
+    
     
     private function getMonthNumber($monthName)
     {
@@ -267,13 +297,24 @@ class AttendanceReportController extends Controller
                                 ->count();
         }
     
-        // Apply search filters independently
-        if (!empty($name)) {
-            $data->whereHas('user', function ($query) use ($name) {
-                $query->where('name', 'like', "%$name%");
+        // Apply search filters
+        if (!empty($searchInput)) {
+            $names = explode(' ', $searchInput); // Split input by space
+            $fName = $names[0] ?? '';
+            $lName = $names[1] ?? '';
+
+            $data->whereHas('user', function ($query) use ($fName, $lName) {
+                $query->where(function ($subQuery) use ($fName, $lName) {
+                    if (!empty($fName)) {
+                        $subQuery->where('name', 'like', "%$fName%");
+                    }
+                    if (!empty($lName)) {
+                        $subQuery->where('name', 'like', "%$lName%");
+                    }
+                });
             });
         }
-    
+
         if (!empty($cutOff)) {
             $data->where('cut_off', 'like', "%$cutOff%");
         }

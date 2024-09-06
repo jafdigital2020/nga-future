@@ -84,8 +84,8 @@ class LeaveController extends Controller
         $leaveRequest->status = 'Pending';
         $leaveRequest->save();
 
-          // Get the supervisor for the user's department
-        $supervisor = User::getSupervisorForDepartment($user->department, $user);
+        // Get the supervisor for the user's department
+        $supervisor = $user->supervisor;
 
         // Get all HR users
         $hrUsers = User::where('role_as', User::ROLE_HR)->get();

@@ -51,18 +51,19 @@
                                         <div class="staff-id">Department :
                                             {{ $user->department ?? 'No department record' }}</div>
                                         <div class="staff-id">Reporting to :
-                                            @if(auth()->user()->isHR() || auth()->user()->isSupervisor())
-                                            Upper Management
+                                            @if ($supervisor === 'Management')
+
+                                            <strong>Management</strong>
+                                            @elseif ($supervisor)
+                                            <strong>
+                                                @if ($supervisor->fName || $supervisor->lName)
+                                                {{ $supervisor->fName }} {{ $supervisor->lName }}
+                                                @else
+                                                {{ $supervisor->name }}
+                                                @endif
+                                            </strong>
                                             @else
-                                            @if($supervisor)
-                                            @if(is_string($supervisor))
-                                            {{ $supervisor }}
-                                            @else
-                                            {{ $supervisor->fName }} {{ $supervisor->lName }}
-                                            @endif
-                                            @else
-                                            N/A
-                                            @endif
+                                            <strong>No supervisor assigned.</strong>
                                             @endif</div>
 
                                         <div class="staff-msg">
@@ -1072,7 +1073,20 @@
                                 </select>
                             </div>
                         </div>
-
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>Reporting to</label>
+                                <select class="form-control" name="reporting_to" id="reporting_to">
+                                    <option value="">--Select Supervisor--</option>
+                                    @foreach ($users as $supervisor)
+                                    <option value="{{ $supervisor->id }}"
+                                        {{ $user->reporting_to == $supervisor->id ? 'selected' : '' }}>
+                                        {{ $supervisor->fName }} {{ $supervisor->lName }}
+                                    </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <div class="submit-section">
                         <button class="btn btn-primary submit-btn" type="submit">Save Changes</button>

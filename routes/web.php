@@ -23,7 +23,7 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::put('dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'update']);
     Route::put('dashboard/breakin', [App\Http\Controllers\Admin\DashboardController::class, 'breakIn']);
     Route::put('dashboard/breakout', [App\Http\Controllers\Admin\DashboardController::class, 'breakOut']);
-    Route::get('employee', [App\Http\Controllers\Admin\EmployeeController::class, 'index']);
+    Route::get('employee', [App\Http\Controllers\Admin\EmployeeController::class, 'index'])->name('admin.employeeindex');
     Route::get('employee-grid', [App\Http\Controllers\Admin\EmployeeController::class, 'gridView'])->name('admin.employeegrid');
     Route::get('employee/create', [App\Http\Controllers\Admin\EmployeeController::class, 'createView'])->name('admin.employeeCreateView');
     Route::post('employee/create', [App\Http\Controllers\Admin\EmployeeController::class, 'create'])->name('admin.employeecreate');
@@ -63,13 +63,24 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::post('payroll/edit/payslip/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'payslip'])->name('admin.payslip');
     Route::get('payslip', [App\Http\Controllers\Admin\PayrollController::class, 'payslipView'])->name('admin.payslipView');
     Route::get('payslip/view/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'viewPayslip'])->name('admin.viewPayslip');
-    Route::get('download', [App\Http\Controllers\Admin\PayrollController::class, 'download'])->name('admin.downloadPayslip');
+    Route::get('payslip/download/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'downloadPayslip'])->name('admin.payslipDownload');
     Route::get('/timesheet', [App\Http\Controllers\Admin\AttendanceReportController::class, 'timesheet'])->name('attendance.searchadmin');
     Route::post('/timesheet/{id}/approve', [\App\Http\Controllers\Admin\AttendanceReportController::class, 'approve'])->name('att.approveadmin');
     Route::post('/timesheet/{id}/decline', [\App\Http\Controllers\Admin\AttendanceReportController::class, 'decline'])->name('att.declineadmin');
     Route::post('/timesheet/approve/{id}', [App\Http\Controllers\Admin\AttendanceReportController::class, 'updateAttendance'])->name('adminTimesheet.updateAttendance');
     Route::delete('/timesheet/delete/{id}', [App\Http\Controllers\Admin\AttendanceReportController::class, 'destroyAttendance'])->name('admin.deleteAttendance');
     Route::post('/attendance/edit/{id}', [App\Http\Controllers\Admin\AttendanceReportController::class, 'updateTableAttendance'])->name('admin.updateTable');
+    Route::post('employee/create/validate-step-1', [App\Http\Controllers\Admin\EmployeeController::class, 'validateStep1'])->name('adminvalidate.step1');
+    Route::post('employee/create/validate-step-2', [App\Http\Controllers\Admin\EmployeeController::class, 'validateStep2'])->name('adminvalidate.step2');
+    Route::post('employee/create/validate-step-3', [App\Http\Controllers\Admin\EmployeeController::class, 'validateStep3'])->name('adminvalidate.step3');
+    Route::post('employee/create/validate-step-4', [App\Http\Controllers\Admin\EmployeeController::class, 'validateStep4'])->name('adminvalidate.step4');
+    Route::post('employee/create/validate-step-5', [App\Http\Controllers\Admin\EmployeeController::class, 'validateStep5'])->name('adminvalidate.step5');
+    Route::get('settings', [App\Http\Controllers\Admin\SettingsController::class, 'company'])->name('settings.company');
+    Route::post('settings/company', [App\Http\Controllers\Admin\SettingsController::class, 'companyStore'])->name('company.store');
+    Route::get('settings/theme', [App\Http\Controllers\Admin\SettingsController::class, 'theme'])->name('settings.theme');
+    Route::post('settings/theme/store', [App\Http\Controllers\Admin\SettingsController::class, 'themeStore'])->name('theme.store');
+    Route::get('settings/changepass', [App\Http\Controllers\Admin\SettingsController::class, 'password'])->name('settings.password');
+    Route::post('settings/changepass', [App\Http\Controllers\Admin\SettingsController::class, 'changePassword'])->name('settings.changepass');
     Route::get('/notifications/mark-as-read/{id}', function ($id) {
         $notification = auth()->user()->notifications()->find($id);
         if ($notification) {
@@ -128,7 +139,8 @@ Route::prefix('hr')->middleware(['auth','isHr', 'sessionTimeout'])->group(functi
     Route::put('dashboard/breakin', [App\Http\Controllers\Hr\DashboardController::class, 'breakIn']);
     Route::put('dashboard/breakout', [App\Http\Controllers\Hr\DashboardController::class, 'breakOut']);
     Route::get('/dashboard/get-data', [App\Http\Controllers\Hr\DashboardController::class, 'getUserAttendance'])->name('attendance.getr');
-    Route::get('employee', [App\Http\Controllers\Hr\EmployeeController::class, 'index'])->name('employee.index');
+    Route::get('employee-grid', [App\Http\Controllers\Hr\EmployeeController::class, 'gridView'])->name('hr.employeegrid');
+    Route::get('employee', [App\Http\Controllers\Hr\EmployeeController::class, 'index'])->name('hr.employeeindex');
     Route::post('employee', [\App\Http\Controllers\Hr\EmployeeController::class, 'store']);
     Route::get('employee/search', [\App\Http\Controllers\Hr\EmployeeController::class, 'search'])->name('employee.search');
     Route::post('employee/delete', [\App\Http\Controllers\Hr\EmployeeController::class, 'delete_function']);
@@ -181,9 +193,16 @@ Route::prefix('hr')->middleware(['auth','isHr', 'sessionTimeout'])->group(functi
     Route::post('leave/hr/request', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'storeLeaveHr'])->name('store.leavehr');
     Route::post('/leave/update/{id}', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'updateHr'])->name('leave.updatehr');
     Route::delete('/leave/delete/{id}', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'destroyHr'])->name('leave.destroyhr');
+    Route::get('employee/create', [App\Http\Controllers\Hr\EmployeeController::class, 'createView'])->name('hr.employeeCreateView');
+    Route::post('employee/create', [App\Http\Controllers\Hr\EmployeeController::class, 'create'])->name('hr.employeecreate');
+    Route::post('employee/create/validate-step-1', [App\Http\Controllers\Hr\EmployeeController::class, 'validateStep1'])->name('hrvalidate.step1');
+    Route::post('employee/create/validate-step-2', [App\Http\Controllers\Hr\EmployeeController::class, 'validateStep2'])->name('hrvalidate.step2');
+    Route::post('employee/create/validate-step-3', [App\Http\Controllers\Hr\EmployeeController::class, 'validateStep3'])->name('hrvalidate.step3');
+    Route::post('employee/create/validate-step-4', [App\Http\Controllers\Hr\EmployeeController::class, 'validateStep4'])->name('hrvalidate.step4');
+    Route::post('employee/create/validate-step-5', [App\Http\Controllers\Hr\EmployeeController::class, 'validateStep5'])->name('hrvalidate.step5');
     Route::get('/notifications/clear', function () {
         auth()->user()->notifications()->delete();
-        return redirect()->back(); 
+        return redirect()->back();
     })->name('notifications.clearhr');
 });
 
@@ -230,8 +249,9 @@ Route::prefix('manager')->middleware(['auth', 'isManager', 'sessionTimeout'])->g
     Route::post('leave/manager/request', [\App\Http\Controllers\Manager\LeaveController::class, 'storeLeaveManager'])->name('store.leavemanager');
     Route::post('/leave/update/{id}', [\App\Http\Controllers\Manager\LeaveController::class, 'updateManager'])->name('leave.updatemanager');
     Route::delete('/leave/delete/{id}', [\App\Http\Controllers\Manager\LeaveController::class, 'destroyManager'])->name('leave.destroymanager');
+    Route::post('employee/shift/{user_id}', [App\Http\Controllers\Manager\DepartmentController::class, 'shiftSchedule'])->name('manager.shift');
     Route::get('/notifications/clear', function () {
         auth()->user()->notifications()->delete();
-        return redirect()->back(); 
+        return redirect()->back();
     })->name('notifications.clearmanager');
 });

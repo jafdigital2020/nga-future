@@ -16,10 +16,11 @@ class ProfileController extends Controller
     public function index ()
     {
         $user = Auth::user();
+        $supervisor = $user->supervisor;
         $contacts = ContactEmergency::where('users_id', $user->id)->get();
         $bankinfo = BankInformation::where('users_id', $user->id)->get();
         $info = PersonalInformation::where('users_id', $user->id)->first();
-        return view('emp.profile.index', compact('user', 'contacts', 'bankinfo', 'info'));
+        return view('emp.profile.index', compact('user', 'contacts', 'bankinfo', 'info', 'supervisor'));
     }
 
     public function update (Request $request) 

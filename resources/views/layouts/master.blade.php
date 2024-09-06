@@ -73,7 +73,7 @@
             </a>
             <!-- Header Title -->
             <div class="page-title-box">
-                <h3>JAF Digital Marketing & IT Services</h3>
+                <h3>{{ $companySettings->company }}</h3>
             </div>
             <!-- /Header Title -->
             <a id="mobile_btn" class="mobile_btn" href="#sidebar"><i class="fa fa-bars"></i></a>
@@ -119,7 +119,8 @@
                                                     src="{{ asset('images/' . auth()->user()->image) }}" />
                                             </span>
                                             <div class="media-body">
-                                                @if(isset($notification->data['leave_type']))
+                                                @if(isset($notification->data['leave_type']) &&
+                                                isset($notification->data['employee_name']))
                                                 <!-- Leave Request Notification -->
                                                 <p class="noti-details">
                                                     <span
@@ -130,7 +131,8 @@
                                                     from <span>{{ $notification->data['start_date'] }}</span> to
                                                     <span>{{ $notification->data['end_date'] }}</span>.
                                                 </p>
-                                                @elseif(isset($notification->data['total_worked']))
+                                                @elseif(isset($notification->data['total_worked']) &&
+                                                isset($notification->data['employee_name']))
                                                 <!-- Attendance Submission Notification -->
                                                 <p class="noti-details">
                                                     <span
@@ -140,6 +142,17 @@
                                                     Worked Hours:
                                                     <span>{{ $notification->data['total_worked'] }}</span>,
                                                     Late Hours: <span>{{ $notification->data['total_late'] }}</span>.
+                                                </p>
+                                                @elseif(isset($notification->data['leave_type']) &&
+                                                !isset($notification->data['employee_name']))
+                                                <!-- Leave Request Approved Notification -->
+                                                <p class="noti-details">
+                                                    Your leave request for
+                                                    <span
+                                                        class="noti-title">{{ $notification->data['leave_type'] }}</span>
+                                                    from <span>{{ $notification->data['start_date'] }}</span> to
+                                                    <span>{{ $notification->data['end_date'] }}</span> has been
+                                                    approved.
                                                 </p>
                                                 @endif
                                                 <p class="noti-time">
@@ -294,7 +307,7 @@
                     </a>
                     <div class="dropdown-menu">
                         <a class="dropdown-item" href="{{ url('admin/profile') }}">My Profile</a>
-                        <a class="dropdown-item" href="settings.html">Settings</a>
+                        <a class="dropdown-item" href="{{ url('admin/settings') }}">Settings</a>
                         <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">
                             {{ __("Logout") }}
@@ -312,9 +325,12 @@
                 <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i
                         class="fa fa-ellipsis-v"></i></a>
                 <div class="dropdown-menu dropdown-menu-right">
-                    <a class="dropdown-item" href="profile.html">My Profile</a>
-                    <a class="dropdown-item" href="settings.html">Settings</a>
-                    <a class="dropdown-item" href="login.html">Logout</a>
+                    <a class="dropdown-item" href="{{ url('admin/profile') }}">My Profile</a>
+                    <a class="dropdown-item" href="{{ url('admin/settings') }}">Settings</a>
+                    <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
+                    document.getElementById('logout-form').submit();">
+                        {{ __("Logout") }}
+                    </a>
                 </div>
             </div>
             <!-- /Mobile Menu -->
@@ -331,16 +347,17 @@
                         </li>
                         <li class="{{ Request::is('admin/dashboard') ? 'active':'' }}">
                             <a href="{{ url('admin/dashboard') }}"><i class="la la-home"></i>
-                                <span>Main</span></a>
+                                <span>Dashboard</span></a>
                         </li>
 
                         <li class="menu-title">
                             <span>Admin</span>
                         </li>
 
-                        <li class="{{ Request::is('admin/employee') ? 'active':'' }}">
-                            <a href="{{ url('admin/employee') }}"
-                                class="{{ Request::is('hr/employee') ? 'active':'' }}"><i class="la la-user-secret"></i>
+                        <li class="{{ Request::is('admin/employee-grid') ? 'active':'' }}">
+                            <a href="{{ url('admin/employee-grid') }}"
+                                class="{{ Request::is('admin/employee-grid') ? 'active':'' }}"><i
+                                    class="la la-user-secret"></i>
                                 <span>Employees</span></a>
                         </li>
                         <li class="{{ Request::is('admin/leave') ? 'active':'' }}">
@@ -458,6 +475,10 @@
 
     <!-- EditTable -->
     <script src="{{asset('assets/js/edittable.js')}}"></script>
+    <!-- Place jsPDF and any related scripts before the closing body tag -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 
     @yield('scripts')
     <script>

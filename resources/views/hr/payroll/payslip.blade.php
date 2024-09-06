@@ -130,8 +130,6 @@
                                                 class="fa fa-pencil m-r-5"></i>Edit</a>
                                         <a class="dropdown-item" href="{{ url('hr/payslip/view/'.$pay->id) }}"><i
                                                 class="fa fa-eye m-r-5"></i>View</a>
-                                        <a class="dropdown-item edit-attendance" href="#">
-                                            <i class="fa fa-download m-r-5"></i>Download</a>
                                     </div>
                                 </div>
                             </td>

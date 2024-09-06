@@ -39,6 +39,8 @@ class User extends Authenticatable
     const ROLE_IT_MANAGER = 5;
     const ROLE_MARKETING_MANAGER = 6;
 
+    public $timestamps = true;
+
     public function getRoleAttribute()
     {
         switch ($this->attributes['role_as']) {
@@ -66,19 +68,30 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'email',
-        'password',
-        'image',
-        'empNumber',
-        'position',
-        'vacLeave',
-        'sickLeave',
-        'bdayLeave',
         'fName',
         'mName',
         'lName',
-        'suffix',
+        'email',
+        'password',
+        'empNumber',
+        'typeOfContract',
+        'phoneNumber',
+        'dateHired',
+        'birthday',
+        'completeAddress',
+        'mSalary',
+        'position',
+        'role_as',
+        'sss',
+        'pagIbig',
+        'philHealth',
         'tin',
+        'department',
+        'bdayLeave',
+        'vacLeave',
+        'sickLeave',
+        'reporting_to',
+        'image',
     ];
 
     public function isSupervisor()
@@ -219,6 +232,16 @@ class User extends Authenticatable
     public function shiftSchedule()
     {
         return $this->hasMany(ShiftSchedule::class, 'users_id', 'id');
+    }
+
+    public function supervisor()
+    {
+        return $this->belongsTo(User::class, 'reporting_to');
+    }
+
+    public function subordinates()
+    {
+        return $this->hasMany(User::class, 'reporting_to');
     }
 
     public function checkIn()

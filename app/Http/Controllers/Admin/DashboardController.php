@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Carbon\Carbon;
 use App\Models\User;
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
@@ -136,6 +137,24 @@ class DashboardController extends Controller
         $departments = User::select('department')->distinct()->get();
 
         $totalUsers = User::where('role_as', '!=', 1)->count();
+
+        // Current month new users excluding role_as = 1
+        $currentMonth = Carbon::now()->startOfMonth();
+        $newUsersThisMonth = User::where('created_at', '>=', $currentMonth)
+                                ->where('role_as', '!=', 1)
+                                ->count();
+
+        
+        // Last month new users excluding role_as = 1
+        $lastMonth = Carbon::now()->subMonth()->startOfMonth();
+        $newUsersLastMonth = User::whereBetween('created_at', [$lastMonth, $lastMonth->copy()->endOfMonth()])
+                                ->where('role_as', '!=', 1)
+                                ->count();
+
+        // Percentage increase calculation with safe checks
+        $percentageIncrease = ($newUsersLastMonth > 0)
+                            ? (($newUsersThisMonth - $newUsersLastMonth) / $newUsersLastMonth) * 100 
+                            : ($newUsersThisMonth > 0 ? 100 : 0);
         
         $today = now()->format('Y-m-d');
 
@@ -166,6 +185,8 @@ class DashboardController extends Controller
         'hasTimeIn',
         'hasBreakOut',
         'hasBreakIn',
+        'newUsersThisMonth',
+        'percentageIncrease',
         ));
     }
 

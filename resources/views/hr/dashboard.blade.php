@@ -150,7 +150,8 @@
                         <div class="stats-info">
                             <p>
                                 Name
-                                <strong>{{ Auth::user()->name }}</strong>
+                                <strong>{{ Auth::user()->fName }} {{ Auth::user()->mName }}
+                                    {{ Auth::user()->lName }}</strong>
                             </p>
                         </div>
                         <div class="stats-info">

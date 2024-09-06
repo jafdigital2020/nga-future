@@ -55,11 +55,6 @@ class EmployeeAttendance extends Model
             // Deduct break duration from total worked time
             $totalWorkedSeconds -= $breakDuration;
     
-            // Deduct breakLate if it exists and is in the format 00:00:00
-            if (!empty($this->breakLate)) {
-                $breakLateSeconds = Carbon::parse($this->breakLate)->secondsSinceMidnight();
-                $totalWorkedSeconds -= $breakLateSeconds;
-            }
     
             // Deduct totalLate if it exists and is in the format 00:00:00
             if (!empty($this->totalLate)) {

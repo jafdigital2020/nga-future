@@ -16,8 +16,8 @@
                 </ul>
             </div>
             <div class="col-auto float-right ml-auto">
-                <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_employee"><i
-                        class="fa fa-plus"></i> Add Employee</a>
+                <a href="{{ url('admin/employee/create') }}" class="btn add-btn"><i class="fa fa-plus"></i> Add
+                    Employee</a>
                 <div class="view-icons">
                     <a href="{{ url('admin/employee-grid') }}" class="grid-view btn btn-link"><i
                             class="fa fa-th"></i></a>
@@ -48,12 +48,10 @@
             <div class="col-sm-6 col-md-3">
                 <div class="form-group form-focus select-focus">
                     <select class="select floating" name="department">
-                        <option value="">--Select Department--</option> <!-- Ensure an empty value for the default -->
-                        <option value="Website Development">Website Development</option>
-                        <option value="SEO">SEO</option>
-                        <option value="Marketing">Marketing</option>
-                        <option value="Graphics">Graphics</option>
-                        <option value="Content">Content</option>
+                        <option value="">--Select Department--</option>
+                        @foreach ($departments as $dept)
+                        <option value="{{ $dept }}">{{ $dept }}</option>
+                        @endforeach
                     </select>
                     <label class="focus-label">Department</label>
                 </div>

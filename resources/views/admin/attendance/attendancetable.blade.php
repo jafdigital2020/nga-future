@@ -40,6 +40,15 @@
                 </div>
             </div>
             <div class="col-sm-6 col-md-2">
+                <div class="form-group form-focus">
+                    <div class="cal-icon">
+                        <input type="text" class="datetimepicker form-control floating" name="date"
+                            value="{{ request('date') }}">
+                    </div>
+                    <label class="focus-label">Date</label>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-2">
                 <div class="form-group form-focus select-focus">
                     <select class="select floating" name="department">
                         <option value="">- </option>
@@ -76,7 +85,7 @@
                     </select> <label class="focus-label">Select Year</label>
                 </div>
             </div>
-            <div class="col-sm-6 col-md-4">
+            <div class="col-sm-6 col-md-2">
                 <button type="submit" class="btn btn-primary btn-block"> Search </button>
             </div>
         </div>
@@ -116,7 +125,7 @@
                                             asset('images/default.png')
                                         }}" alt="Profile Image" />
                                         @endif</a>
-                                    <a href="#">{{ $user->name }}
+                                    <a href="#">{{ $user->fName }} {{ $user->lName }}
                                         <span>{{ $user->department }}</span></a>
                                 </h2>
                             </td>
@@ -285,6 +294,16 @@
         $('#delete_attendance_id').val(attId);
         $('#deleteAttendanceForm').attr('action', '/admin/attendance/delete/' + attId);
         $('#delete_approve').modal('show');
+    });
+
+</script>
+
+<script>
+    // Initialize date picker
+    $('.datetimepicker').datepicker({
+        format: 'yyyy-mm-dd', // Match this format to how your database stores dates
+        autoclose: true,
+        todayHighlight: true
     });
 
 </script>

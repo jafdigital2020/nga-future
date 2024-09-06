@@ -75,7 +75,7 @@
             </a>
             <!-- Header Title -->
             <div class="page-title-box">
-                <h3>JAF Digital Marketing & IT Services</h3>
+                <h3>{{ $companySettings->company }}</h3>
             </div>
             <!-- /Header Title -->
             <a id="mobile_btn" class="mobile_btn" href="#sidebar"><i class="fa fa-bars"></i></a>
@@ -107,7 +107,7 @@
                     <div class="dropdown-menu notifications">
                         <div class="topnav-dropdown-header">
                             <span class="notification-title">Notifications</span>
-                            <a href="{{ route('notifications.clearhr') }}" class="clear-noti">Clear All</a>
+                            <a href="{{ route('notifications.clearmanager') }}" class="clear-noti">Clear All</a>
                         </div>
                         <div class="noti-content">
                             <ul class="notification-list">

@@ -187,7 +187,7 @@
                                     @endif
                                 </strong>
                                 @else
-                                <strong>No supervisor assigned for this department.</strong>
+                                <strong>No supervisor assigned.</strong>
                                 @endif
                             </p>
                         </div>

@@ -20,78 +20,41 @@ class AttendanceApproveController extends Controller
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
         $cutOff = $request->input('cut_off');
+        
+        // Get the IDs of the subordinates of the current supervisor
+        $subordinateIds = User::where('reporting_to', $user->id)->pluck('id');
     
         // Initialize the query
-        $data = ApprovedAttendance::query();
-    
-        // If no status is selected, default to showing pending requests
+        $data = ApprovedAttendance::whereIn('users_id', $subordinateIds);
+        
+        // Apply status filter
         if (empty($status)) {
             $status = 'Pending';
             $data->where('status', $status);
         } else {
             $data->where('status', 'like', "%$status%");
         }
-    
+        
+        // Determine counts based on user role
         if ($user->isAdmin() || $user->isHR()) {
+            // Admins and HR can see all records
             $pendingCount = ApprovedAttendance::where('status', 'Pending')->count();
             $approvedCount = ApprovedAttendance::where('status', 'Approved')->count();
             $declinedCount = ApprovedAttendance::where('status', 'Declined')->count();
-        } elseif ($user->isSupervisor()) {
-            // Supervisors can see requests from multiple departments they manage
-            $departments = [];
-            if ($user->role_as == User::ROLE_OPERATIONS_MANAGER) {
-                // Add departments handled by the Operations Manager
-                $departments = ['SEO', 'Content'];
-            } elseif ($user->role_as == User::ROLE_IT_MANAGER) {
-                $departments = ['IT', 'Website Development'];
-            } elseif ($user->role_as == User::ROLE_MARKETING_MANAGER) {
-                $departments = ['Marketing'];
-            }
-    
-            $data->whereHas('user', function ($query) use ($departments) {
-                $query->whereIn('department', $departments)
-                      ->where('role_as', '!=', User::ROLE_HR) // Not HR
-                      ->where('role_as', '!=', User::ROLE_ADMIN); // Not Admin
-            });
-    
-            $pendingCount = ApprovedAttendance::where('status', 'Pending')
-                                ->whereHas('user', function ($query) use ($departments) {
-                                    $query->whereIn('department', $departments)
-                                          ->where('role_as', '!=', User::ROLE_HR) // Not HR
-                                          ->where('role_as', '!=', User::ROLE_ADMIN); // Not Admin
-                                })->count();
-    
-            $approvedCount = ApprovedAttendance::where('status', 'Approved')
-                                ->whereHas('user', function ($query) use ($departments) {
-                                    $query->whereIn('department', $departments)
-                                          ->where('role_as', '!=', User::ROLE_HR) // Not HR
-                                          ->where('role_as', '!=', User::ROLE_ADMIN); // Not Admin
-                                })->count();
-    
-            $declinedCount = ApprovedAttendance::where('status', 'Declined')
-                                ->whereHas('user', function ($query) use ($departments) {
-                                    $query->whereIn('department', $departments)
-                                          ->where('role_as', '!=', User::ROLE_HR) // Not HR
-                                          ->where('role_as', '!=', User::ROLE_ADMIN); // Not Admin
-                                })->count();
         } else {
-            // Regular users can only see their own requests
-            $data->where('users_id', $user->id);
-    
+            // Counts based on subordinates only
             $pendingCount = ApprovedAttendance::where('status', 'Pending')
-                                ->where('users_id', $user->id)
+                                ->whereIn('users_id', $subordinateIds)
                                 ->count();
-    
             $approvedCount = ApprovedAttendance::where('status', 'Approved')
-                                ->where('users_id', $user->id)
+                                ->whereIn('users_id', $subordinateIds)
                                 ->count();
-    
             $declinedCount = ApprovedAttendance::where('status', 'Declined')
-                                ->where('users_id', $user->id)
+                                ->whereIn('users_id', $subordinateIds)
                                 ->count();
         }
-    
-        // Apply search filters independently
+        
+        // Apply additional search filters
         if (!empty($name)) {
             $data->whereHas('user', function ($query) use ($name) {
                 $query->where('name', 'like', "%$name%");
@@ -113,9 +76,10 @@ class AttendanceApproveController extends Controller
                       });
             });
         }
-    
+        
+        // Get the filtered attendance records
         $attendance = $data->get();
-    
+        
         return view('manager.attendance', compact('attendance', 'pendingCount', 'user', 'approvedCount', 'declinedCount'));
     }
     
@@ -181,24 +145,15 @@ class AttendanceApproveController extends Controller
         $month = $request->get('month', date('m'));
         $year = $request->get('year', date('Y'));
         $department = $request->get('department');
+        
+        // Get the IDs of the subordinates of the current supervisor
+        $subordinateIds = User::where('reporting_to', $user->id)->pluck('id');
     
-        // Define the departments that each manager role can view
-        $departmentManagerRoles = [
-            User::ROLE_IT_MANAGER => ['IT', 'Website Development'],
-            User::ROLE_OPERATIONS_MANAGER => ['SEO', 'Content'],
-            User::ROLE_MARKETING_MANAGER => ['Marketing'],
-            // Add more roles and departments as needed
-        ];
-    
-        // Get the departments the authenticated user can view based on their role
-        $allowedDepartments = $departmentManagerRoles[$user->role_as] ?? [];
-    
-        // Query users with their attendance records filtered by month, year, and optionally department
-        $usersQuery = User::query()
-            ->where('role_as', '!=', 1) // Exclude role with ID 1 (assuming it's not a manager role)
-            ->whereIn('department', $allowedDepartments) // Filter users by allowed departments
+        // Query to fetch users (subordinates) with their attendance records filtered by month, year, and optionally department
+        $usersQuery = User::whereIn('id', $subordinateIds) // Only include subordinates of the supervisor
             ->with(['employeeAttendance' => function ($query) use ($month, $year, $department) {
-                $query->whereMonth('date', $month)->whereYear('date', $year);
+                $query->whereMonth('date', $month)
+                      ->whereYear('date', $year);
                 if ($department) {
                     $query->whereHas('user', function ($query) use ($department) {
                         $query->where('department', $department);
@@ -212,6 +167,7 @@ class AttendanceApproveController extends Controller
                 });
             });
     
+        // Execute the query to fetch the users with their attendance records
         $users = $usersQuery->get();
     
         return view('manager.attendancerecord', [
@@ -222,5 +178,6 @@ class AttendanceApproveController extends Controller
             'selectedDepartment' => $department,
         ]);
     }
+    
     
 }

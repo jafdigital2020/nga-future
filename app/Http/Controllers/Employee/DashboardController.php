@@ -100,7 +100,7 @@ class DashboardController extends Controller
         $filteredData = $data->get();
     
         $department = $user->department;
-        $supervisor = User::getSupervisorForDepartment($department, $user);
+        $supervisor = $user->supervisor;
         
         if ($request->ajax()) {
             $leaveRequests = LeaveRequest::where('users_id', $authUserId)

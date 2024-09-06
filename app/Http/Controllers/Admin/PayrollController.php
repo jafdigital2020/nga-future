@@ -6,8 +6,11 @@ use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Salary;
 use App\Models\Payroll;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use App\Models\SettingsTheme;
 use App\Models\EmployeeSalary;
+use App\Models\SettingsCompany;
 use App\Models\ApprovedAttendance;
 use App\Models\EmployeeAttendance;
 use Illuminate\Support\Facades\DB;
@@ -63,7 +66,7 @@ class PayrollController extends Controller
         $approved = $data->get();
     
         // Assuming you have a list of departments to pass to the view
-        $departments = ApprovedAttendance::select('department')->distinct()->get();
+        $departments = User::select('department')->distinct()->get();
     
         // Assuming you have a list of possible statuses
         $statuses = ApprovedAttendance::select('status')->distinct()->get();
@@ -290,7 +293,7 @@ class PayrollController extends Controller
     $payslip = $data->get();
 
     // Assuming you have a list of departments to pass to the view
-    $departments = Payroll::select('department')->distinct()->get();
+    $departments = User::select('department')->distinct()->get();
 
 
         return view('admin.payroll.payslip', compact('payslip', 'departments', 'cutoffPeriod', 'selectedYear'));
@@ -298,13 +301,10 @@ class PayrollController extends Controller
 
    public function viewPayslip($id)
    {
-       $view = Payroll::findOrFail($id);
+    $view = Payroll::with('user')->findOrFail($id);
 
        return view('admin.payroll.payslipview', compact('view'));
    }
 
-   public function download()
-   {
-    return view('admin.payroll.pdf');
-   }
+   
 }

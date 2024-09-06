@@ -45,7 +45,7 @@
                                         <div class="staff-id">Employee ID : {{ $user->empNumber }}</div>
                                         <div class="small doj text-muted">Date of Join : {{ $user->dateHired }}</div>
                                         <div class="staff-msg">
-                                            <a class="btn btn-danger" href="{{ route('adminchange.pass') }}"> Change
+                                            <a class="btn btn-danger" href="{{ route('settings.password') }}"> Change
                                                 Password
                                             </a>
                                         </div>

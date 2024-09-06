@@ -40,11 +40,22 @@
                                     <div class="profile-info-left">
                                         <h3 class="user-name m-t-0 mb-0">{{ $user->lName }}, {{ $user->fName }}
                                             {{ $user->mName }} ({{ $user->name }})</h3>
-                                        <h6 class="text-muted">{{ $user->position }}</h6>
-                                        <small
-                                            class="text-muted">{{ $user->department ?? 'No department record' }}</small>
-                                        <div class="staff-id">Employee ID : {{ $user->empNumber }}</div>
-                                        <div class="small doj text-muted">Date of Join : {{ $user->dateHired }}</div>
+                                        <div class="staff-id">Department:
+                                            {{ $user->department ?? 'No department record' }}</div>
+                                        <div class="staff-id">Employee ID: {{ $user->empNumber }}</div>
+                                        <div class="staff-id">Reporting to: @if ($supervisor === 'Management')
+                                            <strong>Management</strong>
+                                            @elseif ($supervisor)
+                                            <strong>
+                                                @if ($supervisor->fName || $supervisor->lName)
+                                                {{ $supervisor->fName }} {{ $supervisor->lName }}
+                                                @else
+                                                {{ $supervisor->name }}
+                                                @endif
+                                            </strong>
+                                            @else
+                                            <strong>No supervisor assigned.</strong>
+                                            @endif</div>
                                         <div class="staff-msg">
                                             <a class="btn btn-danger" href="{{ route('change.pass') }}"> Change Password
                                             </a>
@@ -74,6 +85,10 @@
                                         <li>
                                             <div class="title">Type of contract:</div>
                                             <div class="text">{{ $user->typeOfContract }}</div>
+                                        </li>
+                                        <li>
+                                            <div class="title">Date of Join:</div>
+                                            <div class="text">{{ $user->dateHired }}</div>
                                         </li>
                                     </ul>
                                 </div>
