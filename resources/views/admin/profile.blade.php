@@ -38,12 +38,13 @@
                             <div class="row">
                                 <div class="col-md-5">
                                     <div class="profile-info-left">
-                                        <h3 class="user-name m-t-0 mb-0">{{ $user->name }}</h3>
+                                        <h3 class="user-name m-t-0 mb-0">{{ $user->lName }}, {{ $user->fName }}
+                                            {{ $user->mName }} ({{ $user->name }})</h3>
                                         <h6 class="text-muted">{{ $user->position }}</h6>
-                                        <small
-                                            class="text-muted">{{ $user->department ?? 'No department record' }}</small>
+                                        <div class="staff-id">Department:
+                                            {{ $user->department ?? 'No department record' }}</div>
                                         <div class="staff-id">Employee ID : {{ $user->empNumber }}</div>
-                                        <div class="small doj text-muted">Date of Join : {{ $user->dateHired }}</div>
+                                        <div class="staff-id">Date of Join : {{ $user->dateHired }}</div>
                                         <div class="staff-msg">
                                             <a class="btn btn-danger" href="{{ route('settings.password') }}"> Change
                                                 Password
@@ -231,8 +232,7 @@
                     <div class="card profile-box flex-fill">
                         <div class="card-body">
 
-                            <h3 class="card-title">Bank Information<a href="#" class="edit-icon" data-toggle="modal"
-                                    data-target="#bank_info"><i class="fa fa-pencil"></i></a></h3>
+                            <h3 class="card-title">Bank Information</h3>
                             @if($user->bankInfo->isNotEmpty())
                             @foreach ($user->bankInfo as $bank)
                             <ul class="personal-info">

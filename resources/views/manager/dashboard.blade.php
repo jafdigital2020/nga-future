@@ -904,7 +904,14 @@
                                 },
                                 error: function (err) {
                                     console.error('Error saving attendance:', err);
-                                    alert('Error saving attendance.');
+                                    if (err.status === 409) {
+                                        // Handle conflict error (duplicate record)
+                                        alert(err.responseJSON
+                                            .message
+                                        ); // Display specific conflict message
+                                    } else {
+                                        alert('Error saving attendance.');
+                                    }
                                 }
                             });
                         }
@@ -915,6 +922,7 @@
                     alert('Error checking attendance.');
                 }
             });
+
         }
 
         function updateStatus(status) {

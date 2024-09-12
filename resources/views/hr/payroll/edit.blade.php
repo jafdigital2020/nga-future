@@ -382,10 +382,18 @@
                             <label class="col-lg-3 col-form-label">Net Pay</label>
                             <div class="col-lg-9">
                                 <input type="hidden" name="netPay" id="netPay" class="form-control" readonly>
-                                <input type="text" name="netPayTotal" id="netPayTotal" class="form-control" readonly
-                                    style="color: red; display: inline-block; width: 31%;">
-                                <button type="submit" class="btn btn-danger btn-block"
-                                    style="display: inline-block; width: 66%; margin-left: 5px;">
+                                <input type="text" name="netPayTotal" id="netPayTotal" class="form-control" readonly>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <button type="submit" class="btn btn-danger btn-block" name="action" value="save">
+                                    <i class="fa fa-file" aria-hidden="true"></i> Save
+                                </button>
+                            </div>
+                            <div class="col-sm-6">
+                                <button type="submit" class="btn btn-outline-danger btn-block" name="action"
+                                    value="generate">
                                     <i class="fa fa-gear" aria-hidden="true"></i> Generate Payroll
                                 </button>
                             </div>

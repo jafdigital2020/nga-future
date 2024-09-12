@@ -7,7 +7,7 @@
                 <h3 class="page-title">Attendance</h3>
                 <ul class="breadcrumb">
                     <li class="breadcrumb-item">
-                        <a href="index.html">Dashboard</a>
+                        <a href="{{ url('admin/dashboard') }}">Dashboard</a>
                     </li>
                     <li class="breadcrumb-item active">Attendance</li>
                 </ul>
@@ -33,22 +33,14 @@
     <!-- Search Filter -->
     <form method="GET" action="{{ route('report.admin') }}">
         <div class="row filter-row">
-            <div class="col-sm-6 col-md-2">
+            <div class="col-sm-6 col-md-3">
                 <div class="form-group form-focus">
                     <input type="text" class="form-control floating" name="employee_name">
                     <label class="focus-label">Employee Name</label>
                 </div>
             </div>
-            <div class="col-sm-6 col-md-2">
-                <div class="form-group form-focus">
-                    <div class="cal-icon">
-                        <input type="text" class="datetimepicker form-control floating" name="date"
-                            value="{{ request('date') }}">
-                    </div>
-                    <label class="focus-label">Date</label>
-                </div>
-            </div>
-            <div class="col-sm-6 col-md-2">
+
+            <div class="col-sm-6 col-md-3">
                 <div class="form-group form-focus select-focus">
                     <select class="select floating" name="department">
                         <option value="">- </option>
@@ -62,7 +54,7 @@
                     <label class="focus-label">Select Department</label>
                 </div>
             </div>
-            <div class="col-sm-6 col-md-2">
+            <div class="col-sm-6 col-md-3">
                 <div class="form-group form-focus select-focus">
                     <select class="select floating" name="month">
                         <option value="">-</option>
@@ -75,7 +67,7 @@
                     <label class="focus-label">Select Month</label>
                 </div>
             </div>
-            <div class="col-sm-6 col-md-2">
+            <div class="col-sm-6 col-md-3">
                 <div class="form-group form-focus select-focus">
                     <select class="select floating" name="year">
                         <option value="">-</option>
@@ -85,10 +77,38 @@
                     </select> <label class="focus-label">Select Year</label>
                 </div>
             </div>
-            <div class="col-sm-6 col-md-2">
+        </div>
+        <div class="row filter-row">
+            <div class="col-sm-6 col-md-3">
+                <div class="form-group form-focus">
+                    <div class="cal-icon">
+                        <input type="text" class="datetimepicker form-control floating" name="date"
+                            value="{{ request('date') }}">
+                    </div>
+                    <label class="focus-label">Date</label>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="form-group form-focus">
+                    <div class="cal-icon">
+                        <input type="text" class="datetimepicker form-control floating" name="start_date" value="">
+                    </div>
+                    <label class="focus-label">From</label>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="form-group form-focus">
+                    <div class="cal-icon">
+                        <input type="text" class="datetimepicker form-control floating" name="end_date" value="">
+                    </div>
+                    <label class="focus-label">To</label>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
                 <button type="submit" class="btn btn-primary btn-block"> Search </button>
             </div>
         </div>
+
     </form>
     <!-- /Search Filter -->
 
@@ -251,6 +271,36 @@
     </div>
 </div>
 <!-- /Edit attendance Modal -->
+
+<!-- Delete Leave Modal -->
+<div class="modal custom-modal fade" id="delete_approve" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="form-header">
+                    <h3>Delete Attendance</h3>
+                    <p>Are you sure you want to cancel this leave?</p>
+                </div>
+                <div class="modal-btn delete-action">
+                    <div class="row">
+                        <div class="col-5">
+                            <form id="deleteAttendanceForm" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <input type="hidden" name="attendance_id" id="attendance_id">
+                                <button class="btn add-btn" type="submit">Delete</button>
+                            </form>
+                        </div>
+                        <div class="col-6">
+                            <a href="javascript:void(0);" data-dismiss="modal" class="btn add-btn">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Delete Leave Modal -->
 @endsection
 
 @section('scripts')

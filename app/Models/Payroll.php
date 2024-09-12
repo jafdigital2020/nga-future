@@ -45,6 +45,7 @@ class Payroll extends Model
         'dailyRate',
         'hourlyRate',
         'netPay',
+        'status',
     ];
 
     public function user(): BelongsTo

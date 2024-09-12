@@ -18,9 +18,9 @@
             </div>
             <div class="col-auto float-right ml-auto">
                 <div class="view-icons">
-                    <a href="{{ url('hr/timesheet') }}" class="grid-view btn btn-link"><i
+                    <a href="{{ url('hr/timesheet') }}" class="grid-view btn btn-link active"><i
                             class="las la-calendar-check"></i></a>
-                    <a href="{{ url('hr/attendance') }}" class="list-view btn btn-link active"><i
+                    <a href="{{ url('hr/attendance') }}" class="list-view btn btn-link "><i
                             class="la la-calendar"></i></a>
                 </div>
             </div>
@@ -274,6 +274,8 @@
                                             data-total_hours="{{ $att->totalHours }}"
                                             data-total_late="{{ $att->totalLate }}">
                                             <i class="fa fa-pencil m-r-5"></i> Edit</a>
+                                        <a class="dropdown-item" href="{{ url('hr/timesheet/view/' . $att->id) }}">
+                                            <i class="fa fa-eye m-r-5"></i> View</a>
                                         <a class="dropdown-item delete-attendance" href="#" data-id="{{ $att->id }}">
                                             <i class="fa fa-trash-o m-r-5"></i> Delete</a>
                                     </div>

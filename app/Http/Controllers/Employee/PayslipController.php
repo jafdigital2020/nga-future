@@ -38,7 +38,10 @@ class PayslipController extends Controller
         if (!empty($cutoffPeriod)) {
             $data->where('cut_off', $cutoffPeriod); // Search the cut_off column
         }
-    
+        
+        // Add filter for status being 'Payslip'
+        $data->where('status', 'Payslip');
+        
         $payslip = $data->get();
     
 

@@ -10680,3 +10680,11 @@ ul.comment-list li ul.children {
     display: none;
     /* Initially hidden */
 }
+
+.btn-link.active {
+    background-color: #f62d51;
+}
+
+.btn-link.active i {
+    color: white;
+}

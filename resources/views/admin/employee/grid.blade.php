@@ -19,9 +19,11 @@
                 <a href="{{ url('admin/employee/create') }}" class="btn add-btn"><i class="fa fa-plus"></i> Add
                     Employee</a>
                 <div class="view-icons">
-                    <a href="{{ url('admin/employee-grid') }}" class="grid-view btn btn-link"><i
+                    <a href="{{ url('admin/employee-grid') }}"
+                        class="grid-view btn btn-link {{ Request::is('admin/employee-grid') ? 'active':'' }}"><i
                             class="fa fa-th"></i></a>
-                    <a href="{{ url('admin/employee') }}" class="list-view btn btn-link active"><i
+                    <a href="{{ url('admin/employee') }}"
+                        class="list-view btn btn-link {{ Request::is('admin/employee') ? 'active':'' }}"><i
                             class="fa fa-bars"></i></a>
                 </div>
             </div>
@@ -41,7 +43,12 @@
             </div>
             <div class="col-sm-6 col-md-3">
                 <div class="form-group form-focus">
-                    <input type="text" class="form-control floating" name="name" />
+                    <input type="text" class="form-control floating" name="name" list="userName" />
+                    <datalist id="userName">
+                        @foreach ($names as $name)
+                        <option value="{{ $name }}">{{ $name }}</option>
+                        @endforeach
+                    </datalist>
                     <label class="focus-label">Employee Name</label>
                 </div>
             </div>

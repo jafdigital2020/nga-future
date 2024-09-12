@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\HR;
 
+use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\ShiftSchedule;
@@ -21,9 +22,12 @@ class EmployeeController extends Controller
     public function index ()
     {
         $emp = User::where('role_as', '!=', 1)->get();
-        $departments = User::distinct()->pluck('deparment');
+        $departments = User::distinct()->pluck('department');
+        $names = User::select(DB::raw("CONCAT(fName, ' ', lName) as full_name"))
+        ->distinct()
+        ->pluck('full_name');
 
-        return view ('hr.employee.index', compact('emp', 'deparments'));
+        return view ('hr.employee.index', compact('emp', 'departments', 'names'));
     }
 
     public function gridView(Request $request)
@@ -33,7 +37,10 @@ class EmployeeController extends Controller
         $empNumber = $request->input('empNumber');
         $department = $request->input('department');
 
-        $departments = User::distinct()->pluck('deparment');
+        $departments = User::distinct()->pluck('department');
+        $names = User::select(DB::raw("CONCAT(fName, ' ', lName) as full_name"))
+        ->distinct()
+        ->pluck('full_name');
 
         // Initialize the query
         $data = User::query()->where('role_as', '!=', 1); // Exclude users with role_as = 1
@@ -76,7 +83,7 @@ class EmployeeController extends Controller
         $emp = $data->get();
 
         // Return the view with the search results
-        return view('hr.employee.grid', compact('emp'));
+        return view('hr.employee.grid', compact('emp', 'departments', 'names'));
     }
 
     public function search(Request $request)
@@ -85,6 +92,9 @@ class EmployeeController extends Controller
         $empNumber = $request->input('empNumber');
         $department = $request->input('department');
         $department = $request->get('department');
+        $names = User::select(DB::raw("CONCAT(fName, ' ', lName) as full_name"))
+        ->distinct()
+        ->pluck('full_name');
     
         $data = User::query();
     
@@ -125,7 +135,7 @@ class EmployeeController extends Controller
     
         $emp = $data->get();
     
-        return view('hr.employee.index', compact('emp'));
+        return view('hr.employee.index', compact('emp', 'departments', 'names'));
     }
     
     public function store(Request $request)

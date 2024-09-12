@@ -18,9 +18,9 @@
             <div class="col-auto float-right ml-auto">
                 <a href="{{ url('hr/employee/create') }}" class="btn add-btn"></i> Add Employee</a>
                 <div class="view-icons">
-                    <a href="{{ url('hr/employee-grid') }}" class="grid-view btn btn-link"><i class="fa fa-th"></i></a>
-                    <a href="{{ url('hr/employee') }}" class="list-view btn btn-link active"><i
-                            class="fa fa-bars"></i></a>
+                    <a href="{{ url('hr/employee-grid') }}" class="grid-view btn btn-link active "><i
+                            class="fa fa-th"></i></a>
+                    <a href="{{ url('hr/employee') }}" class="list-view btn btn-link "><i class="fa fa-bars"></i></a>
                 </div>
             </div>
         </div>
@@ -39,7 +39,12 @@
             </div>
             <div class="col-sm-6 col-md-3">
                 <div class="form-group form-focus">
-                    <input type="text" class="form-control floating" name="name" />
+                    <input type="text" class="form-control floating" name="name" list="userName" />
+                    <datalist id="userName">
+                        @foreach ($names as $name)
+                        <option value="{{ $name }}">{{ $name }}</option>
+                        @endforeach
+                    </datalist>
                     <label class="focus-label">Employee Name</label>
                 </div>
             </div>

@@ -101,8 +101,6 @@ class EmployeeAttendance extends Model
         return '00:00:00';
     }
     
-
-    
     protected static function booted()
     {
         static::saving(function ($employeeattendance) {
@@ -123,8 +121,14 @@ class EmployeeAttendance extends Model
                         // Save total break late to the model
                         $employeeattendance->breakLate = $totalBreakLate;
     
+                        // Convert timeTotal from "HH:MM:SS" format to seconds
+                        $timeTotalSeconds = strtotime($employeeattendance->timeTotal) - strtotime('TODAY');
+    
                         // Deduct break late from timeTotal
-                        $employeeattendance->timeTotal -= $totalBreakLateSeconds;
+                        $timeTotalSeconds -= $totalBreakLateSeconds;
+    
+                        // Convert back to "HH:MM:SS" format
+                        $employeeattendance->timeTotal = gmdate("H:i:s", $timeTotalSeconds);
     
                         // Check if break late exceeds a threshold (e.g., 5 minutes = 300 seconds)
                         $breakLateThreshold = 300;
@@ -146,6 +150,51 @@ class EmployeeAttendance extends Model
             }
         });
     }
+    
+
+    // protected static function booted()
+    // {
+    //     static::saving(function ($employeeattendance) {
+    //         if ($employeeattendance->isDirty('timeOut')) {
+    //             // Only calculate and update timeTotal if timeOut is set
+    //             if (!empty($employeeattendance->timeEnd) || !empty($employeeattendance->timeOut)) {
+    //                 // Calculate total break late
+    //                 $breakEndTime = Carbon::parse($employeeattendance->breakEnd);
+    //                 $breakOutTime = Carbon::parse($employeeattendance->breakOut);
+    
+    //                 // Check if break is late (breakOut is after breakEnd)
+    //                 if ($breakOutTime > $breakEndTime && $breakOutTime > ($employeeattendance->timeEnd ?? $employeeattendance->timeOut)) {
+    //                     $totalBreakLateSeconds = $breakOutTime->diffInSeconds($breakEndTime); // Calculate break late duration in seconds
+    
+    //                     // Convert totalBreakLateSeconds to HH:MM:SS format
+    //                     $totalBreakLate = gmdate("H:i:s", $totalBreakLateSeconds);
+    
+    //                     // Save total break late to the model
+    //                     $employeeattendance->breakLate = $totalBreakLate;
+    
+    //                     // Deduct break late from timeTotal
+    //                     $employeeattendance->timeTotal -= $totalBreakLateSeconds;
+    
+    //                     // Check if break late exceeds a threshold (e.g., 5 minutes = 300 seconds)
+    //                     $breakLateThreshold = 300;
+    //                     if ($totalBreakLateSeconds > $breakLateThreshold) {
+    //                         // Trigger a JavaScript alert with the break late message
+    //                         $message = 'You are over the break time by ' . $totalBreakLate;
+    //                         echo "<script>showAlert('$message');</script>";
+    //                     }
+    //                 } else {
+    //                     $totalBreakLate = '00:00:00'; // Set break late to 00:00:00 if the break is not late
+    
+    //                     // Save total break late to the model
+    //                     $employeeattendance->breakLate = $totalBreakLate;
+    //                 }
+    
+    //                 // Recalculate and update total worked time by calling getTotalHoursAttribute()
+    //                 $employeeattendance->timeTotal = $employeeattendance->getTotalHoursAttribute();
+    //             }
+    //         }
+    //     });
+    // }
     
     
 }

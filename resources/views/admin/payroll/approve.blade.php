@@ -209,7 +209,12 @@
                             <td>{{ $app->cut_off }}</td>
                             <td>{{ $app->totalLate }}</td>
                             <td>{{ $app->totalHours }}</td>
-                            <td>{{ $app->approved_by }}</td>
+                            <td>
+                                @if($app->approved && $app->approved->fName && $app->approved->lName)
+                                {{ $app->approved->fName }} {{ $app->approved->lName }}</td>
+                            @else
+                            {{ $app->approved->name }}
+                            @endif
                             <td>
                                 @if($app->status === 'Approved')
                                 <span class="badge badge-pill bg-soft-success text-success me-2"

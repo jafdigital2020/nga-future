@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class HRAttendanceController extends Controller
 {
@@ -115,11 +116,24 @@ class HRAttendanceController extends Controller
         $month = $request->get('month', date('m'));
         $year = $request->get('year', date('Y'));
         $department = $request->get('department');
+        $date = $request->get('date'); // Keep single date search
+        $startDate = $request->get('start_date'); 
+        $endDate = $request->get('end_date'); 
     
-        // Query users with their attendance records filtered by month, year, and optionally department
+        // Query users with their attendance records filtered by date range, specific date, and optionally department
         $usersQuery = User::query()
-            ->with(['employeeAttendance' => function ($query) use ($month, $year, $department) {
-                $query->whereMonth('date', $month)->whereYear('date', $year);
+            ->with(['employeeAttendance' => function ($query) use ($startDate, $endDate, $date, $month, $year, $department) {
+                // Filter by date range if both start_date and end_date are provided
+                if ($startDate && $endDate) {
+                    $query->whereBetween('date', [$startDate, $endDate]);
+                } elseif ($date) {
+                    // If a specific date is selected, filter attendance by that exact date
+                    $query->whereDate('date', $date);
+                } else {
+                    // Otherwise, filter by the selected month and year
+                    $query->whereMonth('date', $month)->whereYear('date', $year);
+                }
+    
                 if ($department) {
                     $query->whereHas('user', function ($query) use ($department) {
                         $query->where('department', $department);
@@ -148,7 +162,8 @@ class HRAttendanceController extends Controller
                     });
                 }
             });
-    
+            
+        
         // Apply department filter directly on the users query
         if ($department) {
             $usersQuery->where('department', $department);
@@ -199,6 +214,9 @@ class HRAttendanceController extends Controller
             'selectedDepartment' => $department,
             'totalLate' => $totalLate,
             'total' => $totalTime, // Assuming 'total' represents total time worked
+            'selectedDate' => $date, // Pass the selected date to the view
+            'selectedStartDate' => $startDate, // Pass the selected start date to the view
+            'selectedEndDate' => $endDate, // Pass the selected end date to the view
         ]);
     }
     
@@ -207,6 +225,8 @@ class HRAttendanceController extends Controller
         $monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         return array_search($monthName, $monthNames) + 1;
     }
+
+    // Timesheet Approval
 
     public function timesheet(Request $request)
     {
@@ -308,7 +328,7 @@ class HRAttendanceController extends Controller
     
         $attendance = $data->get();
     
-        return view('hr.timesheet', compact('attendance', 'pendingCount', 'user', 'approvedCount', 'declinedCount'));
+        return view('hr.timesheet.timesheet', compact('attendance', 'pendingCount', 'user', 'approvedCount', 'declinedCount'));
     }
 
     public function approve($id)
@@ -357,6 +377,93 @@ class HRAttendanceController extends Controller
     public function destroyAttendance($id)
     {
         $appr = ApprovedAttendance::findOrFail($id);
+
+        $appr->delete();
+
+        Alert::success('Attendance deleted successfully');
+        return redirect()->back();
+    }
+
+    public function viewTimesheet(Request $request, $id)
+    {
+        $att = ApprovedAttendance::findOrFail($id);
+    
+        $employeeName = $request->input('employee_name');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $cutOff = $request->input('cut_off');
+    
+        $query = EmployeeAttendance::where('users_id', $att->users_id);
+    
+        if ($startDate) {
+            $query->whereDate('date', '>=', $startDate);
+        }
+    
+        if ($endDate) {
+            $query->whereDate('date', '<=', $endDate);
+        }
+
+        $attendanceRecords = $query->get();
+
+        $totalLateSeconds = 0;
+        $totalSeconds = 0;
+    
+        foreach ($attendanceRecords as $attendance) {
+            // Calculate total work time
+            $timeTotal = explode(':', $attendance->timeTotal);
+            if (count($timeTotal) === 3 && is_numeric($timeTotal[0]) && is_numeric($timeTotal[1]) && is_numeric($timeTotal[2])) {
+                $seconds = ($timeTotal[0] * 3600) + ($timeTotal[1] * 60) + $timeTotal[2];
+                $totalSeconds += $seconds;
+            }
+        
+            // Calculate total late time
+            $totalLate = explode(':', $attendance->totalLate);
+            if (count($totalLate) === 3 && is_numeric($totalLate[0]) && is_numeric($totalLate[1]) && is_numeric($totalLate[2])) {
+                $seconds = ($totalLate[0] * 3600) + ($totalLate[1] * 60) + $totalLate[2];
+                $totalLateSeconds += $seconds;
+            }
+        }
+        
+        // Convert total seconds to hours:minutes:seconds format
+        $totalHours = floor($totalSeconds / 3600);
+        $totalMinutes = floor(($totalSeconds % 3600) / 60);
+        $totalSeconds = $totalSeconds % 60;
+        $totalTime = sprintf("%02d:%02d:%02d", $totalHours, $totalMinutes, $totalSeconds);
+        
+        $totalLateHours = floor($totalLateSeconds / 3600);
+        $totalLateMinutes = floor(($totalLateSeconds % 3600) / 60);
+        $totalLateSeconds = $totalLateSeconds % 60;
+        $totalLate = sprintf("%02d:%02d:%02d", $totalLateHours, $totalLateMinutes, $totalLateSeconds);
+        
+        return view('hr.timesheet.viewtimesheet', [
+            'att' => $att,
+            'attendanceRecords' => $attendanceRecords,
+            'totalLate' => $totalLate,
+            'total' => $totalTime,
+        ]);
+    }
+
+    // Table Attendance 
+
+    public function updateTableAttendance(Request $request, $id)
+    {
+        $attupdate = EmployeeAttendance::findOrFail($id);
+
+        $attupdate->timeIn = $request->input('timeIn');
+        $attupdate->breakIn = $request->input('breakIn');
+        $attupdate->breakOut = $request->input('breakOut');
+        $attupdate->timeOut = $request->input('timeOut');
+        $attupdate->totalLate = $request->input('totalLate');
+        $attupdate->timeTotal = $request->input('totalHours');
+        $attupdate->save();
+
+        Alert::success('Attendance Updated');
+        return redirect()->back();
+    }
+
+    public function destroyTableAttendance($id)
+    {
+        $appr = EmployeeAttendance::findOrFail($id);
 
         $appr->delete();
 

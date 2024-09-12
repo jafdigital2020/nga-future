@@ -43,7 +43,19 @@
                                         <div class="staff-id">Department:
                                             {{ $user->department ?? 'No department record' }}</div>
                                         <div class="staff-id">Employee ID: {{ $user->empNumber }}</div>
-                                        <div class="staff-id">Reporting to: @if ($supervisor === 'Management')
+                                        <div class="staff-id">Reporting to:
+                                            <div class="avatar avatar-xs">
+                                                @if($supervisor && $supervisor->image &&
+                                                file_exists(public_path('images/' . $supervisor->image)))
+                                                <img src="{{ asset('images/' . $supervisor->image) }}" alt="">
+                                                @else
+                                                <!-- Optionally, you can add a placeholder here -->
+                                                <img src="{{ asset('images/default.png') }}" alt="Default Avatar">
+                                                @endif
+                                            </div>
+
+
+                                            @if ($supervisor === 'Management')
                                             <strong>Management</strong>
                                             @elseif ($supervisor)
                                             <strong>

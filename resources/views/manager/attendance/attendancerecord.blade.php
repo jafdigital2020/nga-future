@@ -16,10 +16,10 @@
             </div>
             <div class="col-auto float-right ml-auto">
                 <div class="view-icons">
-                    <a href="{{ url('manager/attendance') }}" class="grid-view btn btn-link"><i
-                            class="las la-calendar-check"></i></a>
-                    <a href="{{ url('manager/attendance/record') }}" class="list-view btn btn-link active"><i
-                            class="la la-calendar"></i></a>
+                    <a href="{{ url('manager/attendance/record') }}" class="grid-view btn btn-link active"><i
+                            class="fa fa-th"></i></a>
+                    <a href="{{ url('manager/attendance/tableview') }}" class="list-view btn btn-link "><i
+                            class="fa fa-bars"></i></a>
                 </div>
             </div>
         </div>
@@ -89,7 +89,7 @@
                     <tbody>
                         @foreach($users as $user)
                         <tr>
-                            <td class="sticky-column">
+                            <td>
                                 <h2 class="table-avatar">
                                     <a href="#" class="avatar">
                                         @if ($user->image)

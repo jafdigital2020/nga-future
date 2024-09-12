@@ -253,13 +253,133 @@ class PayrollController extends Controller
        $payroll->dailyRate = $request->input('dailyRate');
        $payroll->hourlyRate = $request->input('hourlyRate');
        $payroll->netPayTotal = $request->input('netPayTotal');
-       $payroll->save();
+       
 
-       $approved->status = 'Payslip';
-       $approved->save();
-
-       Alert::success('Payroll Generated!');
+        // Check which button was pressed and update status accordingly
+        $action = $request->input('action');
+        if ($action === 'save') {
+            $approved->status = 'Processed';
+            $payroll->status = 'Processed';
+            Alert::success('Success', 'The record has been processed successfully.');
+        } elseif ($action === 'generate') {
+            $approved->status = 'Payslip';
+            $payroll->status = 'Payslip';
+            Alert::success('Success', 'The payroll has been generated successfully.');
+        }
+        $payroll->save();
+        $approved->save();
        return redirect()->route('approvedTimeAdmin');
+   }
+
+   public function payslipProcess(Request $request)
+   {
+       $employeeName = $request->input('name');
+       $department = $request->input('department');
+       $cutoffPeriod = $request->input('cutoff_period'); // Get cutoff_period from request
+       $selectedYear = $request->input('year', now()->year);
+   
+       $data = Payroll::query();
+   
+       // Apply filters independently
+       if (!empty($employeeName)) {
+           $data->where('ename', 'like', "%$employeeName%");
+       }
+   
+       if (!empty($department)) {
+           $data->where('department', $department);
+       }
+   
+       if (!empty($selectedYear)) {
+           $data->where('year', $selectedYear);
+       }
+   
+        // Add filter for cutoff_period if provided
+        if ($cutoffPeriod) {
+            $data->where('cut_off', $cutoffPeriod); // Search the cut_off column
+        }
+
+        // Add filter for status being 'Payslip'
+        $data->where('status', 'Processed');
+   
+       $payslip = $data->get();
+   
+       // Assuming you have a list of departments to pass to the view
+       $departments = Payroll::select('department')->distinct()->get();
+   
+       return view('admin.payroll.processed', compact('payslip', 'departments', 'cutoffPeriod', 'selectedYear'));
+   }
+
+   public function processedApproved(Request $request, $id)
+   {
+       $edit = Payroll::findOrFail($id);
+   
+       // Check if the status is already 'Approved'
+       if ($edit->status === 'Approved') {
+           Alert::error('This is already approved.');
+           return redirect()->back();
+       }
+   
+       // Update the status to 'Approved'
+       $edit->status = 'Approved';
+       $edit->save();
+   
+       Alert::success('Timesheet Approved.');
+       return redirect()->back();
+   }
+   
+
+   public function approvedPayslip (Request $request)
+   {
+       $employeeName = $request->input('name');
+       $department = $request->input('department');
+       $cutoffPeriod = $request->input('cutoff_period'); // Get cutoff_period from request
+       $selectedYear = $request->input('year', now()->year);
+   
+       $data = Payroll::query();
+   
+       // Apply filters independently
+       if (!empty($employeeName)) {
+           $data->where('ename', 'like', "%$employeeName%");
+       }
+   
+       if (!empty($department)) {
+           $data->where('department', $department);
+       }
+   
+       if (!empty($selectedYear)) {
+           $data->where('year', $selectedYear);
+       }
+   
+        // Add filter for cutoff_period if provided
+        if ($cutoffPeriod) {
+            $data->where('cut_off', $cutoffPeriod); // Search the cut_off column
+        }
+
+        // Add filter for status being 'Payslip'
+        $data->where('status', 'Approved');
+   
+       $payslip = $data->get();
+   
+       // Assuming you have a list of departments to pass to the view
+       $departments = Payroll::select('department')->distinct()->get();
+   
+       return view('admin.payroll.approvepayslip', compact('payslip', 'departments', 'cutoffPeriod', 'selectedYear'));
+   }
+
+   public function generatePayslip(Request $request, $id)
+   {
+       $edit = Payroll::findOrFail($id);
+   
+       if ($edit->status === 'Payslip') {
+           Alert::error('This is already generated.');
+           return redirect()->back();
+       }
+   
+       $edit->status = 'Payslip';
+       $edit->save();
+   
+       Alert::success('Payslip Generated.');
+       return redirect()->back();
    }
 
 
@@ -291,6 +411,9 @@ class PayrollController extends Controller
     }
 
     $payslip = $data->get();
+
+    // Add filter for status being 'Payslip'
+    $data->where('status', 'Payslip');
 
     // Assuming you have a list of departments to pass to the view
     $departments = User::select('department')->distinct()->get();

@@ -16,8 +16,9 @@
             </div>
             <div class="col-auto float-right ml-auto">
                 <div class="view-icons">
-                    <a href="{{ url('hr/attendance') }}" class="grid-view btn btn-link"><i class="fa fa-th"></i></a>
-                    <a href="{{ url('hr/attendance/tableview') }}" class="list-view btn btn-link active"><i
+                    <a href="{{ url('hr/attendance') }}" class="grid-view btn btn-link active"><i
+                            class="fa fa-th"></i></a>
+                    <a href="{{ url('hr/attendance/tableview') }}" class="list-view btn btn-link "><i
                             class="fa fa-bars"></i></a>
                 </div>
             </div>
@@ -92,7 +93,7 @@
                 <table class="table table-hover table-nowrap custom-table table-nowrap mb-0">
                     <thead class="thead-light">
                         <tr>
-                            <th class="sticky-column">Employee</th>
+                            <th>Employee</th>
                             @for($i = 1; $i <= 31; $i++) <th>{{ $i }}</th>
                                 @endfor
                         </tr>
@@ -100,7 +101,7 @@
                     <tbody>
                         @foreach($users as $user)
                         <tr>
-                            <td class="sticky-column">
+                            <td>
                                 <h2 class="table-avatar">
                                     <a href="{{ url('hr/employee/edit'.$user->id) }}" class="avatar">
                                         @if ($user->image)

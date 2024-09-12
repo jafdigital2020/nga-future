@@ -7,7 +7,7 @@
                 <h3 class="page-title">Attendance</h3>
                 <ul class="breadcrumb">
                     <li class="breadcrumb-item">
-                        <a href="index.html">Dashboard</a>
+                        <a href="{{ url('hr/dashboard') }}">Dashboard</a>
                     </li>
                     <li class="breadcrumb-item active">Attendance</li>
                 </ul>
@@ -33,13 +33,14 @@
     <!-- Search Filter -->
     <form method="GET" action="{{ route('report.empindex') }}">
         <div class="row filter-row">
-            <div class="col-sm-6 col-md-2">
+            <div class="col-sm-6 col-md-3">
                 <div class="form-group form-focus">
                     <input type="text" class="form-control floating" name="employee_name">
                     <label class="focus-label">Employee Name</label>
                 </div>
             </div>
-            <div class="col-sm-6 col-md-2">
+
+            <div class="col-sm-6 col-md-3">
                 <div class="form-group form-focus select-focus">
                     <select class="select floating" name="department">
                         <option value="">- </option>
@@ -53,7 +54,7 @@
                     <label class="focus-label">Select Department</label>
                 </div>
             </div>
-            <div class="col-sm-6 col-md-2">
+            <div class="col-sm-6 col-md-3">
                 <div class="form-group form-focus select-focus">
                     <select class="select floating" name="month">
                         <option value="">-</option>
@@ -66,7 +67,7 @@
                     <label class="focus-label">Select Month</label>
                 </div>
             </div>
-            <div class="col-sm-6 col-md-2">
+            <div class="col-sm-6 col-md-3">
                 <div class="form-group form-focus select-focus">
                     <select class="select floating" name="year">
                         <option value="">-</option>
@@ -76,7 +77,34 @@
                     </select> <label class="focus-label">Select Year</label>
                 </div>
             </div>
-            <div class="col-sm-6 col-md-4">
+        </div>
+        <div class="row filter-row">
+            <div class="col-sm-6 col-md-3">
+                <div class="form-group form-focus">
+                    <div class="cal-icon">
+                        <input type="text" class="datetimepicker form-control floating" name="date"
+                            value="{{ request('date') }}">
+                    </div>
+                    <label class="focus-label">Date</label>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="form-group form-focus">
+                    <div class="cal-icon">
+                        <input type="text" class="datetimepicker form-control floating" name="start_date" value="">
+                    </div>
+                    <label class="focus-label">From</label>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="form-group form-focus">
+                    <div class="cal-icon">
+                        <input type="text" class="datetimepicker form-control floating" name="end_date" value="">
+                    </div>
+                    <label class="focus-label">To</label>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
                 <button type="submit" class="btn btn-primary btn-block"> Search </button>
             </div>
         </div>
@@ -99,6 +127,7 @@
                             <th>Status</th>
                             <th>Total Late</th>
                             <th>Total Hours</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -139,6 +168,26 @@
                             </td>
                             <td>{{ $attendance->totalLate }}</td>
                             <td>{{ $attendance->timeTotal }}</td>
+                            <td class="text-right">
+                                <div class="dropdown dropdown-action">
+                                    <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown"
+                                        aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                                    <div class="dropdown-menu dropdown-menu-right">
+                                        <a class="dropdown-item edit-attendance" href="#"
+                                            data-id="{{ $attendance->id }}" data-date="{{ $attendance->date }}"
+                                            data-time_in="{{ $attendance->timeIn }}"
+                                            data-break_in="{{ $attendance->breakIn }}"
+                                            data-break_out="{{ $attendance->breakOut }}"
+                                            data-time_out="{{ $attendance->timeOut }}"
+                                            data-total_hours="{{ $attendance->totalHours }}"
+                                            data-total_late="{{ $attendance->totalLate }}">
+                                            <i class="fa fa-pencil m-r-5"></i> Edit</a>
+                                        <a class="dropdown-item delete-attendance" href="#"
+                                            data-id="{{ $attendance->id }}">
+                                            <i class="fa fa-trash-o m-r-5"></i> Delete</a>
+                                    </div>
+                                </div>
+                            </td>
                         </tr>
                         @endforeach
                         @endforeach
@@ -156,9 +205,157 @@
         </div>
     </div>
 </div>
+
+<!-- Edit attendance Modal -->
+<div id="edit_attendance" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Attendance</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editAttendanceForm" method="POST">
+                    @csrf
+                    <input type="hidden" name="attendance_id" id="attendance_id">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input class="form-control" type="text" name="date" id="date" readonly>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Time In <span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" name="timeIn" id="timeIn">
+
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Time Out <span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" name="timeOut" id="timeOut">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Break Out<span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" name="breakIn" id="breakIn">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Break In<span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" name="breakOut" id="breakOut">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Total Late</label>
+                        <input class="form-control" type="text" name="totalLate" id="totalLate">
+                    </div>
+                    <div class="form-group">
+                        <label>Total Hours</label>
+                        <input class="form-control" type="text" name="totalHours" id="totalHours">
+                    </div>
+                    <div class="submit-section">
+                        <button type="submit" class="btn btn-primary submit-btn">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Edit attendance Modal -->
+
+<!-- Delete Leave Modal -->
+<div class="modal custom-modal fade" id="delete_approve" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="form-header">
+                    <h3>Delete Attendance</h3>
+                    <p>Are you sure you want to cancel this leave?</p>
+                </div>
+                <div class="modal-btn delete-action">
+                    <div class="row">
+                        <div class="col-5">
+                            <form id="deleteAttendanceForm" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <input type="hidden" name="attendance_id" id="attendance_id">
+                                <button class="btn add-btn" type="submit">Delete</button>
+                            </form>
+                        </div>
+                        <div class="col-6">
+                            <a href="javascript:void(0);" data-dismiss="modal" class="btn add-btn">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Delete Leave Modal -->
 @endsection
 
 @section('scripts')
+
+<script>
+    // Edit attendance request
+    $('.edit-attendance').on('click', function () {
+        var attId = $(this).data('id');
+        var date = $(this).data('date');
+        var timeIn = $(this).data('time_in');
+        var breakOut = $(this).data('break_out');
+        var breakIn = $(this).data('break_in');
+        var timeOut = $(this).data('time_out');
+        var totalHours = $(this).data('total_hours');
+        var totalLate = $(this).data('total_late');
+
+        if (status === 'Approved') {
+            alert('This leave request has already been approved and cannot be edited.');
+            return;
+        }
+
+        $('#attendance_id').val(attId);
+        $('#date').val(date);
+        $('#timeIn').val(timeIn);
+        $('#breakOut').val(breakOut);
+        $('#breakIn').val(breakIn);
+        $('#timeOut').val(timeOut);
+        $('#totalHours').val(totalHours);
+        $('#totalLate').val(totalLate);
+
+        $('#editAttendanceForm').attr('action', '/hr/attendance/edit/' +
+            attId);
+        $('#edit_attendance').modal('show');
+    });
+
+    // Delete attendance request
+    $('.delete-attendance').on('click', function () {
+        var attId = $(this).data('id');
+
+
+        $('#delete_attendance_id').val(attId);
+        $('#deleteAttendanceForm').attr('action', '/hr/attendance/delete/' + attId);
+        $('#delete_approve').modal('show');
+    });
+
+</script>
+
+<script>
+    // Initialize date picker
+    $('.datetimepicker').datepicker({
+        format: 'yyyy-mm-dd', // Match this format to how your database stores dates
+        autoclose: true,
+        todayHighlight: true
+    });
+
+</script>
 
 
 @endsection

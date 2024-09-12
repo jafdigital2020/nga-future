@@ -23,9 +23,12 @@ class EmployeeController extends Controller
     public function index ()
     {
         $emp = User::all();
+        $names = User::select(DB::raw("CONCAT(fName, ' ', lName) as full_name"))
+             ->distinct()
+             ->pluck('full_name');
         $departments = User::distinct()->pluck('department');
 
-        return view('admin.employee.index', compact('emp', 'departments'));
+        return view('admin.employee.index', compact('emp', 'departments', 'names'));
     }
 
     public function gridView(Request $request)
@@ -34,6 +37,10 @@ class EmployeeController extends Controller
         $name = trim($request->input('name'));
         $empNumber = $request->input('empNumber');
         $department = $request->input('department');
+
+        $names = User::select(DB::raw("CONCAT(fName, ' ', lName) as full_name"))
+        ->distinct()
+        ->pluck('full_name');
     
         // Fetch distinct departments
         $departments = User::distinct()->pluck('department');
@@ -79,7 +86,7 @@ class EmployeeController extends Controller
         $emp = $data->get();
     
         // Return the view with the search results and departments
-        return view('admin.employee.grid', compact('emp', 'departments'));
+        return view('admin.employee.grid', compact('emp', 'departments', 'names'));
     }
     
 
@@ -89,6 +96,10 @@ class EmployeeController extends Controller
         $name = trim($request->input('name')); // Trim any whitespace
         $empNumber = $request->input('empNumber');
         $department = $request->input('department');
+        
+        $names = User::select(DB::raw("CONCAT(fName, ' ', lName) as full_name"))
+        ->distinct()
+        ->pluck('full_name');
 
         // Fetch distinct departments
         $departments = User::distinct()->pluck('department');
@@ -133,7 +144,7 @@ class EmployeeController extends Controller
         $emp = $data->get();
 
         // Return the view with the search results
-        return view('admin.employee.index', compact('emp', 'departments'));
+        return view('admin.employee.index', compact('emp', 'departments', 'names'));
     }
 
     public function store(Request $request)
@@ -190,6 +201,7 @@ class EmployeeController extends Controller
             ]);
 
             Alert::success('Employee Added Successfully', 'Employee Added');
+
             return redirect()->back();
         } catch (\Illuminate\Validation\ValidationException $e) {
             Alert::error('Validation Error', $e->getMessage())->persistent(true);
@@ -316,7 +328,7 @@ class EmployeeController extends Controller
         
         $user->save();
         
-        Alert::success('Employee Updated');
+        notify()->success('Employee Updated');
         return redirect()->back();
     }
 

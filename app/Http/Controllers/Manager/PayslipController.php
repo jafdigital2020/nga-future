@@ -28,7 +28,6 @@ class PayslipController extends Controller
         // Filter by authenticated user
         $data->where('users_id', auth()->id());
     
-    
         // Add filter for year if provided
         if (!empty($selectedYear)) {
             $data->where('year', $selectedYear);
@@ -36,15 +35,18 @@ class PayslipController extends Controller
     
         // Add filter for cutoff_period if provided
         if (!empty($cutoffPeriod)) {
-            $data->where('cut_off', $cutoffPeriod); // Search the cut_off column
+            $data->where('cut_off', $cutoffPeriod);
         }
     
+        // Add filter for status being 'Payslip'
+        $data->where('status', 'Payslip');
+    
+        // Get the filtered data
         $payslip = $data->get();
     
-
         return view('manager.payslip.index', compact('payslip', 'cutoffPeriod', 'selectedYear'));
     }
-
+    
     private function calculateCurrentCutoff($date)
     {
         $day = $date->day;

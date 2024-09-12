@@ -67,7 +67,6 @@
                             <select name="role_as" class="form-control" required>
                                 <option value="">-- Select --</option>
                                 <option value="3">Employee</option>
-                                <option value="1">Admin</option>
                                 <option value="2">HR</option>
                                 <option value="4">Operations Manager</option>
                                 <option value="5">IT Manager</option>

@@ -49,6 +49,8 @@
 
     <!-- Datatable CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/dataTables.bootstrap4.min.css') }}" />
+
+    @stack('styles')
 </head>
 
 <body onload="startTime()">
@@ -73,8 +75,11 @@
             </a>
             <!-- Header Title -->
             <div class="page-title-box">
-                <h3>{{ $companySettings->company }}</h3>
+                <h3>{{ optional($themeSettings)->webName ?? '' }}</h3>
             </div>
+
+            <!-- /Settings Redirection -->
+
             <!-- /Header Title -->
             <a id="mobile_btn" class="mobile_btn" href="#sidebar"><i class="fa fa-bars"></i></a>
             <!-- Header Menu -->
@@ -141,7 +146,8 @@
                                                     <span class="noti-title">{{ $notification->data['cutoff'] }}</span>.
                                                     Worked Hours:
                                                     <span>{{ $notification->data['total_worked'] }}</span>,
-                                                    Late Hours: <span>{{ $notification->data['total_late'] }}</span>.
+                                                    Late Hours:
+                                                    <span>{{ $notification->data['total_late'] }}</span>.
                                                 </p>
                                                 @elseif(isset($notification->data['leave_type']) &&
                                                 !isset($notification->data['employee_name']))
@@ -376,35 +382,29 @@
                         <li class="menu-title">
                             <span>Payroll</span>
                         </li>
-                        <!-- <li class="submenu">
-                            <a href="#"><i class="la la-files-o"></i>
-                                <span> Accounting </span>
-                                <span class="menu-arrow"></span></a>
-                            <ul style="display: none">
-                                <li>
-                                    <a href="categories.html">Categories</a>
-                                </li>
-                                <li><a href="budgets.html">Budgets</a></li>
-                                <li>
-                                    <a href="budget-expenses.html">Budget Expenses</a>
-                                </li>
-                                <li>
-                                    <a href="budget-revenues.html">Budget Revenues</a>
-                                </li>
-                            </ul>
-                        </li> -->
                         <li class="submenu">
                             <a href="#"><i class="la la-money"></i>
                                 <span> Payroll </span>
                                 <span class="menu-arrow"></span></a>
                             <ul style="display: none">
-                                <li>
+                                <li class="{{ Request::is('admin/approve') ? 'active':'' }}">
                                     <a href="{{ url('admin/approve') }}">
                                         Approved Timesheet
                                     </a>
                                 </li>
+
                                 <li>
-                                    <a href="{{ url('admin/payslip') }}"> Payslip </a>
+                                    <a href="{{ url('admin/processed') }}">
+                                        Processed Timesheet
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ url('admin/approved/payslip') }}">
+                                        Approved Payslip
+                                    </a>
+                                </li>
+                                <li class="{{ Request::is('admin/payslip') ? 'active':'' }}">
+                                    <a href="{{ url('admin/payslip') }}"> Generated Payslip </a>
                                 </li>
 
                             </ul>
@@ -412,6 +412,24 @@
                         <li>
                             <a href="policies.html"><i class="la la-file-pdf-o"></i>
                                 <span>Policies</span></a>
+                        </li>
+                        <li class="menu-title">
+                            <span>Training</span>
+                        </li>
+                        <li class="submenu">
+                            <a href="#"><i class="la la-edit"></i> <span> Training </span> <span
+                                    class="menu-arrow"></span></a>
+                            <ul style="display: none;">
+                                <li class="{{ Request::is('admin/training') ? 'active':'' }}">
+                                    <a href="{{ url('admin/training') }}"> Training List </a>
+                                </li>
+                                <li class="{{ Request::is('admin/trainers') ? 'active':'' }}">
+                                    <a href="{{ url('admin/trainers') }}"> Trainers</a>
+                                </li>
+                                <li class="{{ Request::is('admin/training-type') ? 'active':'' }}">
+                                    <a href="{{ url('admin/training-type') }}">Training Type </a>
+                                </li>
+                            </ul>
                         </li>
 
                     </ul>
@@ -488,6 +506,9 @@
         });
 
     </script>
+
+    @stack('scripts')
+
 </body>
 
 </html>

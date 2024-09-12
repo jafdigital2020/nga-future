@@ -16,8 +16,8 @@
             </div>
             <div class="col-auto float-right ml-auto">
                 <div class="view-icons">
-                    <a href="{{ url('hr/leave') }}" class="grid-view btn btn-link"><i class="fa fa-th"></i></a>
-                    <a href="{{ url('hr/leave/hr') }}" class="list-view btn btn-link active"><i
+                    <a href="{{ url('hr/leave') }}" class="grid-view btn btn-link active"><i class="fa fa-th"></i></a>
+                    <a href="{{ url('hr/leave/hr') }}" class="list-view btn btn-link "><i
                             class="fa fa-paper-plane"></i></a>
                 </div>
             </div>

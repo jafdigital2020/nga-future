@@ -16,8 +16,9 @@
             </div>
             <div class="col-auto float-right ml-auto">
                 <div class="view-icons">
-                    <a href="{{ url('admin/attendance') }}" class="grid-view btn btn-link"><i class="fa fa-th"></i></a>
-                    <a href="{{ url('admin/attendance/tableview') }}" class="list-view btn btn-link active"><i
+                    <a href="{{ url('admin/attendance') }}" class="grid-view btn btn-link active"><i
+                            class="fa fa-th"></i></a>
+                    <a href="{{ url('admin/attendance/tableview') }}" class="list-view btn btn-link"><i
                             class="fa fa-bars"></i></a>
                 </div>
             </div>
@@ -78,10 +79,12 @@
                     </select> <label class="focus-label">Select Year</label>
                 </div>
             </div>
+
             <div class="col-sm-6 col-md-4">
                 <button type="submit" class="btn btn-primary btn-block"> Search </button>
             </div>
         </div>
+
     </form>
     <!-- /Search Filter -->
 

@@ -31,7 +31,7 @@
                     <label class="col-lg-3 col-form-label">Logo</label>
                     <div class="col-lg-7">
                         <input type="file" class="form-control" name="logo" id="logo" required>
-                        <span class="form-text text-muted">Recommended image size is 40px x 40px</span>
+                        <span class="form-text text-muted">Recommended image size is 150px x 150px</span>
                     </div>
                     <div class="col-lg-2">
                         <div class="img-thumbnail float-right"><img alt="" width="960" id="previewImage" height="540">

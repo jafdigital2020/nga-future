@@ -391,7 +391,7 @@
                                     value="{{ $edit->netPayTotal }}">
                                 <button type="submit" class="btn btn-danger btn-block"
                                     style="display: inline-block; width: 66%; margin-left: 5px;">
-                                    <i class="fa fa-gear" aria-hidden="true"></i> Update Payslip
+                                    <i class="fa fa-gear" aria-hidden="true"></i> Update & Generate Payslip
                                 </button>
                             </div>
                         </div>

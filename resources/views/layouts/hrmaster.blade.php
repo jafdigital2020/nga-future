@@ -74,7 +74,7 @@
             </a>
             <!-- Header Title -->
             <div class="page-title-box">
-                <h3>{{ $companySettings->company }}</h3>
+                <h3>{{ optional($themeSettings)->webName ?? '' }}</h3>
             </div>
             <!-- /Header Title -->
             <a id="mobile_btn" class="mobile_btn" href="#sidebar"><i class="fa fa-bars"></i></a>
@@ -116,8 +116,9 @@
                                         class="notification-link" data-id="{{ $notification->id }}">
                                         <div class="media">
                                             <span class="avatar">
+                                                <!-- Display the requester's image -->
                                                 <img alt="Profile Image"
-                                                    src="{{ asset('images/' . auth()->user()->image) }}" />
+                                                    src="{{ asset('images/' . ($notification->data['image'] ?? 'default.png')) }}" />
                                             </span>
                                             <div class="media-body">
                                                 @if(isset($notification->data['leave_type']) &&
@@ -173,6 +174,7 @@
                     </div>
                 </li>
                 <!-- /Notifications -->
+
 
 
                 <!-- Message Notifications -->
@@ -418,10 +420,19 @@
                                         Approved Timesheet
                                     </a>
                                 </li>
+                                <!-- <li>
+                                    <a href="{{ url('hr/processed') }}">
+                                        Processed Timesheet
+                                    </a>
+                                </li> -->
                                 <li>
-                                    <a href="{{ url('hr/payslip') }}"> Payslip </a>
+                                    <a href="{{ url('hr/approved/payslip') }}">
+                                        Approved Payslip
+                                    </a>
                                 </li>
-
+                                <li>
+                                    <a href="{{ url('hr/payslip') }}">Generated Payslip </a>
+                                </li>
                             </ul>
                         </li>
                         <li>
