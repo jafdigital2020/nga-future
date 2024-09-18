@@ -148,7 +148,7 @@
                             <th>Cut-Off</th>
                             <th>Total Hours</th>
                             <th>Net Pay</th>
-                            <th>Payslip</th>
+                            <th>Payslip Status</th>
                             <th class="text-right">Actions</th>
                         </tr>
                     </thead>
@@ -187,10 +187,60 @@
 
                             <td>₱{{ number_format($pay->netPayTotal, 2) }}</td>
                             <td>
-                                <form action="{{ url('admin/processed/approved/' . $pay->id) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-success">Approve</button>
-                                </form>
+
+                                <div class="dropdown action-label">
+                                    <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#"
+                                        data-toggle="dropdown" aria-expanded="false">
+                                        @if($pay->status == 'New')
+                                        <i class="fa fa-dot-circle-o text-purple"></i> New
+                                        @elseif($pay->status == 'pending')
+                                        <i class="fa fa-dot-circle-o text-info"></i> Pending
+                                        @elseif($pay->status == 'Approved')
+                                        <i class="fa fa-dot-circle-o text-success"></i> Approved
+                                        @elseif($pay->status == 'Revision')
+                                        <i class="fa fa-dot-circle-o text-warning"></i> Revision
+                                        @elseif($pay->status == 'Revised')
+                                        <i class="fa fa-dot-circle-o text-dark"></i> Revised
+                                        @elseif($pay->status == 'Declined')
+                                        <i class="fa fa-dot-circle-o text-danger"></i> Declined
+                                        @else
+                                        <i class="fa fa-dot-circle-o text-info"></i> Pending
+                                        @endif
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-right">
+
+                                        <form id="approve-form-{{ $pay->id }}"
+                                            action="{{ url('admin/processed/approved/' . $pay->id) }}" method="POST"
+                                            style="display:inline;">
+                                            @csrf
+                                            <button type="button" class="dropdown-item approve-button"
+                                                data-pay-id="{{ $pay->id }}">
+                                                <i class="fa fa-dot-circle-o text-success"></i> Approve
+                                            </button>
+                                        </form>
+
+                                        <form id="revision-form-{{ $pay->id }}"
+                                            action="{{ url('admin/processed/revision/' . $pay->id) }}" method="POST"
+                                            style="display:inline;">
+                                            @csrf
+                                            <button type="button" class="dropdown-item revision-button"
+                                                data-pay-id="{{ $pay->id }}">
+                                                <i class="fa fa-dot-circle-o text-warning"></i> Revision
+                                            </button>
+                                        </form>
+
+                                        <form id="decline-form-{{ $pay->id }}"
+                                            action="{{ url('admin/processed/declined/' . $pay->id) }}" method="POST"
+                                            style="display:inline;">
+                                            @csrf
+                                            <button type="button" class="dropdown-item decline-button"
+                                                data-pay-id="{{ $pay->id }}">
+                                                <i class="fa fa-dot-circle-o text-danger"></i> Decline
+                                            </button>
+                                        </form>
+
+                                    </div>
+                                </div>
                             </td>
                             <td class="text-right">
                                 <div class="dropdown dropdown-action">
@@ -217,5 +267,59 @@
 @endsection
 
 @section('scripts')
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var approveButtons = document.querySelectorAll('.approve-button');
+        var declineButtons = document.querySelectorAll('.decline-button');
+        var revisionButtons = document.querySelectorAll('.revision-button');
+
+        approveButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                var payId = button.getAttribute('data-pay-id');
+                confirmApproval(payId);
+            });
+        });
+
+        revisionButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                var payId = button.getAttribute('data-pay-id');
+                confirmRevision(payId);
+            });
+        });
+
+        declineButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                var payId = button.getAttribute('data-pay-id');
+                confirmDecline(payId);
+            });
+        });
+    });
+
+    function confirmApproval(payId) {
+        var form = document.getElementById('approve-form-' + payId);
+        var confirmAction = confirm("Are you sure you want to approve this?");
+        if (confirmAction) {
+            form.submit();
+        }
+    }
+
+    function confirmRevision(payId) {
+        var form = document.getElementById('revision-form-' + payId);
+        var confirmAction = confirm("Are you sure you want to revise this?");
+        if (confirmAction) {
+            form.submit();
+        }
+    }
+
+    function confirmDecline(payId) {
+        var form = document.getElementById('decline-form-' + payId);
+        var confirmAction = confirm("Are you sure you want to decline this?");
+        if (confirmAction) {
+            form.submit();
+        }
+    }
+
+</script>
 
 @endsection

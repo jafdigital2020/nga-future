@@ -174,6 +174,11 @@ class User extends Authenticatable
         return $this->hasMany(EmployeeAttendance::class, 'users_id' , 'id');
     }
 
+    public function editAttendance()
+    {
+        return $this->hasMany(EmployeeAttendance::class, 'users_id', 'edited_by');
+    }
+
     public function employeeSalary()
     {
         return $this->hasMany(Salary::class, 'users_id', 'id');

@@ -25,6 +25,7 @@ class EmployeeAttendance extends Model
         'status',
         'totalLate',
         'breakLate',
+        'edited_by'
     ];
 
     public function employeeSalary()
@@ -35,6 +36,11 @@ class EmployeeAttendance extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'users_id', 'id');
+    }
+
+    public function edited()
+    {
+        return $this->belongsTo(User::class, 'edited_by');
     }
 
     public function getTotalHoursAttribute()

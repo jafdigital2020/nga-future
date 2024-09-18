@@ -21,7 +21,7 @@
     <!-- /Page Header -->
 
     <!-- Create Payroll -->
-    <form action="{{ url('hr/payslip/update/'. $edit->id) }}" method="POST">
+    <form action="{{ url('hr/payslip/update/'. $pay->id) }}" method="POST">
         @csrf
         <div class="row">
             <div class="col-md-12">
@@ -37,7 +37,7 @@
                                     <label class="col-lg-3 col-form-label">Cut-Off</label>
                                     <div class="col-lg-9">
                                         <input type="text" class="form-control" name="cut_off" id="cut_off"
-                                            value="{{ $edit->cut_off }}" readonly>
+                                            value="{{ $pay->cut_off }}" readonly>
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -62,7 +62,7 @@
                                     <div class="col-lg-9">
                                         <div class="cal-icon">
                                             <input class="form-control datetimepicker" id="start_date" name="start_date"
-                                                placeholder="-- Select Date --" value="{{ $edit->start_date }}"
+                                                placeholder="-- Select Date --" value="{{ $pay->start_date }}"
                                                 readonly />
                                         </div>
                                     </div>
@@ -72,8 +72,7 @@
                                     <div class="col-lg-9">
                                         <div class="cal-icon">
                                             <input class="form-control datetimepicker" id="end_date" name="end_date"
-                                                placeholder="-- Select Date --" value="{{ $edit->end_date }}"
-                                                readonly />
+                                                placeholder="-- Select Date --" value="{{ $pay->end_date }}" readonly />
                                         </div>
                                     </div>
                                 </div>
@@ -92,28 +91,28 @@
                                     <label class="col-lg-3 col-form-label">Full Name</label>
                                     <div class="col-lg-9">
                                         <input type="text" class="form-control" name="ename" id="ename"
-                                            value="{{ $edit->user->fName }} {{ $edit->user->lName }}" readonly>
+                                            value="{{ $pay->user->fName }} {{ $pay->user->lName }}" readonly>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label class="col-lg-3 col-form-label">Position</label>
                                     <div class="col-lg-9">
                                         <input type="text" class="form-control" name="position" id="position"
-                                            value="{{ $edit->user->position }}" readonly>
+                                            value="{{ $pay->user->position }}" readonly>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label class="col-lg-3 col-form-label">Department</label>
                                     <div class="col-lg-9">
                                         <input type="text" class="form-control" name="department" id="department"
-                                            value="{{ $edit->user->department }}" readonly>
+                                            value="{{ $pay->user->department }}" readonly>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label class="col-lg-3 col-form-label">Total Hours</label>
                                     <div class="col-lg-9">
                                         <input type="text" class="form-control" name="totalHours" id="totalHours"
-                                            value="{{ $edit->totalHours }}" readonly>
+                                            value="{{ $pay->totalHours }}" readonly>
                                     </div>
                                 </div>
                             </div>
@@ -149,7 +148,7 @@
                                             <input type="radio" name="option_sss" value="no" class="fetch-data">
                                         </label>
                                         <input type="text" class="form-control" name="sss" id="sss"
-                                            style="margin-left: 10px;" value="{{ $edit->sss }}" readonly>
+                                            style="margin-left: 10px;" value="{{ $pay->sss }}" readonly>
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -166,7 +165,7 @@
                                             <input type="radio" name="option_philhealth" value="no" class="fetch-data">
                                         </label>
                                         <input type="text" class="form-control" name="philHealth" id="philHealth"
-                                            style="margin-left: 10px;" value="{{ $edit->philHealth }}" readonly>
+                                            style="margin-left: 10px;" value="{{ $pay->philHealth }}" readonly>
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -183,7 +182,7 @@
                                             <input type="radio" name="option_pagibig" value="no" class="fetch-data">
                                         </label>
                                         <input type="text" class="form-control" name="pagIbig" id="pagIbig"
-                                            style="margin-left: 10px;" value="{{ $edit->pagIbig }}" readonly>
+                                            style="margin-left: 10px;" value="{{ $pay->pagIbig }}" readonly>
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -200,41 +199,65 @@
                                             <input type="radio" name="option_tax" value="no" class="fetch-data">
                                         </label>
                                         <input type="text" class="form-control" name="withHolding" id="withHolding"
-                                            style="margin-left: 10px;" value="{{ $edit->withHolding }}" readonly>
+                                            style="margin-left: 10px;" value="{{ $pay->withHolding }}" readonly>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-xl-6">
                                 <div class="form-group row">
                                     <label class="col-lg-3 col-form-label">Late</label>
                                     <div class="col-lg-9">
                                         <input type="text" class="form-control" name=tLate id="tLate"
-                                            style="display: inline-block; width: 30%;" value="{{ $edit->totalLate }}"
+                                            style="display: inline-block; width: 25%;" value="{{ $pay->totalLate }}"
                                             readonly>
                                         <input type="text" name="late" id="late" class="form-control"
-                                            style="display: inline-block; width: 68%;" readonly>
+                                            style="display: inline-block; width: 74%;" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-6">
+
+                                <div class="form-group row">
+                                    <label class="col-lg-3 col-form-label">SSS Loan</label>
+                                    <div class="col-lg-9">
+                                        <input type="text" name="sssLoan" id="sssLoan" value="{{ $pay->sssLoan }}"
+                                            class="form-control">
                                     </div>
                                 </div>
 
                                 <div class="form-group row">
-                                    <label class="col-lg-3 col-form-label">Loan</label>
+                                    <label class="col-lg-3 col-form-label">Other Loan</label>
                                     <div class="col-lg-9">
                                         <input type="text" name="loan" id="loan" class="form-control"
-                                            value="{{ $edit->loan }}">
+                                            value="{{ $pay->loan }}">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-lg-3 col-form-label">Savings</label>
+                                    <div class="col-lg-9">
+                                        <input type="text" name="savings" id="savings" class="form-control"
+                                            value="{{ $pay->savings }}">
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label class="col-lg-3 col-form-label">Advance</label>
                                     <div class="col-lg-9">
                                         <input type="text" name="advance" id="advance" class="form-control"
-                                            value="{{ $edit->advance }}">
+                                            value="{{ $pay->advance }}">
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-lg-3 col-form-label">Others</label>
+                                    <label class="col-lg-3 col-form-label">HMO</label>
                                     <div class="col-lg-9">
+                                        <input type="text" name="hmo" id="hmo" class="form-control"
+                                            value="{{ $pay->hmo }}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-12">
+                                <div class="form-group row">
+                                    <label class="col-lg-1 col-form-label">Others</label>
+                                    <div class="col-lg-11">
                                         <input type="text" name="others" id="others" class="form-control"
-                                            value="{{ $edit->others }}">
+                                            value="{{ $pay->others }}">
                                     </div>
                                 </div>
                             </div>
@@ -259,67 +282,70 @@
                             <label class="col-lg-3 col-form-label">Birthday Leave</label>
                             <div class="col-lg-9">
                                 <input type="text" class="form-control" name="bLeave" id="bLeave"
-                                    style="display: inline-block; width: 20%;">
+                                    style="display: inline-block; width: 15%;"
+                                    value="{{ $pay->bdayLeave / $pay->dailyRate }}">
                                 <input type="text" class="form-control" name="bdayLeave" id="bdayLeave"
-                                    style="display: inline-block; width: 78%;" value="{{ $edit->bdayLeave }}">
+                                    style="display: inline-block; width: 84%;">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Vacation Leave</label>
                             <div class="col-lg-9">
                                 <input type="text" class="form-control" name=vLeave id="vLeave"
-                                    style="display: inline-block; width: 20%;">
+                                    style="display: inline-block; width: 15%;"
+                                    value="{{ $pay->vacLeave / $pay->dailyRate }}">
                                 <input type="text" name="vacLeave" id="vacLeave" class="form-control"
-                                    style="display: inline-block; width: 78%;" value="{{ $edit->vacLeave }}">
+                                    style="display: inline-block; width: 84%;">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Sick Leave</label>
                             <div class="col-lg-9">
                                 <input type="text" class="form-control" name=sLeave id="sLeave"
-                                    style="display: inline-block; width: 20%;">
+                                    style="display: inline-block; width: 15%;"
+                                    value="{{ $pay->sickLeave / $pay->dailyRate }}">
                                 <input type="text" class="form-control" name="sickLeave" id="sickLeave"
-                                    style="display: inline-block; width: 78%;" value="{{ $edit->sickLeave }}">
+                                    style="display: inline-block; width: 84%;">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Regular Holiday</label>
                             <div class="col-lg-9">
-                                <div style="display: inline-block; width: 30%; position: relative;">
+                                <div style="display: inline-block; width: 20%; position: relative;">
                                     <input type="number" class="form-control" name="rHoliday" id="rHoliday"
-                                        style="width: 100%;" value="0">
+                                        style="width: 100%;" value="{{ $pay->regHoliday / $pay->dailyRate }}">
                                     <span
-                                        style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%);">Day/s</span>
+                                        style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%);">Day/s</span>
                                 </div>
                                 <input type="text" name="regHoliday" id="regHoliday" class="form-control"
-                                    style="display: inline-block; width: 68%;" value="{{ $edit->regHoliday }}" readonly>
+                                    style="display: inline-block; width: 79%;">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Overtime</label>
                             <div class="col-lg-9">
-                                <div style="display: inline-block; width: 30%; position: relative;">
-                                    <input type="text" class="form-control" name="otHours" id="otHours"
-                                        style="width: 100%;" value="0">
+                                <div style="display: inline-block; width: 20%; position: relative;">
+                                    <input type="number" class="form-control" name="otHours" id="otHours"
+                                        style="width: 100%;" value="{{ $pay->otTotal / $pay->hourlyRate }}">
                                     <span
-                                        style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%);">Hrs</span>
+                                        style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%);">Hrs</span>
                                 </div>
                                 <input type="text" name="otTotal" id="otTotal" class="form-control"
-                                    style="display: inline-block; width: 68%;" value="{{ $edit->otTotal }}" readonly>
+                                    style="display: inline-block; width: 79%;" value="{{ $pay->otTotal }}">
                             </div>
                         </div>
 
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">10% Night Differential</label>
                             <div class="col-lg-9">
-                                <div style="display: inline-block; width: 30%; position: relative;">
+                                <div style="display: inline-block; width: 20%; position: relative;">
                                     <input type="number" class="form-control" name="nDiff" id="nDiff"
-                                        style="width: 100%;" value="0">
+                                        style="width: 100%;" value="{{ $pay->nightDiff / $pay->hourlyRate }}">
                                     <span
-                                        style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%);">Hrs</span>
+                                        style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%);">Hrs</span>
                                 </div>
                                 <input type="text" name="nightDiff" id="nightDiff" class="form-control"
-                                    style="display: inline-block; width: 68%;" value="{{ $edit->nightDiff }}" readonly>
+                                    style="display: inline-block; width: 79%;" value="{{ $pay->nightDiff }}">
                             </div>
                         </div>
 
@@ -327,7 +353,14 @@
                             <label class="col-lg-3 col-form-label">Extra Mile / Bonus</label>
                             <div class="col-lg-9">
                                 <input type="text" name="bonus" id="bonus" class="form-control"
-                                    value="{{ $edit->bonus }}">
+                                    value="{{ $pay->bonus }}">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label">Reimbursement</label>
+                            <div class="col-lg-9">
+                                <input type="text" name="reimbursement" id="reimbursement" class="form-control"
+                                    value="{{ $pay->reimbursement }}">
                             </div>
                         </div>
                     </div>
@@ -344,57 +377,58 @@
                             <label class="col-lg-3 col-form-label">Total Deduction</label>
                             <div class="col-lg-9">
                                 <input type="text" name="totalDeduction" id="totalDeduction" class="form-control"
-                                    value="{{ $edit->totalDeduction }}" readonly>
+                                    readonly>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Total Earning</label>
                             <div class="col-lg-9">
-                                <input type="text" name="totalEarning" id="totalEarning" class="form-control"
-                                    value="{{ $edit->totalEarning }}" readonly>
+                                <input type="text" name="totalEarning" id="totalEarning" class="form-control" readonly>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Gross Monthly Pay</label>
                             <div class="col-lg-9">
                                 <input type="text" class="form-control" name="grossMonthly" id="grossMonthly"
-                                    value="{{ $edit->grossMonthly  }}" readonly>
+                                    value="{{ $pay->grossMonthly  }}" readonly>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Gross Basic Pay</label>
                             <div class="col-lg-9">
                                 <input type="text" class="form-control" name="grossBasic" id="grossBasic"
-                                    value="{{ $edit->grossBasic  }}" readonly>
+                                    value="{{ $pay->grossBasic }}" readonly>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Daily Rate</label>
                             <div class="col-lg-9">
                                 <input type="text" class="form-control" name="dailyRate" id="dailyRate"
-                                    value="{{ $edit->dailyRate }}" readonly>
+                                    value="{{ $pay->dailyRate }}" readonly>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Hourly Rate</label>
                             <div class="col-lg-9">
                                 <input type="text" class="form-control" name="hourlyRate" id="hourlyRate"
-                                    value="{{ $edit->hourlyRate }}" readonly>
+                                    value="{{ $pay->hourlyRate }}" readonly>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Net Pay</label>
                             <div class="col-lg-9">
                                 <input type="hidden" name="netPay" id="netPay" class="form-control" readonly>
-                                <input type="text" name="netPayTotal" id="netPayTotal" class="form-control" readonly
-                                    style="color: red; display: inline-block; width: 31%;"
-                                    value="{{ $edit->netPayTotal }}">
-                                <button type="submit" class="btn btn-danger btn-block"
-                                    style="display: inline-block; width: 66%; margin-left: 5px;">
-                                    <i class="fa fa-gear" aria-hidden="true"></i> Update & Generate Payslip
-                                </button>
+                                <input type="text" name="netPayTotal" id="netPayTotal" class="form-control"
+                                    value="{{ $pay->netPayTotal }}" readonly>
                             </div>
                         </div>
+                        <div class="row"></div>
+                        <div class="col-sm-12">
+                            <button type="submit" class="btn btn-danger btn-block">
+                                <i class="fa fa-file" aria-hidden="true"></i> Update
+                            </button>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -570,10 +604,11 @@
         });
 
         // Update total deductions and earnings
-        $('#withHolding, #loan, #advance, #others, #bonus, #sss, #pagIbig, #philHealth').on('input',
-            function () {
-                updateTotalDeduction();
-            });
+        $('#withHolding, #loan, #advance, #others, #bonus, #sss, #pagIbig, #philHealth, #sssLoan, #savings, #hmo, #reimbursement')
+            .on('input',
+                function () {
+                    updateTotalDeduction();
+                });
 
         function updateTotalDeduction() {
             var sssContribution = parseFloat($('#sss').val()) || 0;
@@ -584,9 +619,12 @@
             var advance = parseFloat($('#advance').val()) || 0;
             var others = parseFloat($('#others').val()) || 0;
             var lateDeduction = parseFloat($('#late').val()) || 0;
+            var sssLoan = parseFloat($('#sssLoan').val()) || 0;
+            var savings = parseFloat($('#savings').val()) || 0;
+            var hmo = parseFloat($('#hmo').val()) || 0;
 
             var totalDeduction = sssContribution + philHealthContribution + pagIbigContribution + withHolding +
-                loan + advance + others + lateDeduction;
+                loan + advance + others + lateDeduction + sssLoan + savings + hmo;
 
             $('#totalDeduction').val(totalDeduction.toFixed(2));
             updateTotalEarnings();
@@ -600,8 +638,11 @@
             var nDiffTotal = parseFloat($('#nightDiff').val()) || 0;
             var regHoliday = parseFloat($('#regHoliday').val()) || 0;
             var bonus = parseFloat($('#bonus').val()) || 0;
+            var bdayLeave = parseFloat($('#bdayLeave').val()) || 0;
+            var reimbursement = parseFloat($('#reimbursement').val()) || 0;
 
-            var totalEarnings = birthdayPTO + vacLeave + sickLeave + otTotal + bonus + nDiffTotal + regHoliday;
+            var totalEarnings = birthdayPTO + vacLeave + sickLeave + otTotal + bonus + nDiffTotal + regHoliday +
+                bdayLeave + reimbursement;
             $('#totalEarning').val(totalEarnings.toFixed(2));
 
             var netPay = parseFloat($('#netPay').val()) || 0;

@@ -99,6 +99,11 @@
                                                 </td>
                                             </tr>
                                             <tr>
+                                                <td><strong>Reimbursement</strong> <span
+                                                        class="float-right">₱{{ $view->reimbursement ?? '0.00' }}</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
                                                 <td><strong>Bonus</strong> <span
                                                         class="float-right">₱{{ $view->bonus ?? '0.00' }}</span>
                                                 </td>
@@ -110,7 +115,7 @@
                                             </tr>
                                             <tr>
                                                 <td><strong>Total Earnings</strong> <span
-                                                        class="float-right"><strong>{{ $view->totalEarning }}</strong></span>
+                                                        class="float-right"><strong>₱{{ $view->totalEarning }}</strong></span>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -145,12 +150,24 @@
                                                         class="float-right">₱{{ $view->late ?? '0.00'  }}</span></td>
                                             </tr>
                                             <tr>
-                                                <td><strong>Loan</strong> <span
+                                                <td><strong>SSS Loan</strong> <span
+                                                        class="float-right">₱{{ $view->sssLoan ?? '0.00' }}</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Other Loan</strong> <span
                                                         class="float-right">₱{{ $view->loan ?? '0.00' }}</span></td>
                                             </tr>
                                             <tr>
                                                 <td><strong>Advance</strong> <span
                                                         class="float-right">₱{{ $view->advance ?? '0.00' }}</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Savings</strong> <span
+                                                        class="float-right">₱{{ $view->savings ?? '0.00' }}</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>HMO</strong> <span
+                                                        class="float-right">₱{{ $view->hmo ?? '0.00' }}</span></td>
                                             </tr>
                                             <tr>
                                                 <td><strong>Others</strong> <span

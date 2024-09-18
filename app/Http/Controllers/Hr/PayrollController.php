@@ -250,6 +250,10 @@ class PayrollController extends Controller
        $payroll->dailyRate = $request->input('dailyRate');
        $payroll->hourlyRate = $request->input('hourlyRate');
        $payroll->netPayTotal = $request->input('netPayTotal');
+       $payroll->savings = $request->input('savings');
+       $payroll->reimbursement = $request->input('reimbursement');
+       $payroll->sssLoan = $request->input('sssLoan');
+       $payroll->hmo = $request->input('hmo');
        
 
     // Check which button was pressed and update status accordingly
@@ -296,8 +300,8 @@ class PayrollController extends Controller
             $data->where('cut_off', $cutoffPeriod); // Search the cut_off column
         }
 
-        // Add filter for status being 'Payslip'
-        $data->where('status', 'Processed');
+  
+        $data->whereIn('status', ['Processed', 'Revision', 'Declined', 'Revised']);
    
        $payslip = $data->get();
    
@@ -428,52 +432,57 @@ class PayrollController extends Controller
 
    public function editPayslip($id)
    {
-        $edit = Payroll::findOrFail($id);
+        $pay = Payroll::findOrFail($id);
 
-        return view('hr.payroll.editpayslip', compact('edit'));
+        return view('hr.payroll.editpayslip', compact('pay'));
    }
 
    public function updatePayslip(Request $request, $id)
    {
-        $edit = Payroll::findOrFail($id);
+        $pay = Payroll::findOrFail($id);
 
-        $edit->ename = $request->input('ename');
-        $edit->position = $request->input('position');
-        $edit->department = $request->input('department');
-        $edit->cut_off = $request->input('cut_off');
-        $edit->year = $request->input('year');
-        $edit->transactionDate = $request->input('transactionDate');
-        $edit->start_date = $request->input('start_date');
-        $edit->end_date = $request->input('end_date');
-        $edit->month = $request->input('month');
-        $edit->totalHours = $request->input('totalHours');
-        $edit->totalLate = $request->input('tLate');
-        $edit->sss = $request->input('sss');
-        $edit->pagIbig = $request->input('pagIbig');
-        $edit->philHealth = $request->input('philHealth');
-        $edit->withHolding = $request->input('withHolding');
-        $edit->late = $request->input('late');
-        $edit->loan = $request->input('loan');
-        $edit->advance = $request->input('advance');
-        $edit->others = $request->input('others');
-        $edit->bdayLeave = $request->input('bdayLeave');
-        $edit->vacLeave = $request->input('vacLeave');
-        $edit->sickLeave = $request->input('sickLeave');
-        $edit->regHoliday = $request->input('regHoliday');
-        $edit->otTotal = $request->input('otTotal');
-        $edit->nightDiff = $request->input('nightDiff');
-        $edit->bonus = $request->input('bonus');
-        $edit->totalDeduction = $request->input('totalDeduction');
-        $edit->totalEarning = $request->input('totalEarning');
-        $edit->grossMonthly = $request->input('grossMonthly');
-        $edit->grossBasic = $request->input('grossBasic');
-        $edit->dailyRate = $request->input('dailyRate');
-        $edit->hourlyRate = $request->input('hourlyRate');
-        $edit->netPayTotal = $request->input('netPayTotal');
-        $edit->save();
+        $pay->ename = $request->input('ename');
+        $pay->position = $request->input('position');
+        $pay->department = $request->input('department');
+        $pay->cut_off = $request->input('cut_off');
+        $pay->year = $request->input('year');
+        $pay->transactionDate = $request->input('transactionDate');
+        $pay->start_date = $request->input('start_date');
+        $pay->end_date = $request->input('end_date');
+        $pay->month = $request->input('month');
+        $pay->totalHours = $request->input('totalHours');
+        $pay->totalLate = $request->input('tLate');
+        $pay->sss = $request->input('sss');
+        $pay->pagIbig = $request->input('pagIbig');
+        $pay->philHealth = $request->input('philHealth');
+        $pay->withHolding = $request->input('withHolding');
+        $pay->late = $request->input('late');
+        $pay->loan = $request->input('loan');
+        $pay->advance = $request->input('advance');
+        $pay->others = $request->input('others');
+        $pay->bdayLeave = $request->input('bdayLeave');
+        $pay->vacLeave = $request->input('vacLeave');
+        $pay->sickLeave = $request->input('sickLeave');
+        $pay->regHoliday = $request->input('regHoliday');
+        $pay->otTotal = $request->input('otTotal');
+        $pay->nightDiff = $request->input('nightDiff');
+        $pay->bonus = $request->input('bonus');
+        $pay->totalDeduction = $request->input('totalDeduction');
+        $pay->totalEarning = $request->input('totalEarning');
+        $pay->grossMonthly = $request->input('grossMonthly');
+        $pay->grossBasic = $request->input('grossBasic');
+        $pay->dailyRate = $request->input('dailyRate');
+        $pay->hourlyRate = $request->input('hourlyRate');
+        $pay->netPayTotal = $request->input('netPayTotal');
+        $pay->savings = $request->input('savings');
+        $pay->reimbursement = $request->input('reimbursement');
+        $pay->sssLoan = $request->input('sssLoan');
+        $pay->hmo = $request->input('hmo');
+        $pay->status = 'Revised';
+        $pay->save();
 
         Alert::success('Updated');
-        return redirect()->back();
+        return redirect()->route('hr.payslipProcess');
    }
 
    public function download()

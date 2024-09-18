@@ -46,6 +46,10 @@ class Payroll extends Model
         'hourlyRate',
         'netPay',
         'status',
+        'sssLoan',
+        'reimbursement',
+        'hmo',
+        'savings',
     ];
 
     public function user(): BelongsTo

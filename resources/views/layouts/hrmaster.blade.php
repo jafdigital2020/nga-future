@@ -175,8 +175,6 @@
                 </li>
                 <!-- /Notifications -->
 
-
-
                 <!-- Message Notifications -->
                 <!-- <li class="nav-item dropdown">
                     <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
@@ -420,11 +418,11 @@
                                         Approved Timesheet
                                     </a>
                                 </li>
-                                <!-- <li>
+                                <li>
                                     <a href="{{ url('hr/processed') }}">
                                         Processed Timesheet
                                     </a>
-                                </li> -->
+                                </li>
                                 <li>
                                     <a href="{{ url('hr/approved/payslip') }}">
                                         Approved Payslip

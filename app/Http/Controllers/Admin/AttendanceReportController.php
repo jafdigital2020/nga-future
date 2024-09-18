@@ -24,25 +24,53 @@ class AttendanceReportController extends Controller
         $month = $request->get('month', date('m'));
         $year = $request->get('year', date('Y'));
         $department = $request->get('department');
+        $date = $request->get('date'); // Keep single date search
+        $startDate = $request->get('start_date'); 
+        $endDate = $request->get('end_date'); 
     
-        // Query users with their attendance records filtered by month, year, and optionally department
+        // Query users with their attendance records filtered by date range, specific date, and optionally department
         $usersQuery = User::query()
-        ->where('role_as', '!=', 1)
-        ->with(['employeeAttendance' => function ($query) use ($month, $year, $department) {
-            $query->whereMonth('date', $month)->whereYear('date', $year);
-            if ($department) {
-                $query->whereHas('user', function ($query) use ($department) {
-                    $query->where('department', $department);
-                });
-            }
-        }])
-        ->when($employeeName, function ($query) use ($employeeName) {
-            $query->where(function ($subQuery) use ($employeeName) {
-                $subQuery->where('fName', 'like', '%' . $employeeName . '%')
-                         ->orWhere('lName', 'like', '%' . $employeeName . '%');
+            ->with(['employeeAttendance' => function ($query) use ($startDate, $endDate, $date, $month, $year, $department) {
+                // Filter by date range if both start_date and end_date are provided
+                if ($startDate && $endDate) {
+                    $query->whereBetween('date', [$startDate, $endDate]);
+                } elseif ($date) {
+                    // If a specific date is selected, filter attendance by that exact date
+                    $query->whereDate('date', $date);
+                } else {
+                    // Otherwise, filter by the selected month and year
+                    $query->whereMonth('date', $month)->whereYear('date', $year);
+                }
+    
+                if ($department) {
+                    $query->whereHas('user', function ($query) use ($department) {
+                        $query->where('department', $department);
+                    });
+                }
+                $query->with('edited');
+            }])
+            ->when($employeeName, function ($query) use ($employeeName) {
+                // Split the input into parts
+                $names = explode(' ', $employeeName);
+            
+                // If the input contains more than one part, assume the last part is the last name
+                if (count($names) > 1) {
+                    $lName = array_pop($names); // Last part as the last name
+                    $fName = implode(' ', $names); // Combine the remaining parts as the first name
+            
+                    // Check for exact match of combined fName and lName
+                    $query->where(function ($query) use ($fName, $lName) {
+                        $query->where('fName', 'like', '%' . $fName . '%')
+                              ->where('lName', 'like', '%' . $lName . '%');
+                    });
+                } else {
+                    // If only one part is provided, search in both fields
+                    $query->where(function ($query) use ($employeeName) {
+                        $query->where('fName', 'like', '%' . $employeeName . '%')
+                              ->orWhere('lName', 'like', '%' . $employeeName . '%');
+                    });
+                }
             });
-        });
-        
     
         // Apply department filter directly on the users query
         if ($department) {
@@ -383,6 +411,7 @@ class AttendanceReportController extends Controller
                         $query->where('department', $department);
                     });
                 }
+                $query->with('edited');
             }])
             ->when($employeeName, function ($query) use ($employeeName) {
                 // Split the input into parts
@@ -457,9 +486,9 @@ class AttendanceReportController extends Controller
             'selectedDepartment' => $department,
             'totalLate' => $totalLate,
             'total' => $totalTime,
-            'selectedDate' => $date, // Pass the selected date to the view
-            'selectedStartDate' => $startDate, // Pass the selected start date to the view
-            'selectedEndDate' => $endDate, // Pass the selected end date to the view
+            'selectedDate' => $date, 
+            'selectedStartDate' => $startDate, 
+            'selectedEndDate' => $endDate, 
         ]);
     }
 
@@ -473,6 +502,8 @@ class AttendanceReportController extends Controller
         $attupdate->timeOut = $request->input('timeOut');
         $attupdate->totalLate = $request->input('totalLate');
         $attupdate->timeTotal = $request->input('totalHours');
+        $attupdate->status = 'Edited';
+        $attupdate->edited_by = Auth::user()->id;
         $attupdate->save();
 
         Alert::success('Attendance Updated');

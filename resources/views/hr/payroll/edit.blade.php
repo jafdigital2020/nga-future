@@ -203,8 +203,6 @@
                                             style="margin-left: 10px;" readonly>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-xl-6">
                                 <div class="form-group row">
                                     <label class="col-lg-3 col-form-label">Late</label>
                                     <div class="col-lg-9">
@@ -216,10 +214,26 @@
                                     </div>
                                 </div>
 
+                            </div>
+                            <div class="col-xl-6">
+
                                 <div class="form-group row">
-                                    <label class="col-lg-3 col-form-label">Loan</label>
+                                    <label class="col-lg-3 col-form-label">SSS Loan</label>
+                                    <div class="col-lg-9">
+                                        <input type="text" name="sssLoan" id="sssLoan" class="form-control">
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <label class="col-lg-3 col-form-label">Other Loan</label>
                                     <div class="col-lg-9">
                                         <input type="text" name="loan" id="loan" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-lg-3 col-form-label">Savings</label>
+                                    <div class="col-lg-9">
+                                        <input type="text" name="savings" id="savings" class="form-control">
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -229,8 +243,17 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-lg-3 col-form-label">Others</label>
+                                    <label class="col-lg-3 col-form-label">HMO</label>
                                     <div class="col-lg-9">
+                                        <input type="text" name="hmo" id="hmo" class="form-control">
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="col-xl-12">
+                                <div class="form-group row">
+                                    <label class="col-lg-1 col-form-label">Others</label>
+                                    <div class="col-lg-11">
                                         <input type="text" name="others" id="others" class="form-control">
                                     </div>
                                 </div>
@@ -329,6 +352,12 @@
                                 <input type="text" name="bonus" id="bonus" class="form-control">
                             </div>
                         </div>
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label">Reimbursement</label>
+                            <div class="col-lg-9">
+                                <input type="text" name="reimbursement" id="reimbursement" class="form-control">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -385,7 +414,8 @@
                                 <input type="text" name="netPayTotal" id="netPayTotal" class="form-control" readonly>
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="form-group row">
+
                             <div class="col-sm-6">
                                 <button type="submit" class="btn btn-danger btn-block" name="action" value="save">
                                     <i class="fa fa-file" aria-hidden="true"></i> Save
@@ -397,6 +427,7 @@
                                     <i class="fa fa-gear" aria-hidden="true"></i> Generate Payroll
                                 </button>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -573,10 +604,11 @@
         });
 
         // Update total deductions and earnings
-        $('#withHolding, #loan, #advance, #others, #bonus, #sss, #pagIbig, #philHealth').on('input',
-            function () {
-                updateTotalDeduction();
-            });
+        $('#withHolding, #loan, #advance, #others, #bonus, #sss, #pagIbig, #philHealth, #sssLoan, #savings, #hmo, #reimbursement')
+            .on('input',
+                function () {
+                    updateTotalDeduction();
+                });
 
         function updateTotalDeduction() {
             var sssContribution = parseFloat($('#sss').val()) || 0;
@@ -587,9 +619,12 @@
             var advance = parseFloat($('#advance').val()) || 0;
             var others = parseFloat($('#others').val()) || 0;
             var lateDeduction = parseFloat($('#late').val()) || 0;
+            var sssLoan = parseFloat($('#sssLoan').val()) || 0;
+            var savings = parseFloat($('#savings').val()) || 0;
+            var hmo = parseFloat($('#hmo').val()) || 0;
 
             var totalDeduction = sssContribution + philHealthContribution + pagIbigContribution + withHolding +
-                loan + advance + others + lateDeduction;
+                loan + advance + others + lateDeduction + sssLoan + savings + hmo;
 
             $('#totalDeduction').val(totalDeduction.toFixed(2));
             updateTotalEarnings();
@@ -603,8 +638,11 @@
             var nDiffTotal = parseFloat($('#nightDiff').val()) || 0;
             var regHoliday = parseFloat($('#regHoliday').val()) || 0;
             var bonus = parseFloat($('#bonus').val()) || 0;
+            var bdayLeave = parseFloat($('#bdayLeave').val()) || 0;
+            var reimbursement = parseFloat($('#reimbursement').val()) || 0;
 
-            var totalEarnings = birthdayPTO + vacLeave + sickLeave + otTotal + bonus + nDiffTotal + regHoliday;
+            var totalEarnings = birthdayPTO + vacLeave + sickLeave + otTotal + bonus + nDiffTotal + regHoliday +
+                bdayLeave + reimbursement;
             $('#totalEarning').val(totalEarnings.toFixed(2));
 
             var netPay = parseFloat($('#netPay').val()) || 0;

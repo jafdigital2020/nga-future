@@ -415,10 +415,10 @@
                             <a href="{{ url('emp/payslip') }}"><i class="la la-money"></i>
                                 <span>Payslip</span></a>
                         </li>
-                        <li>
+                        <!-- <li>
                             <a href="policies.html"><i class="la la-file-pdf-o"></i>
                                 <span>Policies</span></a>
-                        </li>
+                        </li> -->
 
                         <!-- <li class="menu-title">
                             <span>Performance</span>

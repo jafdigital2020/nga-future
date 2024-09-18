@@ -122,10 +122,9 @@
                             <th>Name</th>
                             <th>Date</th>
                             <th>Time In</th>
-                            <th>Break In</th>
-                            <th>Break Out</th>
                             <th>Time Out</th>
                             <th>Status</th>
+                            <th>Edited By</th>
                             <th>Total Late</th>
                             <th>Total Hours</th>
                             <th>Action</th>
@@ -134,6 +133,7 @@
                     <tbody>
                         @foreach($filteredData as $user)
                         @foreach($user->employeeAttendance as $attendance)
+
                         <tr>
                             <td>
                                 <h2 class="table-avatar">
@@ -151,24 +151,33 @@
                             </td>
                             <td>{{ $attendance->date }}</td>
                             <td>{{ $attendance->timeIn }}</td>
-                            <td>{{ $attendance->breakIn }}</td>
-                            <td>{{ $attendance->breakOut }}</td>
                             <td>{{ $attendance->timeOut }}</td>
                             <td>
-                                <span
-                                    class="{{ $attendance->status == 'Late' ? 'bg-inverse-danger' : 'bg-inverse-success' }}"
-                                    style="
-                                                padding: 5px 10px;
-                                                border-radius: 5px;
-                                                font-size: 12px;
-                                                font-weight: bold;
-                                                color: white;
-                                            ">
+                                <span class="
+                                        {{ $attendance->status == 'Late' ? 'bg-danger' : 
+                                        ($attendance->status == 'On Time' ? 'bg-success' : 
+                                        ($attendance->status == 'Edited' ? 'bg-warning' : '')) }}
+                                    " style="
+                                        padding: 5px 10px;
+                                        border-radius: 5px;
+                                        font-size: 12px;
+                                        font-weight: bold;
+                                        color: white;
+                                    ">
                                     {{ $attendance->status }}
                                 </span>
                             </td>
+                            <td>
+                                @if($attendance->edited)
+                                {{ $attendance->edited->fName ?? $attendance->edited->name }}
+                                {{ $attendance->edited->lName ?? '' }}
+                                @else
+                                Not Edited
+                                @endif
+                            </td>
                             <td>{{ $attendance->totalLate }}</td>
                             <td>{{ $attendance->timeTotal }}</td>
+
                             <td class="text-right">
                                 <div class="dropdown dropdown-action">
                                     <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown"
@@ -192,10 +201,11 @@
                         </tr>
                         @endforeach
                         @endforeach
+
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="7">Total</th>
+                            <th colspan="6">Total</th>
 
                             <th>{{ $totalLate }}</th>
                             <th id="total_hours">{{ $total }}</th>

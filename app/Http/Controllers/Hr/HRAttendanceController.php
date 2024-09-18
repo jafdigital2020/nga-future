@@ -455,6 +455,8 @@ class HRAttendanceController extends Controller
         $attupdate->timeOut = $request->input('timeOut');
         $attupdate->totalLate = $request->input('totalLate');
         $attupdate->timeTotal = $request->input('totalHours');
+        $attupdate->status = 'Edited';
+        $attupdate->edited_by = Auth::user()->id;
         $attupdate->save();
 
         Alert::success('Attendance Updated');

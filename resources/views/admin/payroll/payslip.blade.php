@@ -48,81 +48,70 @@
                         <option value="" {{ $cutoffPeriod == '' ? 'selected' : '' }}>-- Select Cut-off Period --
                         </option>
                         <option value="December - January 1st Cut-off"
-                            {{ $cutoffPeriod == 'December - January 1st Cut-off' ? 'selected' : '' }}>
-                            December - January 1st Cut-off
+                            {{ $cutoffPeriod == 'December - January 1st Cut-off' ? 'selected' : '' }}>December - January
+                            1st Cut-off</option>
+                        <option value="January 2nd Cut-off"
+                            {{ $cutoffPeriod == 'January 2nd Cut-off' ? 'selected' : '' }}>January 2nd Cut-off</option>
+                        <option value="January - February 1st Cut-off"
+                            {{ $cutoffPeriod == 'January - February 1st Cut-off' ? 'selected' : '' }}>January - February
+                            1st Cut-off</option>
+                        <option value="February 2nd Cut-off"
+                            {{ $cutoffPeriod == 'February 2nd Cut-off' ? 'selected' : '' }}>February 2nd Cut-off
                         </option>
-                        <option value="January" {{ $cutoffPeriod == 'January' ? 'selected' : '' }}>
-                            January 2nd Cut-off
+                        <option value="February - March 1st Cut-off"
+                            {{ $cutoffPeriod == 'February - March 1st Cut-off' ? 'selected' : '' }}>February - March 1st
+                            Cut-off</option>
+                        <option value="March 2nd Cut-off" {{ $cutoffPeriod == 'March 2nd Cut-off' ? 'selected' : '' }}>
+                            March 2nd Cut-off</option>
+                        <option value="March - April 1st Cut-off"
+                            {{ $cutoffPeriod == 'March - April 1st Cut-off' ? 'selected' : '' }}>March - April 1st
+                            Cut-off</option>
+                        <option value="April 2nd Cut-off" {{ $cutoffPeriod == 'April 2nd Cut-off' ? 'selected' : '' }}>
+                            April 2nd Cut-off</option>
+                        <option value="April - May 1st Cut-off"
+                            {{ $cutoffPeriod == 'April - May 1st Cut-off' ? 'selected' : '' }}>April - May 1st Cut-off
                         </option>
-                        <option value="January-February" {{ $cutoffPeriod == 'January-February' ? 'selected' : '' }}>
-                            January - February 1st Cut-off
+                        <option value="May 2nd Cut-off" {{ $cutoffPeriod == 'May 2nd Cut-off' ? 'selected' : '' }}>May
+                            2nd Cut-off</option>
+                        <option value="May - June 1st Cut-off"
+                            {{ $cutoffPeriod == 'May - June 1st Cut-off' ? 'selected' : '' }}>May - June 1st Cut-off
                         </option>
-                        <option value="February" {{ $cutoffPeriod == 'February' ? 'selected' : '' }}>
-                            February 2nd Cut-off
+                        <option value="June 2nd Cut-off" {{ $cutoffPeriod == 'June 2nd Cut-off' ? 'selected' : '' }}>
+                            June 2nd Cut-off</option>
+                        <option value="June - July 1st Cut-off"
+                            {{ $cutoffPeriod == 'June - July 1st Cut-off' ? 'selected' : '' }}>June - July 1st Cut-off
                         </option>
-                        <option value="February-March" {{ $cutoffPeriod == 'February-March' ? 'selected' : '' }}>
-                            February - March 1st Cut-off
+                        <option value="July 2nd Cut-off" {{ $cutoffPeriod == 'July 2nd Cut-off' ? 'selected' : '' }}>
+                            July 2nd Cut-off</option>
+                        <option value="July - August 1st Cut-off"
+                            {{ $cutoffPeriod == 'July - August 1st Cut-off' ? 'selected' : '' }}>July - August 1st
+                            Cut-off</option>
+                        <option value="August 2nd Cut-off"
+                            {{ $cutoffPeriod == 'August 2nd Cut-off' ? 'selected' : '' }}>August 2nd Cut-off</option>
+                        <option value="August - September 1st Cut-off "
+                            {{ $cutoffPeriod == 'August - September 1st Cut-off ' ? 'selected' : '' }}>August -
+                            September 1st Cut-off 2024</option>
+                        <option value="September 2nd Cut-off"
+                            {{ $cutoffPeriod == 'September 2nd Cut-off' ? 'selected' : '' }}>September 2nd Cut-off
                         </option>
-                        <option value="March" {{ $cutoffPeriod == 'March' ? 'selected' : '' }}>
-                            March 2nd Cut-off
+                        <option value="September - October 1st Cut-off"
+                            {{ $cutoffPeriod == 'September - October 1st Cut-off' ? 'selected' : '' }}>September -
+                            October 1st Cut-off</option>
+                        <option value="October 2nd Cut-off"
+                            {{ $cutoffPeriod == 'October 2nd Cut-off' ? 'selected' : '' }}>October 2nd Cut-off</option>
+                        <option value="October - November 1st Cut-off"
+                            {{ $cutoffPeriod == 'October - November 1st Cut-off' ? 'selected' : '' }}>October - November
+                            1st Cut-off</option>
+                        <option value="November 2nd Cut-off"
+                            {{ $cutoffPeriod == 'November 2nd Cut-off' ? 'selected' : '' }}>November 2nd Cut-off
                         </option>
-                        <option value="March-April" {{ $cutoffPeriod == 'March-April' ? 'selected' : '' }}>
-                            March - April 1st Cut-off
-                        </option>
-                        <option value="April" {{ $cutoffPeriod == 'April' ? 'selected' : '' }}>
-                            April 2nd Cut-off
-                        </option>
-                        <option value="April-May" {{ $cutoffPeriod == 'April-May' ? 'selected' : '' }}>
-                            April - May 1st Cut-off
-                        </option>
-                        <option value="May" {{ $cutoffPeriod == 'May' ? 'selected' : '' }}>
-                            May 2nd Cut-off
-                        </option>
-                        <option value="May-June" {{ $cutoffPeriod == 'May-June' ? 'selected' : '' }}>
-                            May - June 1st Cut-off
-                        </option>
-                        <option value="June" {{ $cutoffPeriod == 'June' ? 'selected' : '' }}>
-                            June 2nd Cut-off
-                        </option>
-                        <option value="June-July" {{ $cutoffPeriod == 'June-July' ? 'selected' : '' }}>
-                            June - July 1st Cut-off
-                        </option>
-                        <option value="July" {{ $cutoffPeriod == 'July' ? 'selected' : '' }}>
-                            July 2nd Cut-off
-                        </option>
-                        <option value="July-August" {{ $cutoffPeriod == 'July-August' ? 'selected' : '' }}>
-                            July - August 1st Cut-off
-                        </option>
-                        <option value="August" {{ $cutoffPeriod == 'August' ? 'selected' : '' }}>
-                            August 2nd Cut-off
-                        </option>
-                        <option value="August - September 1st Cut-off"
-                            {{ $cutoffPeriod == 'August - September 1st Cut-off 2024' ? 'selected' : '' }}>
-                            August - September 1st Cut-off 2024
-                        </option>
-                        <option value="September" {{ $cutoffPeriod == 'September' ? 'selected' : '' }}>
-                            September 2nd Cut-off
-                        </option>
-                        <option value="September-October" {{ $cutoffPeriod == 'September-October' ? 'selected' : '' }}>
-                            September - October 1st Cut-off
-                        </option>
-                        <option value="October" {{ $cutoffPeriod == 'October' ? 'selected' : '' }}>
-                            October 2nd Cut-off
-                        </option>
-                        <option value="October-November" {{ $cutoffPeriod == 'October-November' ? 'selected' : '' }}>
-                            October - November 1st Cut-off
-                        </option>
-                        <option value="November" {{ $cutoffPeriod == 'November' ? 'selected' : '' }}>
-                            November 2nd Cut-off
-                        </option>
-                        <option value="November-December" {{ $cutoffPeriod == 'November-December' ? 'selected' : '' }}>
-                            November - December 1st Cut-off
-                        </option>
-                        <option value="December" {{ $cutoffPeriod == 'December' ? 'selected' : '' }}>
-                            December 2nd Cut-off
+                        <option value="November - December 1st Cut-off"
+                            {{ $cutoffPeriod == 'November - December 1st Cut-off' ? 'selected' : '' }}>November -
+                            December 1st Cut-off</option>
+                        <option value="December 2nd Cut-off"
+                            {{ $cutoffPeriod == 'December 2nd Cut-off' ? 'selected' : '' }}>December 2nd Cut-off
                         </option>
                     </select>
-
                     <label class="focus-label">Cut-off Period</label>
                 </div>
             </div>

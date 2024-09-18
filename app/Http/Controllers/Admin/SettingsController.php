@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\LeaveType;
 use Illuminate\Http\Request;
 use App\Models\SettingsTheme;
 use App\Models\SettingsCompany;
+use App\Models\SettingsHoliday;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use RealRashid\SweetAlert\Facades\Alert;
@@ -170,6 +172,34 @@ class SettingsController extends Controller
         $user->update([
             'password' => Hash::make($newPassword),
         ]);
+    }
+
+    public function holiday()
+    {
+        $holiday = SettingsHoliday::all();
+
+        return view('admin.settings.holiday', compact('holiday'));
+    }
+
+    public function holidayStore(Request $request)
+    {
+        $holiday = new SettingsHoliday();
+
+        $holiday->title = $request->input('title');
+        $holiday->holidayDate = $request->input('holidayDate');
+        $holiday->holidayDay = $request->input('holidayDay');
+        $holiday->type = $request->input('type');
+        $holiday->save();
+
+        Alert::success('Holiday Added');
+        return redirect()->back();
+    }
+
+    public function leaveType()
+    {
+        $ltype = LeaveType::all();
+
+        return view('admin.settings.leavetype', compact('ltype'));
     }
     
     

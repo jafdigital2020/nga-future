@@ -165,13 +165,13 @@
                                 <span class="text-success">+12.5%</span>
                             </div>
                         </div>
-                        <h3 class="mb-3">₱1,42,300</h3>
+                        <h3 class="mb-3">₱1,042,300</h3>
                         <div class="progress mb-2" style="height: 5px">
                             <div class="progress-bar bg-primary" role="progressbar" style="width: 70%"
                                 aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                         <p class="mb-0">
-                            Previous Month <span class="text-muted">₱1,15,852</span>
+                            Previous Month <span class="text-muted">₱1,015,852</span>
                         </p>
                     </div>
                 </div>
@@ -207,13 +207,13 @@
                                 <span class="text-danger">-75%</span>
                             </div>
                         </div>
-                        <h3 class="mb-3">₱1,12,000</h3>
+                        <h3 class="mb-3">₱1,012,000</h3>
                         <div class="progress mb-2" style="height: 5px">
                             <div class="progress-bar bg-primary" role="progressbar" style="width: 70%"
                                 aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                         <p class="mb-0">
-                            Previous Month <span class="text-muted">₱1,42,000</span>
+                            Previous Month <span class="text-muted">₱1,042,000</span>
                         </p>
                     </div>
                 </div>
@@ -261,7 +261,7 @@
                                         <h2><a href="#">The Playground</a></h2>
                                     </td>
                                     <td>8 Feb 2024</td>
-                                    <td>$100,000</td>
+                                    <td>₱100,000</td>
                                     <td>
                                         <span class="badge bg-inverse-success">Paid</span>
                                     </td>

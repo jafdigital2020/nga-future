@@ -120,8 +120,9 @@
                                         class="notification-link" data-id="{{ $notification->id }}">
                                         <div class="media">
                                             <span class="avatar">
+                                                <!-- Display the requester's image -->
                                                 <img alt="Profile Image"
-                                                    src="{{ asset('images/' . auth()->user()->image) }}" />
+                                                    src="{{ asset('images/' . ($notification->data['image'] ?? 'default.png')) }}" />
                                             </span>
                                             <div class="media-body">
                                                 @if(isset($notification->data['leave_type']) &&
@@ -146,8 +147,7 @@
                                                     <span class="noti-title">{{ $notification->data['cutoff'] }}</span>.
                                                     Worked Hours:
                                                     <span>{{ $notification->data['total_worked'] }}</span>,
-                                                    Late Hours:
-                                                    <span>{{ $notification->data['total_late'] }}</span>.
+                                                    Late Hours: <span>{{ $notification->data['total_late'] }}</span>.
                                                 </p>
                                                 @elseif(isset($notification->data['leave_type']) &&
                                                 !isset($notification->data['employee_name']))
@@ -429,6 +429,30 @@
                                 <li class="{{ Request::is('admin/training-type') ? 'active':'' }}">
                                     <a href="{{ url('admin/training-type') }}">Training Type </a>
                                 </li>
+                            </ul>
+                        </li>
+                        <li class="menu-title">
+                            <span>Sales & Accounting</span>
+                        </li>
+                        <li class="submenu">
+                            <a href="#"><i class="la la-files-o"></i> <span> Sales </span> <span
+                                    class="menu-arrow"></span></a>
+                            <ul style="display: none;">
+                                <li><a href="{{ route('admin.estimate') }}">Estimates</a></li>
+                                <li><a href="{{ route('admin.invoice') }}">Invoices</a></li>
+                                <li><a href="{{ route('admin.payment') }}">Payments</a></li>
+                                <li><a href="{{ route('admin.expense') }}">Expenses</a></li>
+                                <li><a href="{{ route('admin.tax') }}">Taxes</a></li>
+                            </ul>
+                        </li>
+                        <li class="submenu">
+                            <a href="#"><i class="la la-files-o"></i> <span> Accounting </span> <span
+                                    class="menu-arrow"></span></a>
+                            <ul style="display: none;">
+                                <li><a href="{{ route('admin.categories') }}">Categories</a></li>
+                                <li><a href="budgets.html">Budgets</a></li>
+                                <li><a href="budget-expenses.html">Budget Expenses</a></li>
+                                <li><a href="budget-revenues.html">Budget Revenues</a></li>
                             </ul>
                         </li>
 

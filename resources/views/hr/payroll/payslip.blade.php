@@ -88,9 +88,9 @@
                             Cut-off</option>
                         <option value="August 2nd Cut-off"
                             {{ $cutoffPeriod == 'August 2nd Cut-off' ? 'selected' : '' }}>August 2nd Cut-off</option>
-                        <option value="August - September 1st Cut-off 2024"
-                            {{ $cutoffPeriod == 'August - September 1st Cut-off 2024' ? 'selected' : '' }}>August -
-                            September 1st Cut-off 2024</option>
+                        <option value="August - September 1st Cut-off"
+                            {{ $cutoffPeriod == 'August - September 1st Cut-off' ? 'selected' : '' }}>August -
+                            September 1st Cut-off</option>
                         <option value="September 2nd Cut-off"
                             {{ $cutoffPeriod == 'September 2nd Cut-off' ? 'selected' : '' }}>September 2nd Cut-off
                         </option>

@@ -231,14 +231,19 @@
                             <a href="{{ url('admin/settings/theme') }}"><i class="la la-photo"></i> <span>Theme
                                     Settings</span></a>
                         </li>
+                        <li class="{{ Request::is('admin/settings/holiday') ? 'active':'' }}">
+                            <a href="{{ url('admin/settings/holiday') }}"><i class="la la-calendar"></i> <span>
+                                    Holidays</span></a>
+                        </li>
+
+                        <li class="{{ Request::is('admin/settings/leavetype') ? 'active':'' }}">
+                            <a href="{{ url('admin/settings/leavetype') }}"><i class="la la-cogs"></i> <span>Leave
+                                    Type</span></a>
+                        </li>
                         <li class="{{ Request::is('admin/settings/changepass') ? 'active':'' }}">
                             <a href="{{ url('admin/settings/changepass') }}"><i class="la la-lock"></i> <span>Change
                                     Password</span></a>
                         </li>
-                        <!-- <li class="{{ Request::is('admin/settings/leavetype') ? 'active':'' }}">
-                            <a href="{{ url('admin/settings/leavetype') }}"><i class="la la-cogs"></i> <span>Leave
-                                    Type</span></a>
-                        </li> -->
                     </ul>
                 </div>
             </div>

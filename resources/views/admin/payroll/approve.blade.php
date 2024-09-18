@@ -211,10 +211,11 @@
                             <td>{{ $app->totalHours }}</td>
                             <td>
                                 @if($app->approved && $app->approved->fName && $app->approved->lName)
-                                {{ $app->approved->fName }} {{ $app->approved->lName }}</td>
-                            @else
-                            {{ $app->approved->name }}
-                            @endif
+                                {{ $app->approved->fName }} {{ $app->approved->lName }}
+                                @else
+                                {{ $app->approved->name }}
+                                @endif
+                            </td>
                             <td>
                                 @if($app->status === 'Approved')
                                 <span class="badge badge-pill bg-soft-success text-success me-2"

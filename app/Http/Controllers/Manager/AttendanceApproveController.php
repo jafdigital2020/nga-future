@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\ApprovedAttendance;
 use App\Models\EmployeeAttendance;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class AttendanceApproveController extends Controller
@@ -366,6 +367,7 @@ class AttendanceApproveController extends Controller
         $attupdate->totalLate = $request->input('totalLate');
         $attupdate->timeTotal = $request->input('totalHours');
         $attupdate->status = 'Edited';
+        $attupdate->edited_by = Auth::user()->id;
         $attupdate->save();
 
         Alert::success('Attendance Updated');

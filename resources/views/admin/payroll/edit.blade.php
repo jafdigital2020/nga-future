@@ -203,23 +203,37 @@
                                             style="margin-left: 10px;" readonly>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-xl-6">
                                 <div class="form-group row">
                                     <label class="col-lg-3 col-form-label">Late</label>
                                     <div class="col-lg-9">
                                         <input type="text" class="form-control" name=tLate id="tLate"
-                                            style="display: inline-block; width: 25%;" value="{{ $payroll->totalLate }}"
+                                            style="display: inline-block; width: 30%;" value="{{ $payroll->totalLate }}"
                                             readonly>
                                         <input type="text" name="late" id="late" class="form-control"
-                                            style="display: inline-block; width: 74%;" readonly>
+                                            style="display: inline-block; width: 68%;" readonly>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="col-xl-6">
+
+                                <div class="form-group row">
+                                    <label class="col-lg-3 col-form-label">SSS Loan</label>
+                                    <div class="col-lg-9">
+                                        <input type="text" name="sssLoan" id="sssLoan" class="form-control">
                                     </div>
                                 </div>
 
                                 <div class="form-group row">
-                                    <label class="col-lg-3 col-form-label">Loan</label>
+                                    <label class="col-lg-3 col-form-label">Other Loan</label>
                                     <div class="col-lg-9">
                                         <input type="text" name="loan" id="loan" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-lg-3 col-form-label">Savings</label>
+                                    <div class="col-lg-9">
+                                        <input type="text" name="savings" id="savings" class="form-control">
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -229,8 +243,17 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-lg-3 col-form-label">Others</label>
+                                    <label class="col-lg-3 col-form-label">HMO</label>
                                     <div class="col-lg-9">
+                                        <input type="text" name="hmo" id="hmo" class="form-control">
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="col-xl-12">
+                                <div class="form-group row">
+                                    <label class="col-lg-1 col-form-label">Others</label>
+                                    <div class="col-lg-11">
                                         <input type="text" name="others" id="others" class="form-control">
                                     </div>
                                 </div>
@@ -256,70 +279,70 @@
                             <label class="col-lg-3 col-form-label">Birthday Leave</label>
                             <div class="col-lg-9">
                                 <input type="text" class="form-control" name="bLeave" id="bLeave"
-                                    style="display: inline-block; width: 15%;" value="{{ $payroll->bdayLeave }}"
+                                    style="display: inline-block; width: 20%;" value="{{ $payroll->bdayLeave }}"
                                     readonly>
                                 <input type="text" class="form-control" name="bdayLeave" id="bdayLeave"
-                                    style="display: inline-block; width: 84%;" readonly>
+                                    style="display: inline-block; width: 78%;" readonly>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Vacation Leave</label>
                             <div class="col-lg-9">
                                 <input type="text" class="form-control" name=vLeave id="vLeave"
-                                    style="display: inline-block; width: 15%;" value="{{ $payroll->vacLeave }}"
+                                    style="display: inline-block; width: 20%;" value="{{ $payroll->vacLeave }}"
                                     readonly>
                                 <input type="text" name="vacLeave" id="vacLeave" class="form-control"
-                                    style="display: inline-block; width: 84%;" readonly>
+                                    style="display: inline-block; width: 78%;" readonly>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Sick Leave</label>
                             <div class="col-lg-9">
                                 <input type="text" class="form-control" name=sLeave id="sLeave"
-                                    style="display: inline-block; width: 15%;" value="{{ $payroll->sickLeave }}"
+                                    style="display: inline-block; width: 20%;" value="{{ $payroll->sickLeave }}"
                                     readonly>
                                 <input type="text" class="form-control" name="sickLeave" id="sickLeave"
-                                    style="display: inline-block; width: 84%;" readonly>
+                                    style="display: inline-block; width: 78%;" readonly>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Regular Holiday</label>
                             <div class="col-lg-9">
-                                <div style="display: inline-block; width: 20%; position: relative;">
+                                <div style="display: inline-block; width: 30%; position: relative;">
                                     <input type="number" class="form-control" name="rHoliday" id="rHoliday"
                                         style="width: 100%;" value="0">
                                     <span
-                                        style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%);">Day/s</span>
+                                        style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%);">Day/s</span>
                                 </div>
                                 <input type="text" name="regHoliday" id="regHoliday" class="form-control"
-                                    style="display: inline-block; width: 79%;" readonly>
+                                    style="display: inline-block; width: 68%;" readonly>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Overtime</label>
                             <div class="col-lg-9">
-                                <div style="display: inline-block; width: 20%; position: relative;">
+                                <div style="display: inline-block; width: 30%; position: relative;">
                                     <input type="number" class="form-control" name="otHours" id="otHours"
                                         style="width: 100%;" value="0">
                                     <span
-                                        style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%);">Hrs</span>
+                                        style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%);">Hrs</span>
                                 </div>
                                 <input type="text" name="otTotal" id="otTotal" class="form-control"
-                                    style="display: inline-block; width: 79%;" readonly>
+                                    style="display: inline-block; width: 68%;" readonly>
                             </div>
                         </div>
 
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">10% Night Differential</label>
                             <div class="col-lg-9">
-                                <div style="display: inline-block; width: 20%; position: relative;">
+                                <div style="display: inline-block; width: 30%; position: relative;">
                                     <input type="number" class="form-control" name="nDiff" id="nDiff"
                                         style="width: 100%;" value="0">
                                     <span
-                                        style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%);">Hrs</span>
+                                        style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%);">Hrs</span>
                                 </div>
                                 <input type="text" name="nightDiff" id="nightDiff" class="form-control"
-                                    style="display: inline-block; width: 79%;" readonly>
+                                    style="display: inline-block; width: 68%;" readonly>
                             </div>
                         </div>
 
@@ -327,6 +350,12 @@
                             <label class="col-lg-3 col-form-label">Extra Mile / Bonus</label>
                             <div class="col-lg-9">
                                 <input type="text" name="bonus" id="bonus" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label">Reimbursement</label>
+                            <div class="col-lg-9">
+                                <input type="text" name="reimbursement" id="reimbursement" class="form-control">
                             </div>
                         </div>
                     </div>
@@ -385,24 +414,28 @@
                                 <input type="text" name="netPayTotal" id="netPayTotal" class="form-control" readonly>
                             </div>
                         </div>
-                        <div class="row"></div>
-                        <div class="col-sm-6">
-                            <button type="submit" class="btn btn-danger btn-block" name="action" value="save">
-                                <i class="fa fa-file" aria-hidden="true"></i> Save
-                            </button>
-                        </div>
-                        <div class="col-sm-6">
-                            <button type="submit" class="btn btn-outline-danger btn-block" name="action"
-                                value="generate">
-                                <i class="fa fa-gear" aria-hidden="true"></i> Generate Payroll
-                            </button>
+                        <div class="form-group row">
+
+                            <div class="col-sm-6">
+                                <button type="submit" class="btn btn-danger btn-block" name="action" value="save">
+                                    <i class="fa fa-file" aria-hidden="true"></i> Save
+                                </button>
+                            </div>
+                            <div class="col-sm-6">
+                                <button type="submit" class="btn btn-outline-danger btn-block" name="action"
+                                    value="generate">
+                                    <i class="fa fa-gear" aria-hidden="true"></i> Generate Payroll
+                                </button>
+                            </div>
+
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </form>
 </div>
-</form>
+
 <!-- /Earnings & Total -->
 </div>
 
@@ -573,9 +606,11 @@
         });
 
         // Update total deductions and earnings
-        $('#withHolding, #loan, #advance, #others, #bonus').on('input', function () {
-            updateTotalDeduction();
-        });
+        $('#withHolding, #loan, #advance, #others, #bonus, #sss, #pagIbig, #philHealth, #sssLoan, #savings, #hmo, #reimbursement')
+            .on('input',
+                function () {
+                    updateTotalDeduction();
+                });
 
         function updateTotalDeduction() {
             var sssContribution = parseFloat($('#sss').val()) || 0;
@@ -586,9 +621,12 @@
             var advance = parseFloat($('#advance').val()) || 0;
             var others = parseFloat($('#others').val()) || 0;
             var lateDeduction = parseFloat($('#late').val()) || 0;
+            var sssLoan = parseFloat($('#sssLoan').val()) || 0;
+            var savings = parseFloat($('#savings').val()) || 0;
+            var hmo = parseFloat($('#hmo').val()) || 0;
 
             var totalDeduction = sssContribution + philHealthContribution + pagIbigContribution + withHolding +
-                loan + advance + others + lateDeduction;
+                loan + advance + others + lateDeduction + sssLoan + savings + hmo;
 
             $('#totalDeduction').val(totalDeduction.toFixed(2));
             updateTotalEarnings();
@@ -602,8 +640,11 @@
             var nDiffTotal = parseFloat($('#nightDiff').val()) || 0;
             var regHoliday = parseFloat($('#regHoliday').val()) || 0;
             var bonus = parseFloat($('#bonus').val()) || 0;
+            var bdayLeave = parseFloat($('#bdayLeave').val()) || 0;
+            var reimbursement = parseFloat($('#reimbursement').val()) || 0;
 
-            var totalEarnings = birthdayPTO + vacLeave + sickLeave + otTotal + bonus + nDiffTotal + regHoliday;
+            var totalEarnings = birthdayPTO + vacLeave + sickLeave + otTotal + bonus + nDiffTotal + regHoliday +
+                bdayLeave + reimbursement;
             $('#totalEarning').val(totalEarnings.toFixed(2));
 
             var netPay = parseFloat($('#netPay').val()) || 0;

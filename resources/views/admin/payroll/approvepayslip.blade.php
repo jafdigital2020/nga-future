@@ -20,7 +20,7 @@
     <!-- /Page Header -->
 
     <!-- Search Filter -->
-    <form action="{{ route('admin.payslipProcess') }}" method="GET">
+    <form action="{{ route('admin.approvedPayslip') }}" method="GET">
         <div class="row filter-row">
             <div class="col-sm-6 col-md-2">
                 <div class="form-group form-focus">
@@ -88,8 +88,8 @@
                             Cut-off</option>
                         <option value="August 2nd Cut-off"
                             {{ $cutoffPeriod == 'August 2nd Cut-off' ? 'selected' : '' }}>August 2nd Cut-off</option>
-                        <option value="August - September 1st Cut-off 2024"
-                            {{ $cutoffPeriod == 'August - September 1st Cut-off 2024' ? 'selected' : '' }}>August -
+                        <option value="August - September 1st Cut-off "
+                            {{ $cutoffPeriod == 'August - September 1st Cut-off ' ? 'selected' : '' }}>August -
                             September 1st Cut-off 2024</option>
                         <option value="September 2nd Cut-off"
                             {{ $cutoffPeriod == 'September 2nd Cut-off' ? 'selected' : '' }}>September 2nd Cut-off

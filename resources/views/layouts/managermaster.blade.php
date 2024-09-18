@@ -117,8 +117,9 @@
                                         class="notification-link" data-id="{{ $notification->id }}">
                                         <div class="media">
                                             <span class="avatar">
+                                                <!-- Display the requester's image -->
                                                 <img alt="Profile Image"
-                                                    src="{{ asset('images/' . auth()->user()->image) }}" />
+                                                    src="{{ asset('images/' . ($notification->data['image'] ?? 'default.png')) }}" />
                                             </span>
                                             <div class="media-body">
                                                 @if(isset($notification->data['leave_type']) &&

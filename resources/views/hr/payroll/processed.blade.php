@@ -88,9 +88,9 @@
                             Cut-off</option>
                         <option value="August 2nd Cut-off"
                             {{ $cutoffPeriod == 'August 2nd Cut-off' ? 'selected' : '' }}>August 2nd Cut-off</option>
-                        <option value="August - September 1st Cut-off 2024"
-                            {{ $cutoffPeriod == 'August - September 1st Cut-off 2024' ? 'selected' : '' }}>August -
-                            September 1st Cut-off 2024</option>
+                        <option value="August - September 1st Cut-off"
+                            {{ $cutoffPeriod == 'August - September 1st Cut-off' ? 'selected' : '' }}>August -
+                            September 1st Cut-off</option>
                         <option value="September 2nd Cut-off"
                             {{ $cutoffPeriod == 'September 2nd Cut-off' ? 'selected' : '' }}>September 2nd Cut-off
                         </option>
@@ -187,10 +187,28 @@
 
                             <td>₱{{ number_format($pay->netPayTotal, 2) }}</td>
                             <td>
-                                <form action="{{ url('hr/processed/approved/' . $pay->id) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-success">Approve</button>
-                                </form>
+
+                                <div class="dropdown action-label">
+                                    <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#"
+                                        data-toggle="dropdown" aria-expanded="false">
+                                        @if($pay->status == 'New')
+                                        <i class="fa fa-dot-circle-o text-purple"></i> New
+                                        @elseif($pay->status == 'pending')
+                                        <i class="fa fa-dot-circle-o text-info"></i> Pending
+                                        @elseif($pay->status == 'Approved')
+                                        <i class="fa fa-dot-circle-o text-success"></i> Approved
+                                        @elseif($pay->status == 'Revision')
+                                        <i class="fa fa-dot-circle-o text-warning"></i> Revision
+                                        @elseif($pay->status == 'Revised')
+                                        <i class="fa fa-dot-circle-o text-dark"></i> Revised
+                                        @elseif($pay->status == 'Declined')
+                                        <i class="fa fa-dot-circle-o text-danger"></i> Declined
+                                        @else
+                                        <i class="fa fa-dot-circle-o text-info"></i> Pending
+                                        @endif
+                                    </a>
+
+                                </div>
                             </td>
                             <td class="text-right">
                                 <div class="dropdown dropdown-action">

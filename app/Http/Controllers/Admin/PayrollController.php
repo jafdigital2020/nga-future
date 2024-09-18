@@ -253,6 +253,10 @@ class PayrollController extends Controller
        $payroll->dailyRate = $request->input('dailyRate');
        $payroll->hourlyRate = $request->input('hourlyRate');
        $payroll->netPayTotal = $request->input('netPayTotal');
+       $payroll->savings = $request->input('savings');
+       $payroll->reimbursement = $request->input('reimbursement');
+       $payroll->sssLoan = $request->input('sssLoan');
+       $payroll->hmo = $request->input('hmo');
        
 
         // Check which button was pressed and update status accordingly
@@ -299,7 +303,7 @@ class PayrollController extends Controller
         }
 
         // Add filter for status being 'Payslip'
-        $data->where('status', 'Processed');
+        $data->whereIn('status', ['Processed', 'Revision', 'Declined', 'Revised']);
    
        $payslip = $data->get();
    
@@ -323,7 +327,43 @@ class PayrollController extends Controller
        $edit->status = 'Approved';
        $edit->save();
    
-       Alert::success('Timesheet Approved.');
+       Alert::success('Payslip Approved.');
+       return redirect()->back();
+   }
+
+   public function processedRevision(Request $request, $id)
+   {
+       $edit = Payroll::findOrFail($id);
+   
+       // Check if the status is already 'Approved'
+       if ($edit->status === 'Revision') {
+           Alert::error('It is pending for revision.');
+           return redirect()->back();
+       }
+   
+       // Update the status to 'Approved'
+       $edit->status = 'Revision';
+       $edit->save();
+   
+       Alert::success('Payslip is for Revision.');
+       return redirect()->back();
+   }
+
+   public function processedDeclined(Request $request, $id)
+   {
+       $edit = Payroll::findOrFail($id);
+   
+       // Check if the status is already 'Approved'
+       if ($edit->status === 'Declined') {
+           Alert::error('This is already declined.');
+           return redirect()->back();
+       }
+   
+       // Update the status to 'Approved'
+       $edit->status = 'Declined';
+       $edit->save();
+   
+       Alert::success('Payslip Declined.');
        return redirect()->back();
    }
    
@@ -406,7 +446,8 @@ class PayrollController extends Controller
         $data->where('year', $selectedYear);
     }
 
-    if (!empty($cutoffPeriod)) {
+    // Add filter for cutoff_period if provided
+    if ($cutoffPeriod) {
         $data->where('cut_off', $cutoffPeriod); // Search the cut_off column
     }
 
@@ -427,6 +468,69 @@ class PayrollController extends Controller
     $view = Payroll::with('user')->findOrFail($id);
 
        return view('admin.payroll.payslipview', compact('view'));
+   }
+
+   public function editPayslip($id)
+   {
+        $pay = Payroll::findOrFail($id);
+
+        return view('admin.payroll.editpayslip', compact('pay'));
+   }
+
+   public function updatePayslip(Request $request, $id)
+   {
+        $edit = Payroll::findOrFail($id);
+
+        $edit->ename = $request->input('ename');
+        $edit->position = $request->input('position');
+        $edit->department = $request->input('department');
+        $edit->cut_off = $request->input('cut_off');
+        $edit->year = $request->input('year');
+        $edit->transactionDate = $request->input('transactionDate');
+        $edit->start_date = $request->input('start_date');
+        $edit->end_date = $request->input('end_date');
+        $edit->month = $request->input('month');
+        $edit->totalHours = $request->input('totalHours');
+        $edit->totalLate = $request->input('tLate');
+        $edit->sss = $request->input('sss');
+        $edit->pagIbig = $request->input('pagIbig');
+        $edit->philHealth = $request->input('philHealth');
+        $edit->withHolding = $request->input('withHolding');
+        $edit->late = $request->input('late');
+        $edit->loan = $request->input('loan');
+        $edit->advance = $request->input('advance');
+        $edit->others = $request->input('others');
+        $edit->bdayLeave = $request->input('bdayLeave');
+        $edit->vacLeave = $request->input('vacLeave');
+        $edit->sickLeave = $request->input('sickLeave');
+        $edit->regHoliday = $request->input('regHoliday');
+        $edit->otTotal = $request->input('otTotal');
+        $edit->nightDiff = $request->input('nightDiff');
+        $edit->bonus = $request->input('bonus');
+        $edit->totalDeduction = $request->input('totalDeduction');
+        $edit->totalEarning = $request->input('totalEarning');
+        $edit->grossMonthly = $request->input('grossMonthly');
+        $edit->grossBasic = $request->input('grossBasic');
+        $edit->dailyRate = $request->input('dailyRate');
+        $edit->hourlyRate = $request->input('hourlyRate');
+        $edit->netPayTotal = $request->input('netPayTotal');
+        $edit->savings = $request->input('savings');
+        $edit->reimbursement = $request->input('reimbursement');
+        $edit->sssLoan = $request->input('sssLoan');
+        $edit->hmo = $request->input('hmo');
+        $edit->status = 'Revised';
+
+        $edit->save();
+
+        Alert::success('Updated');
+        return redirect()->route('admin.payslipProcess');
+   }
+
+   public function processedEdit (Request $request, $id)
+   {
+        $pay = Payroll::findOrFail($id);
+
+        return view('admin.payroll.processededit', compact('pay'));
    }
 
    
