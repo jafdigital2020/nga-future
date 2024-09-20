@@ -116,7 +116,7 @@
                             <ul class="notification-list">
                                 @foreach(auth()->user()->unreadNotifications as $notification)
                                 <li class="notification-message">
-                                    <a href="{{ isset($notification->data['leave_type']) ? route('leave.searchadmin') : (isset($notification->data['total_worked']) ? route('approvedTime') : '#') }}"
+                                    <a href="{{ isset($notification->data['leave_type']) ? route('leave.searchadmin') : (isset($notification->data['total_worked']) ? route('approvedTime') : (isset($notification->data['missed_logout']) ? route('missedLogouts') : '#')) }}"
                                         class="notification-link" data-id="{{ $notification->id }}">
                                         <div class="media">
                                             <span class="avatar">
@@ -160,6 +160,14 @@
                                                     <span>{{ $notification->data['end_date'] }}</span> has been
                                                     approved.
                                                 </p>
+                                                @elseif(isset($notification->data['missed_logout']))
+                                                <!-- Missed Logout Notification -->
+                                                <p class="noti-details">
+                                                    <span
+                                                        class="noti-title">{{ $notification->data['employee_name'] }}</span>
+                                                    missed logging out on
+                                                    <span>{{ $notification->data['date'] }}</span>.
+                                                </p>
                                                 @endif
                                                 <p class="noti-time">
                                                     <span
@@ -178,6 +186,7 @@
                     </div>
                 </li>
                 <!-- /Notifications -->
+
 
                 <!-- Message Notifications -->
                 <!-- <li class="nav-item dropdown">

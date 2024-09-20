@@ -21,6 +21,7 @@ class EmployeeAttendance extends Model
         'breakEnd',
         'breakOut',
         'timeEnd',
+        'shiftOver',
         'timeOut',
         'status',
         'totalLate',
@@ -43,44 +44,41 @@ class EmployeeAttendance extends Model
         return $this->belongsTo(User::class, 'edited_by');
     }
 
+
     public function getTotalHoursAttribute()
     {
         if (!empty($this->timeOut) || !empty($this->timeEnd)) {
-            $startTime = Carbon::parse($this->timeIn);
-            $endTime = Carbon::parse($this->timeOut ?? $this->timeEnd ?? Carbon::now('Asia/Manila'));
-            $shiftEndTime = Carbon::parse($this->shiftEnd); // Assuming shiftEnd is stored as a string in the format HH:MM:SS
+            $timeIn = Carbon::parse($this->timeIn);
+            $breakIn = !empty($this->breakIn) ? Carbon::parse($this->breakIn) : null;
+            $breakOut = !empty($this->breakOut) ? Carbon::parse($this->breakOut) : null;
+            $timeOut = Carbon::parse($this->timeOut ?? Carbon::now('Asia/Manila'));
+            $timeEnd = Carbon::parse($this->timeEnd ?? Carbon::now('Asia/Manila'));
     
-            // Calculate the total worked time in seconds
-            $totalWorkedSeconds = $endTime->diffInSeconds($startTime);
+            // Initialize total worked seconds
+            $totalWorkedSeconds = 0;
     
-            // Calculate the break duration in seconds if both breakIn and breakOut are provided
-            $breakDuration = (!empty($this->breakIn) && !empty($this->breakOut))
-                ? Carbon::parse($this->breakOut)->diffInSeconds(Carbon::parse($this->breakIn))
-                : 0;
-    
-            // Deduct break duration from total worked time
-            $totalWorkedSeconds -= $breakDuration;
-    
-    
-            // Deduct totalLate if it exists and is in the format 00:00:00
-            if (!empty($this->totalLate)) {
-                $totalLateSeconds = Carbon::parse($this->totalLate)->secondsSinceMidnight();
-    
-                // Check if the employee worked beyond shiftEnd and logged in late
-                if ($endTime->greaterThan($shiftEndTime)) {
-                    // Calculate time beyond shiftEnd
-                    $overtimeSeconds = $endTime->diffInSeconds($shiftEndTime);
-    
-                    // If overtime is greater than or equal to totalLate, deduct totalLate from totalWorkedSeconds
-                    if ($overtimeSeconds >= $totalLateSeconds) {
-                        $totalWorkedSeconds -= $totalLateSeconds;
-                    } else {
-                        // If overtime is less than totalLate, deduct the remaining late time from totalWorkedSeconds
-                        $totalWorkedSeconds -= ($totalLateSeconds - $overtimeSeconds);
-                    }
+            // Case 1: User has breakIn and breakOut
+            if ($breakIn && $breakOut) {
+                // If timeOut is greater than timeEnd, calculate using timeEnd
+                if ($timeOut->greaterThan($timeEnd)) {
+                    // From timeIn to breakIn
+                    $totalWorkedSeconds += $timeIn->diffInSeconds($breakIn);
+                    // From breakOut to timeEnd
+                    $totalWorkedSeconds += $breakOut->diffInSeconds($timeEnd);
                 } else {
-                    // Deduct the entire totalLate if no overtime
-                    $totalWorkedSeconds -= $totalLateSeconds;
+                    // From timeIn to breakIn
+                    $totalWorkedSeconds += $timeIn->diffInSeconds($breakIn);
+                    // From breakOut to timeOut
+                    $totalWorkedSeconds += $breakOut->diffInSeconds($timeOut);
+                }
+            }
+            // Case 2: No breakIn and breakOut
+            else {
+                // If timeOut is greater than timeEnd, calculate using timeEnd
+                if ($timeOut->greaterThan($timeEnd)) {
+                    $totalWorkedSeconds += $timeIn->diffInSeconds($timeEnd);
+                } else {
+                    $totalWorkedSeconds += $timeIn->diffInSeconds($timeOut);
                 }
             }
     
@@ -89,10 +87,11 @@ class EmployeeAttendance extends Model
                 $totalWorkedSeconds = 0;
             }
     
-            // Limit the total worked hours to the max allowed hours (8 hours = 28800 seconds)
-            $maxWorkedHours = 28800; // 8 hours in seconds
-            if ($totalWorkedSeconds > $maxWorkedHours) {
-                $totalWorkedSeconds = $maxWorkedHours;
+            // Cap total worked time to allowed hours
+            $shiftSchedule = ShiftSchedule::where('users_id', auth()->user()->id)->first();
+            $allowedHours = Carbon::parse($shiftSchedule->allowedHours)->secondsSinceMidnight();
+            if ($totalWorkedSeconds > $allowedHours) {
+                $totalWorkedSeconds = $allowedHours;
             }
     
             // Calculate hours, minutes, and seconds
@@ -107,6 +106,10 @@ class EmployeeAttendance extends Model
         return '00:00:00';
     }
     
+    
+    
+    
+
     protected static function booted()
     {
         static::saving(function ($employeeattendance) {
@@ -157,6 +160,73 @@ class EmployeeAttendance extends Model
         });
     }
     
+
+
+    // public function getTotalHoursAttribute()
+    // {
+    //     if (!empty($this->timeOut) || !empty($this->timeEnd)) {
+    //         $startTime = Carbon::parse($this->timeIn);
+    //         $endTime = Carbon::parse($this->timeOut ?? $this->timeEnd ?? Carbon::now('Asia/Manila'));
+    //         $shiftEndTime = Carbon::parse($this->shiftEnd); // Assuming shiftEnd is stored as a string in the format HH:MM:SS
+    
+    //         // Calculate the total worked time in seconds
+    //         $totalWorkedSeconds = $endTime->diffInSeconds($startTime);
+    
+    //         // Calculate the break duration in seconds if both breakIn and breakOut are provided
+    //         $breakDuration = (!empty($this->breakIn) && !empty($this->breakOut))
+    //             ? Carbon::parse($this->breakOut)->diffInSeconds(Carbon::parse($this->breakIn))
+    //             : 0;
+    
+    //         // Deduct break duration from total worked time
+    //         $totalWorkedSeconds -= $breakDuration;
+    
+    
+    //         // Deduct totalLate if it exists and is in the format 00:00:00
+    //         if (!empty($this->totalLate)) {
+    //             $totalLateSeconds = Carbon::parse($this->totalLate)->secondsSinceMidnight();
+    
+    //             // Check if the employee worked beyond shiftEnd and logged in late
+    //             if ($endTime->greaterThan($shiftEndTime)) {
+    //                 // Calculate time beyond shiftEnd
+    //                 $overtimeSeconds = $endTime->diffInSeconds($shiftEndTime);
+    
+    //                 // If overtime is greater than or equal to totalLate, deduct totalLate from totalWorkedSeconds
+    //                 if ($overtimeSeconds >= $totalLateSeconds) {
+    //                     $totalWorkedSeconds -= $totalLateSeconds;
+    //                 } else {
+    //                     // If overtime is less than totalLate, deduct the remaining late time from totalWorkedSeconds
+    //                     $totalWorkedSeconds -= ($totalLateSeconds - $overtimeSeconds);
+    //                 }
+    //             } else {
+    //                 // Deduct the entire totalLate if no overtime
+    //                 $totalWorkedSeconds -= $totalLateSeconds;
+    //             }
+    //         }
+    
+    //         // Ensure the total worked seconds are not negative
+    //         if ($totalWorkedSeconds < 0) {
+    //             $totalWorkedSeconds = 0;
+    //         }
+    
+    //         // Limit the total worked hours to the max allowed hours (8 hours = 28800 seconds)
+    //         $maxWorkedHours = 28800; // 8 hours in seconds
+    //         if ($totalWorkedSeconds > $maxWorkedHours) {
+    //             $totalWorkedSeconds = $maxWorkedHours;
+    //         }
+    
+    //         // Calculate hours, minutes, and seconds
+    //         $hours = floor($totalWorkedSeconds / 3600);
+    //         $minutes = floor(($totalWorkedSeconds % 3600) / 60);
+    //         $seconds = $totalWorkedSeconds % 60;
+    
+    //         // Format the total time as HH:MM:SS
+    //         return sprintf("%02d:%02d:%02d", $hours, $minutes, $seconds);
+    //     }
+    
+    //     return '00:00:00';
+    // }
+    
+
 
     // protected static function booted()
     // {

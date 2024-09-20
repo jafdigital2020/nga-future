@@ -17,6 +17,7 @@ class ShiftSchedule extends Model
        'lateThreshold',
        'shiftEnd',
        'isFlexibleTime',
+       'allowedHours',
     ];
 
     public function user()

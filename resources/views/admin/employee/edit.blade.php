@@ -1436,7 +1436,7 @@
                         <div class="col-md-12">
                             @forelse ($user->shiftSchedule as $shift)
                             <div class="row">
-                                <div class="col-sm-12">
+                                <div class="col-sm-4">
                                     <div class="form-group">
                                         <label class="col-form-label">Flexible Time</label>
                                         <div class="custom-control custom-switch">
@@ -1448,6 +1448,14 @@
                                             <label class="custom-control-label"
                                                 for="flexibleTime{{ $shift->id }}"></label>
                                         </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-8">
+                                    <div class="form-group">
+                                        <label for="" class="col-form-label">Allowed hours</label>
+                                        <input type="text" class="form-control" id="allowedHours" name="allowedHours"
+                                            value="{{ $shift->allowedHours ?? '' }}" placeholder="HH:MM:SS"
+                                            pattern="[0-9]{2}:[0-9]{2}:[0-9]{2}">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -1631,6 +1639,25 @@
             shiftEnd.val('');
         }
     }
+
+</script>
+<script>
+    document.getElementById('allowedHours').addEventListener('input', function (e) {
+        let input = e.target.value;
+
+        // Remove all non-digit characters
+        input = input.replace(/[^0-9]/g, '');
+
+        // Insert colons after every 2 digits
+        if (input.length >= 3 && input.length <= 4) {
+            input = input.slice(0, 2) + ':' + input.slice(2);
+        }
+        if (input.length >= 5) {
+            input = input.slice(0, 2) + ':' + input.slice(2, 4) + ':' + input.slice(4, 6);
+        }
+
+        e.target.value = input;
+    });
 
 </script>
 
