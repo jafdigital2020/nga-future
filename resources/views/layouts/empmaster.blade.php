@@ -25,8 +25,6 @@
     <link href="{{ asset('assets/css/line-awesome.min.css') }}" rel="stylesheet" />
     <!-- Chart CSS -->
     <link href="{{ asset('assets/plugins/morris/morris.css') }}" rel="stylesheet" />
-    <!-- Main CSS -->
-    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" />
 
     <!----FAVICON---->
     <link rel="icon" href="{{ url('assets/img/jaffavicon.png') }}" />
@@ -50,6 +48,18 @@
 
     <!-- Tagsinput CSS -->
     <link rel="stylesheet" href="{{ asset('assets/plugins/bootstrap-tagsinput/bootstrap-tagsinput.css') }}">
+
+    <!-- New -->
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/feather2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/ow.carousel.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/material.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/feather.css') }}" />
+
+    <!-- Toastr -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"
+        integrity="sha512-vKMx8UnXk60zUwyUnUPM3HbQo8QfmNx7+ltw8Pm5zLusl1XIfwcxo8DbWCqMGKaWeNxWA8yrx5v3SaVpMvR3CA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 </head>
 
@@ -328,9 +338,11 @@
                 <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i
                         class="fa fa-ellipsis-v"></i></a>
                 <div class="dropdown-menu dropdown-menu-right">
-                    <a class="dropdown-item" href="profile.html">My Profile</a>
-                    <a class="dropdown-item" href="settings.html">Settings</a>
-                    <a class="dropdown-item" href="login.html">Logout</a>
+                    <a class="dropdown-item" href="{{ route('emp.profile') }}">My Profile</a>
+                    <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
+                                                     document.getElementById('logout-form').submit();">
+                        {{ __("Logout") }}
+                    </a>
                 </div>
             </div>
             <!-- /Mobile Menu -->
@@ -386,20 +398,10 @@
                         <li class="menu-title">
                             <span>Employee</span>
                         </li>
-                        <!-- <li class="submenu">
-                            <a href="#" class=""><i class="la la-user"></i>
-                                <span> Attendance</span>
-                                <span class="menu-arrow"></span></a>
-                            <ul style="display: none">
-                                <li>
-                                    <a href="{{ url('emp/attendance') }}"
-                                        class="{{ Request::is('emp/attendance') ? 'active':'' }}">Time in / Time Out</a>
-                                </li>
-                                <li>
-                                    <a href="overtime.html">Overtime</a>
-                                </li>
-                            </ul>
-                        </li> -->
+                        <li class="{{ Request::is('emp/attendance') ? 'active':'' }}">
+                            <a href="{{ url('emp/attendance') }}"><i class="la la-calendar"></i>
+                                <span>Attendance</span></a>
+                        </li>
                         <li class="{{ Request::is('emp/leave') ? 'active':'' }}">
                             <a href="{{ url('emp/leave') }}"><i class="la la-rocket"></i>
                                 <span>Leave</span></a>
@@ -551,6 +553,7 @@
     <!-- Place jsPDF and any related scripts before the closing body tag -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
     @yield('scripts')
     <script>

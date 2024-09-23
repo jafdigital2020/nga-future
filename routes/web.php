@@ -149,6 +149,8 @@ Route::prefix('emp')->middleware(['auth','isEmployee', 'sessionTimeout'])->group
     Route::get('payslip', [App\Http\Controllers\Employee\PayslipController::class, 'payslipView'])->name('emp.payslipView');
     Route::get('payslip/view/{id}', [App\Http\Controllers\Employee\PayslipController::class, 'viewPayslip'])->name('emp.viewPayslip');
     Route::get('download', [App\Http\Controllers\Employee\PayslipController::class, 'download'])->name('emp.downloadPayslip');
+    // Attendance
+    Route::get('attendance', [App\Http\Controllers\Employee\AttendanceController::class, 'index'])->name('emp.attendance');
     Route::get('/notifications/clear', function () {
         auth()->user()->notifications()->delete();
         return redirect()->back();

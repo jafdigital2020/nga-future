@@ -75,42 +75,5 @@ class AttendanceController extends Controller
         return view('emp.attendance.index', compact('att', 'empatt', 'all', 'total', 'latest', 'data', 'filteredData', 'totalTime', 'totalLate'));
     }
 
-    public function store(Request $request)
-    {
-        $request->user()->checkIn();
-
-        return redirect('/emp/attendance');
-    }
-
-    public function breakIn(Request $request)
-    {
-        $request->user()->breakIn();
-
-        return redirect('/emp/attendance');
-
-    }
-
-    public function breakOut(Request $request)
-    {
-        $request->user()->breakOut();
-
-        return redirect('/emp/attendance');
-    }
-
-
-    public function update(Request $request)
-    {
-        $request->user()->checkOut();
-
-        return redirect('/emp/attendance');
-    }
-
-   
-
-    public function countdown()
-    {
-        $countdownDuration = 3600; // 1 hour in seconds
-        return view('emp.attendance.index', compact('countdownDuration'));
-    }
 
 }

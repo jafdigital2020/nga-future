@@ -8,4 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class SettingsHoliday extends Model
 {
     use HasFactory;
+
+    protected $table = 'settings_holidays';
+    protected $fillable = [
+        'title',
+        'holidayDate',
+        'holidayDay',
+        'type',
+    ];
 }

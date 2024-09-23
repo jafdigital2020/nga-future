@@ -1,40 +1,5 @@
-@extends('layouts.hrmaster') @section('title', 'Dashboard')
+@extends('layouts.empmaster') @section('title', 'Payroll Dashboard')
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<style>
-    .clock-in-btn {
-        display: inline-block;
-        margin-left: 10px;
-    }
-
-    .clock-in-btn form,
-    .clock-in-btn button {
-        display: inline-block;
-        margin: 0;
-    }
-
-    /* Mobile View */
-    @media (max-width: 600px) {
-        .clock-in-btn {
-            display: block;
-            /* Stack elements vertically */
-            margin-left: 0;
-            /* Remove left margin */
-            margin-bottom: 10px;
-            /* Add space between buttons */
-        }
-
-        .clock-in-btn form,
-        .clock-in-btn button {
-            display: block;
-            /* Make forms and buttons take full width */
-            width: 100%;
-            /* Full width for better accessibility */
-            margin: 0;
-            /* Reset margin */
-        }
-    }
-
-</style>
 @section('content')
 
 <div class="content container-fluid pb-0">
@@ -56,9 +21,8 @@
                         <div class="card-body">
                             <div class="welcome-info">
                                 <div class="welcome-content">
-                                    <h4> Welcome, {{ Auth::user()->fName }} {{ Auth::user()->lName }}</h4>
-                                    <p>You have <span>{{ auth()->user()->unreadNotifications->count() }}
-                                            notifications</span> today,</p>
+                                    <h4> Welcome Back, {{ Auth::user()->fName }} {{ Auth::user()->lName }}</h4>
+                                    <p>You have <span>4 meetings</span> today,</p>
                                 </div>
                                 <div class="welcome-img">
                                     <img src="{{ Auth::user()->image ? asset('images/' . Auth::user()->image) : asset('images/default.png') }}"
@@ -66,7 +30,7 @@
                                 </div>
                             </div>
                             <div class="welcome-btn">
-                                <a href="{{ url('hr/profile') }}" class="btn">View Profile</a>
+                                <a href="{{ url('emp/profile') }}" class="btn">View Profile</a>
                             </div>
                         </div>
                     </div>
@@ -74,6 +38,18 @@
                         <div class="card-body">
                             <div class="statistic-header">
                                 <h4>Statistics</h4>
+                                @if (session('success'))
+                                <div class="alert alert-success">
+                                    {{ session("success") }}
+                                </div>
+                                @elseif (session('error'))
+                                <div class="alert alert-danger">
+                                    {{ session("error") }}
+                                </div>
+                                @else
+
+                                <p>Welcome to One JAF!</p>
+                                @endif
                                 <div class="dropdown statistic-dropdown">
 
                                     <a class="text-muted" id="clock">
@@ -103,7 +79,7 @@
                                         @endif</h4>
                                 </div>
                                 <div class="clock-in-btn">
-                                    <form action="{{ url('hr/dashboard') }}" method="POST">
+                                    <form action="{{ url('emp/dashboard') }}" method="POST">
                                         @csrf
                                         <button type="submit" class="btn btn-danger">Clock-In</button>
                                     </form>
@@ -134,7 +110,7 @@
                                                 Are you sure you want to time out?
                                             </div>
                                             <div class="modal-footer">
-                                                <form action="{{ url('hr/dashboard/') }}" method="POST">
+                                                <form action="{{ url('emp/dashboard/') }}" method="POST">
                                                     @csrf @method('PUT')
                                                     <button type="submit" class="btn btn-primary">
                                                         Yes
@@ -151,24 +127,22 @@
                             </div>
                             <div class="clock-in-list">
                                 <ul class="nav">
-                                    <form action="{{ url('hr/dashboard/breakin/') }}" method="POST">
+                                    <form action="{{ url('emp/dashboard/breakin/') }}" method="POST">
                                         @csrf @method('PUT')
                                         <div class="clock-in-btn">
-                                            <button type="submit" class="btn btn-danger btn-sm" id="startButton">Start
-                                                Break</button>
+                                            <button type="submit" class="btn btn-danger btn-sm">Start Break</button>
                                         </div>
                                     </form>
-                                    <form action="{{ url('hr/dashboard/breakout/') }}" method="POST">
+                                    <form action="{{ url('emp/dashboard/breakout/') }}" method="POST">
                                         @csrf @method('PUT')
                                         <div class="clock-in-btn">
-                                            <button type="submit" class="btn btn-outline-danger btn-sm"
-                                                id="resetButton">End
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">End
                                                 Break</button>
                                         </div>
                                     </form>
                                     <li>
-                                        <p>Break Timer</p>
-                                        <h6 id="countdown">01:00:00</h6>
+                                        <p>Break</p>
+                                        <h6 id="countdown">01:00:00 hr</h6>
                                     </li>
                                 </ul>
                             </div>
@@ -207,46 +181,44 @@
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="attendance-details">
-                                            <h4 class="text-primary">
-                                                {{ Auth::user()->vacLeave + Auth::user()->sickLeave + Auth::user()->bdayLeave }}
-                                            </h4>
+                                            <h4 class="text-primary"></h4>
                                             <p>Total Leaves</p>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="attendance-details">
-                                            <h4 class="text-pink">{{ $leaveApproved }}</h4>
+                                            <h4 class="text-pink"></h4>
                                             <p>Leaves Taken</p>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="attendance-details">
-                                            <h4 class="text-success">{{ $leavePending }}</h4>
+                                            <h4 class="text-success">04</h4>
                                             <p>Pending Approval</p>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="attendance-details">
-                                            <h4 class="text-purple">{{ Auth::user()->vacLeave }}</h4>
+                                            <h4 class="text-purple">0</h4>
                                             <p>Vacation Leave</p>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="attendance-details">
-                                            <h4 class="text-info">{{ Auth::user()->sickLeave }}</h4>
+                                            <h4 class="text-info">214</h4>
                                             <p>Sick <br>Leave</p>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="attendance-details">
-                                            <h4 class="text-danger">{{ Auth::user()->bdayLeave }}</h4>
+                                            <h4 class="text-danger">2</h4>
                                             <p>Birthday Leave</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="view-attendance">
-                                <a href="{{ url('hr/leave') }}">
+                                <a href="{{ url('emp/leave') }}">
                                     Apply Leave <i class="fa-solid fa-arrow-right"></i>
                                 </a>
                             </div>
@@ -261,13 +233,8 @@
                                         <i class="fa-solid fa-calendar-days" style="color:white; font-size: 30px;"></i>
                                     </div>
                                     <div class="holiday-calendar-content">
-                                        @if($nearestHoliday)
-                                        <h6>{{ $nearestHoliday->title }}</h6>
-                                        <p>{{ $nearestHoliday->holidayDay }} {{ $nearestHoliday->holidayDate }}</p>
-                                        @else
-                                        <h6>No Holiday Set</h6>
-                                        <p>No data found.</p>
-                                        @endif
+                                        <h6>Ramzan</h6>
+                                        <p>Mon 20 May 2024</p>
                                     </div>
                                 </div>
                                 <div class="holiday-btn">
@@ -334,69 +301,51 @@
         <div class="calendar-container">
             <div class="calendar-header">
                 <div class="filter-controls">
-                    <div class="row">
-                        <!-- Cut-off Period Select -->
-                        <div class="col-12 col-md-6 mb-3">
-                            <div class="form-group form-focus select-focus">
-                                <select class="select floating" id="monthSelect">
-                                    <option value="0">December - January 1st Cut-off</option>
-                                    <option value="1">January 2nd Cut-off</option>
-                                    <option value="2">January - February 1st Cut-off</option>
-                                    <option value="3">February 2nd Cut-off</option>
-                                    <option value="4">February - March 1st Cut-off</option>
-                                    <option value="5">March 2nd Cut-off</option>
-                                    <option value="6">March - April 1st Cut-off</option>
-                                    <option value="7">April 2nd Cut-off</option>
-                                    <option value="8">April - May 1st Cut-off</option>
-                                    <option value="9">May 2nd Cut-off</option>
-                                    <option value="10">May - June 1st Cut-off</option>
-                                    <option value="11">June 2nd Cut-off</option>
-                                    <option value="12">June - July 1st Cut-off</option>
-                                    <option value="13">July 2nd Cut-off</option>
-                                    <option value="14">July - August 1st Cut-off</option>
-                                    <option value="15">August 2nd Cut-off</option>
-                                    <option value="16">August - September 1st Cut-off</option>
-                                    <option value="17">September 2nd Cut-off</option>
-                                    <option value="18">September - October 1st Cut-off</option>
-                                    <option value="19">October 2nd Cut-off</option>
-                                    <option value="20">October - November 1st Cut-off</option>
-                                    <option value="21">November 2nd Cut-off</option>
-                                    <option value="22">November - December 1st Cut-off</option>
-                                    <option value="23">December 2nd Cut-off</option>
-                                </select>
-                                <label class="focus-label">Cut-off Period</label>
-                            </div>
-                        </div>
-
-                        <!-- Year Select -->
-                        <div class="col-12 col-md-6 mb-3">
-                            <div class="form-group form-focus select-focus">
-                                <select name="" id="yearSelect" class="select floating">
-                                    <option value="2023">2023</option>
-                                    <option value="2024">2024</option>
-                                    <option value="2025">2025</option>
-                                    <option value="2026">2026</option>
-                                </select>
-                                <label class="focus-label">Year</label>
-                            </div>
-                        </div>
+                    <div class="form-group form-focus select-focus">
+                        <select class="select floating" id="monthSelect">
+                            <option value="0">December - January 1st Cut-off</option>
+                            <option value="1">January 2nd Cut-off</option>
+                            <option value="2">January - February 1st Cut-off</option>
+                            <option value="3">February 2nd Cut-off</option>
+                            <option value="4">February - March 1st Cut-off</option>
+                            <option value="5">March 2nd Cut-off</option>
+                            <option value="6">March - April 1st Cut-off</option>
+                            <option value="7">April 2nd Cut-off</option>
+                            <option value="8">April - May 1st Cut-off</option>
+                            <option value="9">May 2nd Cut-off</option>
+                            <option value="10">May - June 1st Cut-off</option>
+                            <option value="11">June 2nd Cut-off</option>
+                            <option value="12">June - July 1st Cut-off</option>
+                            <option value="13">July 2nd Cut-off</option>
+                            <option value="14">July - August 1st Cut-off</option>
+                            <option value="15">August 2nd Cut-off</option>
+                            <option value="16">August - September 1st Cut-off</option>
+                            <option value="17">September 2nd Cut-off</option>
+                            <option value="18">September - October 1st Cut-off</option>
+                            <option value="19">October 2nd Cut-off</option>
+                            <option value="20">October - November 1st Cut-off</option>
+                            <option value="21">November 2nd Cut-off</option>
+                            <option value="22">November - December 1st Cut-off</option>
+                            <option value="23">December 2nd Cut-off</option>
+                        </select>
+                        <label class="focus-label">Cut-off Period</label>
                     </div>
-
-                    <!-- Buttons -->
-                    <div class="row">
-                        <div class="col-12 col-md-6 mb-3 text-center text-md-left">
-                            <button id="searchButton" class="btn btn-danger">Search</button>
-                        </div>
-                        <div class="col-12 col-md-6 mb-3 text-center text-md-left">
-                            <button id="saveButton" class="btn btn-outline-danger">Send</button>
-                        </div>
+                    <div class="form-group form-focus select-focus">
+                        <select name="" id="yearSelect" class="select floating">
+                            <option value="2023">2023</option>
+                            <option value="2024">2024</option>
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
+                        </select>
+                        <label class="focus-label">Year</label>
                     </div>
+                    <button id="searchButton" class="btn btn-danger">Search</button>
+                    <button id="saveButton" class="btn btn-outline-danger">Send</button>
                 </div>
             </div>
             <div id="calendar"></div>
         </div>
     </div>
-
 
 
     <!-- /Calendar Record -->
@@ -414,7 +363,7 @@
                                     applaud &amp; appreciate</p>
                             </div>
                             <div class="employee-month-content">
-                                <h6><strong>Congrats, Hanna</strong></h6>
+                                <h6>Congrats, Hanna</h6>
                                 <p>UI/UX Team Lead</p>
                             </div>
                         </div>
@@ -630,6 +579,7 @@
     </div>
 </div>
 
+
 @endsection
 
 
@@ -668,8 +618,8 @@
         const yearSelect = document.getElementById('yearSelect');
         const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const monthNames = [
-            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'June',
-            'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
         ];
 
         const holidays = {
@@ -888,9 +838,6 @@
             totalBox.innerText =
                 `Total Worked Hours: ${totalWorkedFormatted}\nTotal Late: ${totalLateFormatted}\nUnpaid Leave: ${unpaidLeaveCount}\nVacation Leave: ${vacationLeaveCount}\nSick Leave: ${sickLeaveCount}\nBirthday Leave: ${bdayLeaveCount}\nStatus: ${status}`;
             calendar.appendChild(totalBox);
-
-
-
         }
 
         function checkHoliday(date) {
@@ -906,7 +853,7 @@
 
         function fetchAttendanceData(startDate, endDate, callback) {
             $.ajax({
-                url: "{{ route('attendance.getr') }}",
+                url: "{{ route('attendance.get') }}",
                 method: 'GET',
                 dataType: 'json',
                 data: {
@@ -925,7 +872,7 @@
 
         function fetchStatus(cutoff, callback) {
             $.ajax({
-                url: "{{ route('attendance.statusr') }}", // Ensure this route matches your Laravel route for fetching status
+                url: "{{ route('attendance.status') }}", // Ensure this route matches your Laravel route for fetching status
                 method: 'GET',
                 dataType: 'json',
                 data: {
@@ -1106,7 +1053,7 @@
 
             // Check if the attendance record already exists
             $.ajax({
-                url: "{{ route('attendance.checkr') }}",
+                url: "{{ route('attendance.check') }}",
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -1132,7 +1079,7 @@
                         if (confirm('Do you wish to send this cut-off?')) {
                             // Save the attendance record
                             $.ajax({
-                                url: "{{ route('attendance.saver') }}",
+                                url: "{{ route('attendance.save') }}",
                                 method: 'POST',
                                 headers: {
                                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr(
@@ -1221,7 +1168,7 @@
             const now = new Date().getTime();
             const timeRemaining = Math.max(Math.floor((endTime - now) / 1000), 0);
 
-            countdownElement.textContent = `${formatTime(timeRemaining)}`;
+            countdownElement.textContent = `Time remaining: ${formatTime(timeRemaining)}`;
 
             if (timeRemaining > 0) {
                 setTimeout(updateCountdown, 1000);
@@ -1263,7 +1210,7 @@
     resetButton.addEventListener('click', function () {
         localStorage.removeItem(countdownKey);
         localStorage.removeItem(lastStartKey);
-        countdownElement.textContent = "1:00:00";
+        countdownElement.textContent = "Time remaining: 1:00:00";
     });
 
     // Initialize the countdown if it's already set
@@ -1281,57 +1228,5 @@
     setTimeout(refreshPage, 1800000); // 30 minutes = 1800000 milliseconds
 
 </script>
-
-@if (session('success'))
-<script>
-    toastr.options = {
-        "closeButton": true,
-        "debug": false,
-        "newestOnTop": false,
-        "progressBar": true,
-        "positionClass": "toast-top-right", // Or any position you prefer
-        "preventDuplicates": false,
-        "onclick": null,
-        "showDuration": "300",
-        "hideDuration": "1000",
-        "timeOut": "5000", // 5 seconds
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut"
-    }
-    toastr.success("{{ session('success') }}");
-
-</script>
-@endif
-
-@if (session('error'))
-<script>
-    toastr.options = {
-        "closeButton": true,
-        "debug": false,
-        "newestOnTop": false,
-        "progressBar": true,
-        "positionClass": "toast-top-right", // Or any position you prefer
-        "preventDuplicates": false,
-        "onclick": null,
-        "showDuration": "300",
-        "hideDuration": "1000",
-        "timeOut": "5000", // 5 seconds
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut"
-    }
-    toastr.error("{{ session('error') }}");
-
-</script>
-@endif
-
-
-
-
 
 @endsection

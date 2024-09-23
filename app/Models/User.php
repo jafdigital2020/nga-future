@@ -250,91 +250,184 @@ class User extends Authenticatable
     }
 
     public function checkIn()
-    {
-        try {
-            $now = $this->freshTimestamp();
+{
+    try {
+        $now = $this->freshTimestamp();
 
-            // Check if the user has already timed in for the day
-            $employeeAttendance = $this->employeeAttendance()
-                ->where('date', Carbon::now('Asia/Manila')->toDateString())
-                ->first();
+        // Check if the user has already timed in for the day
+        $employeeAttendance = $this->employeeAttendance()
+            ->where('date', Carbon::now('Asia/Manila')->toDateString())
+            ->first();
 
-            if ($employeeAttendance) {
-                return back()->with('error', 'You have already timed in!');
-            }
-
-            // Get the user's shift schedule
-            $shiftSchedule = ShiftSchedule::where('users_id', auth()->user()->id)->first();
-
-            if (!$shiftSchedule) {
-                return back()->with('error', 'Shift schedule not found.');
-            }
-
-            $timeIn = Carbon::now('Asia/Manila');
-
-            // Determine status and total late based on shift times if not flexible
-            $status = 'On Time';
-            $totalLate = '00:00:00';
-
-            // Handling for non-flexible shifts
-            if (!$shiftSchedule->isFlexibleTime) {
-                $shiftStart = Carbon::parse($shiftSchedule->shiftStart, 'Asia/Manila');
-                $lateThreshold = Carbon::parse($shiftSchedule->lateThreshold, 'Asia/Manila');
-                $shiftEnd = Carbon::parse($shiftSchedule->shiftEnd, 'Asia/Manila')->format('h:i:s A');
-
-                // If the user is late
-                if ($timeIn->gt($lateThreshold)) {
-                    $status = 'Late';
-                    $totalLateInSeconds = $timeIn->diffInSeconds($lateThreshold);
-                    $hours = floor($totalLateInSeconds / 3600);
-                    $minutes = floor(($totalLateInSeconds % 3600) / 60);
-                    $seconds = $totalLateInSeconds % 60;
-                    $totalLate = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
-                }
-
-                // If timeIn is greater than shiftStart (i.e., user is late), set timeEnd to shiftEnd
-                if ($timeIn->greaterThan($shiftStart)) {
-                    $timeEnd = $shiftEnd;
-                } else {
-                    // Calculate timeEnd based on allowedHours
-                    $allowedHours = Carbon::parse($shiftSchedule->allowedHours)->secondsSinceMidnight();
-                    $timeEnd = $timeIn->copy()->addSeconds($allowedHours)->format('h:i:s A');
-
-                    // If calculated timeEnd exceeds shiftEnd, cap timeEnd to shiftEnd
-                    if (Carbon::parse($timeEnd, 'Asia/Manila')->greaterThan($shiftEnd)) {
-                        $timeEnd = $shiftEnd;
-                    }
-                }
-
-                // Assign shiftEnd to shiftOver
-                $shiftOver = $shiftEnd;
-            } else {
-                // For flexible time, no need to calculate shiftEnd or timeEnd
-                $timeEnd = null;  // Flexible schedules can have dynamic end times
-                $shiftOver = null;  // No fixed shift end for flexible schedules
-            }
-
-            // Create the attendance record
-            $this->employeeAttendance()->create([
-                'name' => auth()->user()->fName . ' ' . auth()->user()->lName,
-                'date' => Carbon::now('Asia/Manila')->toDateString(),
-                'timeIn' => $timeIn->format('h:i:s A'),
-                'status' => $status,
-                'totalLate' => $totalLate,
-                'timeEnd' => $timeEnd,  // Store calculated timeEnd
-                'shiftOver' => $shiftOver,  // Store shiftEnd as shiftOver
-            ]);
-
-            return back()->with('success', 'Time in successfully! You are ' . $status . '. Welcome.');
-
-        } catch (Exception $e) {
-            // Log the error for debugging purposes
-            Log::error('Check-in Error: ' . $e->getMessage(), ['exception' => $e]);
-
-            // Return a generic error message to the user
-            return back()->with('error', 'An unexpected error occurred. Please try again later.');
+        if ($employeeAttendance) {
+            return back()->with('error', 'You have already timed in!');
         }
+
+        // Get the user's shift schedule
+        $shiftSchedule = ShiftSchedule::where('users_id', auth()->user()->id)->first();
+
+        if (!$shiftSchedule) {
+            return back()->with('error', 'Shift schedule not found.');
+        }
+
+        $timeIn = Carbon::now('Asia/Manila');
+
+        // Check if the current time is past the shift end time
+        $shiftEnd = Carbon::parse($shiftSchedule->shiftEnd, 'Asia/Manila');
+        if ($timeIn->greaterThan($shiftEnd)) {
+            return back()->with('error', 'You cannot clock in because your shift has already ended.');
+        }
+
+        // Determine status and total late based on shift times if not flexible
+        $status = 'On Time';
+        $totalLate = '00:00:00';
+
+        // Handling for non-flexible shifts
+        if (!$shiftSchedule->isFlexibleTime) {
+            $shiftStart = Carbon::parse($shiftSchedule->shiftStart, 'Asia/Manila');
+            $lateThreshold = Carbon::parse($shiftSchedule->lateThreshold, 'Asia/Manila');
+
+            // If the user is late
+            if ($timeIn->gt($lateThreshold)) {
+                $status = 'Late';
+                $totalLateInSeconds = $timeIn->diffInSeconds($lateThreshold);
+                $hours = floor($totalLateInSeconds / 3600);
+                $minutes = floor(($totalLateInSeconds % 3600) / 60);
+                $seconds = $totalLateInSeconds % 60;
+                $totalLate = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+            }
+
+            // If timeIn is greater than shiftStart (i.e., user is late), set timeEnd to shiftEnd
+            if ($timeIn->greaterThan($shiftStart)) {
+                $timeEnd = $shiftEnd;
+            } else {
+                // Calculate timeEnd based on allowedHours
+                $allowedHours = Carbon::parse($shiftSchedule->allowedHours)->secondsSinceMidnight();
+                $timeEnd = $timeIn->copy()->addSeconds($allowedHours)->format('h:i:s A');
+
+                // If calculated timeEnd exceeds shiftEnd, cap timeEnd to shiftEnd
+                if (Carbon::parse($timeEnd, 'Asia/Manila')->greaterThan($shiftEnd)) {
+                    $timeEnd = $shiftEnd;
+                }
+            }
+
+            // Assign shiftEnd to shiftOver
+            $shiftOver = $shiftEnd;
+        } else {
+            // For flexible time, no need to calculate shiftEnd or timeEnd
+            $timeEnd = null;  // Flexible schedules can have dynamic end times
+            $shiftOver = null;  // No fixed shift end for flexible schedules
+        }
+
+        // Create the attendance record
+        $this->employeeAttendance()->create([
+            'name' => auth()->user()->fName . ' ' . auth()->user()->lName,
+            'date' => Carbon::now('Asia/Manila')->toDateString(),
+            'timeIn' => $timeIn->format('h:i:s A'),
+            'status' => $status,
+            'totalLate' => $totalLate,
+            'timeEnd' => $timeEnd,  // Store calculated timeEnd
+            'shiftOver' => $shiftOver,  // Store shiftEnd as shiftOver
+        ]);
+
+        return back()->with('success', 'Time in successfully! You are ' . $status . '. Welcome.');
+
+    } catch (Exception $e) {
+        // Log the error for debugging purposes
+        Log::error('Check-in Error: ' . $e->getMessage(), ['exception' => $e]);
+
+        // Return a generic error message to the user
+        return back()->with('error', 'An unexpected error occurred. Please try again later.');
     }
+}
+
+
+    // public function checkIn()
+    // {
+    //     try {
+    //         $now = $this->freshTimestamp();
+
+    //         // Check if the user has already timed in for the day
+    //         $employeeAttendance = $this->employeeAttendance()
+    //             ->where('date', Carbon::now('Asia/Manila')->toDateString())
+    //             ->first();
+
+    //         if ($employeeAttendance) {
+    //             return back()->with('error', 'You have already timed in!');
+    //         }
+
+    //         // Get the user's shift schedule
+    //         $shiftSchedule = ShiftSchedule::where('users_id', auth()->user()->id)->first();
+
+    //         if (!$shiftSchedule) {
+    //             return back()->with('error', 'Shift schedule not found.');
+    //         }
+
+    //         $timeIn = Carbon::now('Asia/Manila');
+
+    //         // Determine status and total late based on shift times if not flexible
+    //         $status = 'On Time';
+    //         $totalLate = '00:00:00';
+
+    //         // Handling for non-flexible shifts
+    //         if (!$shiftSchedule->isFlexibleTime) {
+    //             $shiftStart = Carbon::parse($shiftSchedule->shiftStart, 'Asia/Manila');
+    //             $lateThreshold = Carbon::parse($shiftSchedule->lateThreshold, 'Asia/Manila');
+    //             $shiftEnd = Carbon::parse($shiftSchedule->shiftEnd, 'Asia/Manila')->format('h:i:s A');
+
+    //             // If the user is late
+    //             if ($timeIn->gt($lateThreshold)) {
+    //                 $status = 'Late';
+    //                 $totalLateInSeconds = $timeIn->diffInSeconds($lateThreshold);
+    //                 $hours = floor($totalLateInSeconds / 3600);
+    //                 $minutes = floor(($totalLateInSeconds % 3600) / 60);
+    //                 $seconds = $totalLateInSeconds % 60;
+    //                 $totalLate = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+    //             }
+
+    //             // If timeIn is greater than shiftStart (i.e., user is late), set timeEnd to shiftEnd
+    //             if ($timeIn->greaterThan($shiftStart)) {
+    //                 $timeEnd = $shiftEnd;
+    //             } else {
+    //                 // Calculate timeEnd based on allowedHours
+    //                 $allowedHours = Carbon::parse($shiftSchedule->allowedHours)->secondsSinceMidnight();
+    //                 $timeEnd = $timeIn->copy()->addSeconds($allowedHours)->format('h:i:s A');
+
+    //                 // If calculated timeEnd exceeds shiftEnd, cap timeEnd to shiftEnd
+    //                 if (Carbon::parse($timeEnd, 'Asia/Manila')->greaterThan($shiftEnd)) {
+    //                     $timeEnd = $shiftEnd;
+    //                 }
+    //             }
+
+    //             // Assign shiftEnd to shiftOver
+    //             $shiftOver = $shiftEnd;
+    //         } else {
+    //             // For flexible time, no need to calculate shiftEnd or timeEnd
+    //             $timeEnd = null;  // Flexible schedules can have dynamic end times
+    //             $shiftOver = null;  // No fixed shift end for flexible schedules
+    //         }
+
+    //         // Create the attendance record
+    //         $this->employeeAttendance()->create([
+    //             'name' => auth()->user()->fName . ' ' . auth()->user()->lName,
+    //             'date' => Carbon::now('Asia/Manila')->toDateString(),
+    //             'timeIn' => $timeIn->format('h:i:s A'),
+    //             'status' => $status,
+    //             'totalLate' => $totalLate,
+    //             'timeEnd' => $timeEnd,  // Store calculated timeEnd
+    //             'shiftOver' => $shiftOver,  // Store shiftEnd as shiftOver
+    //         ]);
+
+    //         return back()->with('success', 'Time in successfully! You are ' . $status . '. Welcome.');
+
+    //     } catch (Exception $e) {
+    //         // Log the error for debugging purposes
+    //         Log::error('Check-in Error: ' . $e->getMessage(), ['exception' => $e]);
+
+    //         // Return a generic error message to the user
+    //         return back()->with('error', 'An unexpected error occurred. Please try again later.');
+    //     }
+    // }
 
 
     // public function checkIn()

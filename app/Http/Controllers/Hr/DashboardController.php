@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Hr;
 
+use Carbon\Carbon;
 use App\Models\User;
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
+use App\Models\SettingsHoliday;
 use App\Models\EmploymentRecord;
 use App\Models\EmployementSalary;
 use App\Models\ApprovedAttendance;
@@ -22,7 +24,14 @@ class DashboardController extends Controller
         $authUserId = auth()->user()->id;
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
-    
+        
+        $leaveApproved = LeaveRequest::where('users_id', auth()->user()->id)
+                ->where('status', 'Approved')
+                ->count();
+
+        $leavePending = LeaveRequest::where('users_id', auth()->user()->id)
+                ->where('status', 'Pending')
+                ->count();
         $record = EmploymentRecord::where('users_id', $user->id)->get();
         $salrecord = EmployementSalary::where('users_id', $user->id)->get();
         $data = EmployeeAttendance::where('users_id', $authUserId);
@@ -55,8 +64,15 @@ class DashboardController extends Controller
         $all = DB::table('attendance')->get();
         $empatt = DB::table('attendance')->where('users_id', auth()->user()->id)->get();
         $latest = EmployeeAttendance::where('users_id', Auth::user()->id)->latest()->first();
+
+        $today = Carbon::today();
+    
+        // Get the nearest holiday after or equal to today
+        $nearestHoliday = SettingsHoliday::where('holidayDate', '>=', $today)
+                                          ->orderBy('holidayDate', 'asc')
+                                          ->first();
         
-        return view('hr.dashboard', compact('user', 'empatt', 'all', 'total', 'latest', 'filteredData', 'supervisor', 'record', 'salrecord'));
+        return view('hr.dashboard', compact('user', 'empatt', 'all', 'total', 'latest', 'filteredData', 'supervisor', 'record', 'salrecord', 'leaveApproved', 'leavePending', 'nearestHoliday'));
     }
 
     public function getUserAttendance(Request $request)

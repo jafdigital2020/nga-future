@@ -1,141 +1,277 @@
-@extends('layouts.managermaster') @section('title', 'One JAF')
+@extends('layouts.managermaster') @section('title', 'Dashboard')
 <meta name="csrf-token" content="{{ csrf_token() }}">
+<style>
+    .clock-in-btn {
+        display: inline-block;
+        margin-left: 10px;
+    }
 
+    .clock-in-btn form,
+    .clock-in-btn button {
+        display: inline-block;
+        margin: 0;
+    }
+
+    /* Mobile View */
+    @media (max-width: 600px) {
+        .clock-in-btn {
+            display: block;
+            /* Stack elements vertically */
+            margin-left: 0;
+            /* Remove left margin */
+            margin-bottom: 10px;
+            /* Add space between buttons */
+        }
+
+        .clock-in-btn form,
+        .clock-in-btn button {
+            display: block;
+            /* Make forms and buttons take full width */
+            width: 100%;
+            /* Full width for better accessibility */
+            margin: 0;
+            /* Reset margin */
+        }
+    }
+
+</style>
 @section('content')
 
-<div class="content container-fluid">
-    <!-- ATTENDANCE -->
+<div class="content container-fluid pb-0">
+
     <div class="row">
         <div class="col-md-12">
-            <div class="welcome-box">
-                <div class="welcome-img">
-                    <img alt="" src="{{ asset('images/' . Auth::user()->image) }}">
-                </div>
-                <div class="welcome-det">
-                    <h3>Hi, {{ Auth::user()->name }}</h3>
-                    <p>{{ date('l, j F Y') }}</p>
-                </div>
+            <div class="employee-alert-box">
+
             </div>
         </div>
     </div>
 
     <div class="row">
-        <div class="col-md-4">
-            <div class="card punch-status">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        Timesheet
-                        <small class="text-muted" id="clock"></small>
-                    </h5>
-                    <div class="punch-det">
-                        @if (session('success'))
-                        <div class="alert alert-success">
-                            {{ session("success") }}
-                        </div>
-                        @elseif (session('error'))
-                        <div class="alert alert-danger">
-                            {{ session("error") }}
-                        </div>
-                        @else
+        <div class="col-xxl-8 col-lg-12 col-md-12">
+            <div class="row">
 
-                        <p>Welcome to One JAF!</p>
-                        @endif
-                    </div>
-                    <div class="punch-info">
-                        <div class="punch-hours">
-                            @if($latest && $latest->date ===
-                            now()->format('Y-m-d'))
-                            <span>{{ $latest->timeTotal }}</span>
-                            @else
-                            <span>Total Time</span>
-                            @endif
-                        </div>
-                    </div>
-
-                    <!-- Attendance -->
-
-                    <!-- Time In -->
-                    <div class="punch-btn-container">
-                        <form action="{{ url('manager/dashboard') }}" method="POST">
-                            @csrf
-                            <div class="punch-btn-section">
-                                <button type="submit" class="btn1">
-                                    Clock In
-                                </button>
-                            </div>
-                        </form>
-
-                        <!-- Break Buttons -->
-
-                        <form action="{{ url('manager/dashboard/breakin/') }}" method="POST">
-                            @csrf @method('PUT')
-                            <div class="punch-btn-section">
-                                <button class="btn2" type="submit" id="startButton">
-                                    Start Break
-                                </button>
-                            </div>
-                        </form>
-
-                        <form action="{{ url('manager/dashboard/breakout/') }}" method="POST">
-                            @csrf @method('PUT')
-                            <div class="punch-btn-section">
-                                <button class="btn1" type="submit" id="resetButton">
-                                    End Break
-                                </button>
-                            </div>
-                        </form>
-
-                        <!-- Time Out -->
-                        <div class="punch-btn-section">
-                            <button type="submit" class="btn2" data-toggle="modal" data-target="#exampleModal">
-                                Clock Out
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Modal -->
-                    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
-                        aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel">
-                                        Warning!
-                                    </h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
+                <div class="col-lg-6 col-md-12">
+                    <div class="card employee-welcome-card flex-fill">
+                        <div class="card-body">
+                            <div class="welcome-info">
+                                <div class="welcome-content">
+                                    <h4> Welcome, {{ Auth::user()->fName }} {{ Auth::user()->lName }}</h4>
+                                    <p>You have <span>{{ auth()->user()->unreadNotifications->count() }}
+                                            notifications</span> today,</p>
                                 </div>
-                                <div class="modal-body">
-                                    Are you sure you want to time out?
+                                <div class="welcome-img">
+                                    <img src="{{ Auth::user()->image ? asset('images/' . Auth::user()->image) : asset('images/default.png') }}"
+                                        class="img-fluid" alt="User">
                                 </div>
-                                <div class="modal-footer">
-                                    <form action="{{ url('manager/dashboard/') }}" method="POST">
-                                        @csrf @method('PUT')
-                                        <button type="submit" class="btn btn-primary">
-                                            Yes
-                                        </button>
+                            </div>
+                            <div class="welcome-btn">
+                                <a href="{{ url('manager/profile') }}" class="btn">View Profile</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card flex-fill">
+                        <div class="card-body">
+                            <div class="statistic-header">
+                                <h4>Statistics</h4>
+                                <div class="dropdown statistic-dropdown">
+
+                                    <a class="text-muted" id="clock">
+
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-end">
+                                        <a href="javascript:void(0);" class="dropdown-item">
+                                            Week
+                                        </a>
+                                        <a href="javascript:void(0);" class="dropdown-item">
+                                            Month
+                                        </a>
+                                        <a href="javascript:void(0);" class="dropdown-item">
+                                            Year
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="clock-in-info">
+                                <div class="clock-in-content">
+                                    <p>Work Time</p>
+                                    <h4> @if($latest && $latest->date ===
+                                        now()->format('Y-m-d'))
+                                        <span>{{ $latest->timeTotal }}</span>
+                                        @else
+                                        <span>00:00:00</span>
+                                        @endif</h4>
+                                </div>
+                                <div class="clock-in-btn">
+                                    <form action="{{ url('manager/dashboard') }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="btn btn-danger">Clock-In</button>
                                     </form>
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                                        No
+                                </div>
+
+                                <div class="clock-in-btn">
+                                    <button type="submit" class="btn btn-outline-danger" data-toggle="modal"
+                                        data-target="#exampleModal">
+                                        Clock Out
                                     </button>
                                 </div>
+
+                                <!--Clock Out Modal -->
+                                <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
+                                    aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="exampleModalLabel">
+                                                    Warning!
+                                                </h5>
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                    aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                Are you sure you want to time out?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <form action="{{ url('manager/dashboard/') }}" method="POST">
+                                                    @csrf @method('PUT')
+                                                    <button type="submit" class="btn btn-primary">
+                                                        Yes
+                                                    </button>
+                                                </form>
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                    No
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Clock Out Modal -->
+                            </div>
+                            <div class="clock-in-list">
+                                <ul class="nav">
+                                    <form action="{{ url('manager/dashboard/breakin/') }}" method="POST">
+                                        @csrf @method('PUT')
+                                        <div class="clock-in-btn">
+                                            <button type="submit" class="btn btn-danger btn-sm" id="startButton">Start
+                                                Break</button>
+                                        </div>
+                                    </form>
+                                    <form action="{{ url('manager/dashboard/breakout/') }}" method="POST">
+                                        @csrf @method('PUT')
+                                        <div class="clock-in-btn">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                id="resetButton">End
+                                                Break</button>
+                                        </div>
+                                    </form>
+                                    <li>
+                                        <p>Break Timer</p>
+                                        <h6 id="countdown">01:00:00</h6>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="view-attendance">
+                                <a href="#">
+                                    View Attendance <i class="fa-solid fa-arrow-right"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
-                    <!-- Modal -->
-                    <div class="statistics">
-                        <div class="row">
-                            <div class="col-md-6 col-6 text-center">
-                                <div class="stats-box">
-                                    <p>Break</p>
-                                    <h6>1 hr</h6>
+                </div>
+                <div class="col-lg-6 col-md-12">
+                    <div class="card flex-fill">
+                        <div class="card-body">
+                            <div class="statistic-header">
+                                <h4>Attendance &amp; Leaves</h4>
+                                <div class="dropdown statistic-dropdown">
+                                    <a class="dropdown-toggle" data-bs-toggle="dropdown" href="javascript:void(0);"
+                                        aria-expanded="false">
+                                        2024
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-end" style="">
+                                        <a href="javascript:void(0);" class="dropdown-item">
+                                            2025
+                                        </a>
+                                        <a href="javascript:void(0);" class="dropdown-item">
+                                            2026
+                                        </a>
+                                        <a href="javascript:void(0);" class="dropdown-item">
+                                            2027
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-6 col-6 text-center">
-                                <div class="stats-box">
-                                    <p>Break Timer</p>
-                                    <h6 id="countdown">01:00:00</h6>
+                            <div class="attendance-list">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="attendance-details">
+                                            <h4 class="text-primary">
+                                                {{ Auth::user()->vacLeave + Auth::user()->sickLeave + Auth::user()->bdayLeave }}
+                                            </h4>
+                                            <p>Total Leaves</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="attendance-details">
+                                            <h4 class="text-pink">{{ $leaveApproved }}</h4>
+                                            <p>Leaves Taken</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="attendance-details">
+                                            <h4 class="text-success">{{ $leavePending }}</h4>
+                                            <p>Pending Approval</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="attendance-details">
+                                            <h4 class="text-purple">{{ Auth::user()->vacLeave }}</h4>
+                                            <p>Vacation Leave</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="attendance-details">
+                                            <h4 class="text-info">{{ Auth::user()->sickLeave }}</h4>
+                                            <p>Sick <br>Leave</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="attendance-details">
+                                            <h4 class="text-danger">{{ Auth::user()->bdayLeave }}</h4>
+                                            <p>Birthday Leave</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="view-attendance">
+                                <a href="{{ url('manager/leave') }}">
+                                    Apply Leave <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card info-card flex-fill">
+                        <div class="card-body">
+                            <h4 class="holiday-title">Upcoming Holidays</h4>
+                            <div class="holiday-details">
+                                <div class="holiday-calendar">
+                                    <div class="holiday-calendar-icon">
+                                        <i class="fa-solid fa-calendar-days" style="color:white; font-size: 30px;"></i>
+                                    </div>
+                                    <div class="holiday-calendar-content">
+                                        @if($nearestHoliday)
+                                        <h6>{{ $nearestHoliday->title }}</h6>
+                                        <p>{{ $nearestHoliday->holidayDay }} {{ $nearestHoliday->holidayDate }}</p>
+                                        @else
+                                        <h6>No Holiday Set</h6>
+                                        <p>No data found.</p>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="holiday-btn">
+
                                 </div>
                             </div>
                         </div>
@@ -144,55 +280,9 @@
 
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card att-statistics">
-                <div class="card-body">
-                    <h5 class="card-title">Employee Info</h5>
-                    <div class="stats-list">
-                        <div class="stats-info">
-                            <p>
-                                Name
-                                <strong>{{ Auth::user()->lName }}, {{ Auth::user()->fName }} {{ Auth::user()->mName }}
-                                    ({{ Auth::user()->name }})</strong>
-                            </p>
-                        </div>
-                        <div class="stats-info">
-                            <p>
-                                Employee ID
-                                <strong>{{ Auth::user()->empNumber }}</strong>
-                            </p>
-                        </div>
-                        <div class="stats-info">
-                            <p>
-                                Email
-                                <strong>{{ Auth::user()->email }}</strong>
-                            </p>
-                        </div>
-                        <div class="stats-info">
-                            <p>
-                                Position
-                                <strong>{{ Auth::user()->position }}</strong>
-                            </p>
-                        </div>
-                        <div class="stats-info">
-                            <p>
-                                Reporting to
-                                @if ($supervisor === 'Management')
 
-                                <strong>Management</strong>
-                                @elseif ($supervisor)
-                                <strong>{{ $supervisor->name }}</strong>
-                                @else
-                                <strong>No supervisor assigned for this department.</strong>
-                                @endif
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card recent-activity">
+        <div class="col-xxl-4 col-lg-12 col-md-12 d-flex">
+            <div class="card flex-fill recent-activity">
                 <div class="card-body">
                     <h5 class="card-title">Today's Activity</h5>
                     <ul class="res-activity-list">
@@ -231,11 +321,12 @@
                         </li>
                         @endif @endif
                     </ul>
+
                 </div>
             </div>
         </div>
+
     </div>
-    <!--/ATTENDANCE -->
 
     <!-- CALENDAR RECORD -->
 
@@ -243,155 +334,304 @@
         <div class="calendar-container">
             <div class="calendar-header">
                 <div class="filter-controls">
-                    <div class="form-group form-focus select-focus">
-                        <select class="select floating" id="monthSelect">
-                            <option value="0">December - January 1st Cut-off</option>
-                            <option value="1">January 2nd Cut-off</option>
-                            <option value="2">January - February 1st Cut-off</option>
-                            <option value="3">February 2nd Cut-off</option>
-                            <option value="4">February - March 1st Cut-off</option>
-                            <option value="5">March 2nd Cut-off</option>
-                            <option value="6">March - April 1st Cut-off</option>
-                            <option value="7">April 2nd Cut-off</option>
-                            <option value="8">April - May 1st Cut-off</option>
-                            <option value="9">May 2nd Cut-off</option>
-                            <option value="10">May - June 1st Cut-off</option>
-                            <option value="11">June 2nd Cut-off</option>
-                            <option value="12">June - July 1st Cut-off</option>
-                            <option value="13">July 2nd Cut-off</option>
-                            <option value="14">July - August 1st Cut-off</option>
-                            <option value="15">August 2nd Cut-off</option>
-                            <option value="16">August - September 1st Cut-off</option>
-                            <option value="17">September 2nd Cut-off</option>
-                            <option value="18">September - October 1st Cut-off</option>
-                            <option value="19">October 2nd Cut-off</option>
-                            <option value="20">October - November 1st Cut-off</option>
-                            <option value="21">November 2nd Cut-off</option>
-                            <option value="22">November - December 1st Cut-off</option>
-                            <option value="23">December 2nd Cut-off</option>
-                        </select>
-                        <label class="focus-label">Cut-off Period</label>
+                    <div class="row">
+                        <!-- Cut-off Period Select -->
+                        <div class="col-12 col-md-6 mb-3">
+                            <div class="form-group form-focus select-focus">
+                                <select class="select floating" id="monthSelect">
+                                    <option value="0">December - January 1st Cut-off</option>
+                                    <option value="1">January 2nd Cut-off</option>
+                                    <option value="2">January - February 1st Cut-off</option>
+                                    <option value="3">February 2nd Cut-off</option>
+                                    <option value="4">February - March 1st Cut-off</option>
+                                    <option value="5">March 2nd Cut-off</option>
+                                    <option value="6">March - April 1st Cut-off</option>
+                                    <option value="7">April 2nd Cut-off</option>
+                                    <option value="8">April - May 1st Cut-off</option>
+                                    <option value="9">May 2nd Cut-off</option>
+                                    <option value="10">May - June 1st Cut-off</option>
+                                    <option value="11">June 2nd Cut-off</option>
+                                    <option value="12">June - July 1st Cut-off</option>
+                                    <option value="13">July 2nd Cut-off</option>
+                                    <option value="14">July - August 1st Cut-off</option>
+                                    <option value="15">August 2nd Cut-off</option>
+                                    <option value="16">August - September 1st Cut-off</option>
+                                    <option value="17">September 2nd Cut-off</option>
+                                    <option value="18">September - October 1st Cut-off</option>
+                                    <option value="19">October 2nd Cut-off</option>
+                                    <option value="20">October - November 1st Cut-off</option>
+                                    <option value="21">November 2nd Cut-off</option>
+                                    <option value="22">November - December 1st Cut-off</option>
+                                    <option value="23">December 2nd Cut-off</option>
+                                </select>
+                                <label class="focus-label">Cut-off Period</label>
+                            </div>
+                        </div>
+
+                        <!-- Year Select -->
+                        <div class="col-12 col-md-6 mb-3">
+                            <div class="form-group form-focus select-focus">
+                                <select name="" id="yearSelect" class="select floating">
+                                    <option value="2023">2023</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2025">2025</option>
+                                    <option value="2026">2026</option>
+                                </select>
+                                <label class="focus-label">Year</label>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group form-focus select-focus">
-                        <select name="" id="yearSelect" class="select floating">
-                            <option value="2023">2023</option>
-                            <option value="2024">2024</option>
-                            <option value="2025">2025</option>
-                            <option value="2026">2026</option>
-                        </select>
-                        <label class="focus-label">Year</label>
+
+                    <!-- Buttons -->
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3 text-center text-md-left">
+                            <button id="searchButton" class="btn btn-danger">Search</button>
+                        </div>
+                        <div class="col-12 col-md-6 mb-3 text-center text-md-left">
+                            <button id="saveButton" class="btn btn-outline-danger">Send</button>
+                        </div>
                     </div>
-                    <button id="searchButton" class="btn btn-danger">Search</button>
-                    <button id="saveButton" class="btn btn-outline-danger">Send</button>
                 </div>
             </div>
             <div id="calendar"></div>
         </div>
     </div>
 
+
+
     <!-- /Calendar Record -->
-
-
-    <!-- Employee Tabs -->
-
     <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-body">
-                    <h4 class="card-title"></h4>
-                    <ul class="nav nav-tabs nav-tabs-top">
-                        <li class="nav-item"><a class="nav-link active" href="#top-tab1" data-toggle="tab">Employement
-                                Record</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#top-tab2" data-toggle="tab">Salary Record</a>
-                        </li>
-                    </ul>
-                    <div class="tab-content">
-                        <div class="tab-pane show active" id="top-tab1">
-                            <div class="col-lg-12">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h4 class="card-title mb-0">Employment Record</h4>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="table-responsive">
-                                            <table class="table table-nowrap mb-0">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Name</th>
-                                                        <th>Hired Date</th>
-                                                        <th>Job Title</th>
-                                                        <th>Department</th>
-                                                        <th>Location</th>
-                                                    </tr>
-                                                </thead>
-                                                @foreach ($record as $rec)
-                                                <tbody>
-                                                    <tr>
-                                                        <td>{{ $rec->name }}</td>
-                                                        <td>{{ $rec->hiredDate }}</td>
-                                                        <td>{{ $rec->jobTitle }}</td>
-                                                        <td>{{ $rec->department }}</td>
-                                                        <td>{{ $rec->location }}</td>
-                                                    </tr>
-                                                </tbody>
-                                                @endforeach
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tab-pane" id="top-tab2">
-                            <div class="col-lg-12">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h4 class="card-title mb-0">Salary Record</h4>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="table-responsive">
-                                            <table class="table table-nowrap mb-0">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Name</th>
-                                                        <th>Annual Salary</th>
-                                                        <th>Salary Frequency Monthly</th>
-                                                        <th>Salary Rate</th>
-                                                        <th>Currency</th>
-                                                        <th>Proposal Reason</th>
-                                                    </tr>
-                                                </thead>
-                                                @foreach ($salrecord as $sal)
-                                                <tbody>
-                                                    <tr>
-                                                        <td>{{ $sal->name }}</td>
-                                                        <td>{{ $sal->annSalary }}</td>
-                                                        <td>{{ $sal->salFreqMonthly }}</td>
-                                                        <td>{{ $sal->salRate }}</td>
-                                                        <td>{{ $sal->currency }}</td>
-                                                        <td>{{ $sal->proposalReason }}</td>
-                                                    </tr>
-                                                </tbody>
-                                                @endforeach
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
+        <div class="col-xl-6 col-md-12 d-flex">
+            <div class="card employee-month-card flex-fill">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-lg-9 col-md-12">
+                            <div class="employee-month-details">
+                                <h4>Employee of the month</h4>
+                                <p>We are really proud of the difference you have made which gives everybody the reason
+                                    to
+                                    applaud &amp; appreciate</p>
+                            </div>
+                            <div class="employee-month-content">
+                                <h6><strong>Congrats, Hanna</strong></h6>
+                                <p>UI/UX Team Lead</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-12">
+                            <div class="employee-month-img">
+                                <img src="https://smarthr.dreamstechnologies.com/laravel/template/public/assets/img/employee-img.png"
+                                    class="img-fluid" alt="User">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
+
+        <div class="col-xl-6 col-md-12 d-flex">
+            <div class="card flex-fill">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-sm-8">
+                            <div class="statistic-header">
+                                <h4>Company Policy</h4>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 text-sm-end">
+                            <div class="owl-nav company-nav nav-control"><button type="button" role="presentation"
+                                    class="owl-prev"><i class="fa-solid fa-chevron-left"></i></button><button
+                                    type="button" role="presentation" class="owl-next"><i
+                                        class="fa-solid fa-chevron-right"></i></button></div>
+                        </div>
+                    </div>
+                    <div class="company-slider owl-carousel owl-loaded owl-drag">
+
+                        <div class="owl-stage-outer">
+                            <div class="owl-stage"
+                                style="transform: translate3d(-570px, 0px, 0px); transition: all; width: 1998px;">
+                                <div class="owl-item cloned" style="width: 265.3px; margin-right: 20px;">
+                                    <div class="company-grid company-soft-success">
+                                        <div class="company-top">
+                                            <div class="company-icon">
+                                                <span class="company-icon-success rounded-circle">EP</span>
+                                            </div>
+                                            <div class="company-link">
+                                                <a
+                                                    href="https://smarthr.dreamstechnologies.com/laravel/template/public/companies">Employer
+                                                    Policy</a>
+                                            </div>
+                                        </div>
+                                        <div class="company-bottom d-flex">
+                                            <ul>
+                                                <li>Policy Name : Parking</li>
+                                                <li>Updated on : 25 Jan 2024</li>
+                                            </ul>
+                                            <div class="company-bottom-links">
+                                                <a href="#"><i class="la la-download"></i></a>
+                                                <a href="#"><i class="la la-eye"></i></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="owl-item cloned" style="width: 265.3px; margin-right: 20px;">
+                                    <div class="company-grid company-soft-info">
+                                        <div class="company-top">
+                                            <div class="company-icon">
+                                                <span class="company-icon-info rounded-circle">LP</span>
+                                            </div>
+                                            <div class="company-link">
+                                                <a
+                                                    href="https://smarthr.dreamstechnologies.com/laravel/template/public/companies">Leave
+                                                    Policy</a>
+                                            </div>
+                                        </div>
+                                        <div class="company-bottom d-flex">
+                                            <ul>
+                                                <li>Policy Name : Annual Leave</li>
+                                                <li>Updated on : 25 Jan 2023</li>
+                                            </ul>
+                                            <div class="company-bottom-links">
+                                                <a href="#"><i class="la la-download"></i></a>
+                                                <a href="#"><i class="la la-eye"></i></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="owl-item active" style="width: 265.3px; margin-right: 20px;">
+                                    <div class="company-grid company-soft-tertiary">
+                                        <div class="company-top">
+                                            <div class="company-icon">
+                                                <span class="company-icon-tertiary rounded-circle">HR</span>
+                                            </div>
+                                            <div class="company-link">
+                                                <a
+                                                    href="https://smarthr.dreamstechnologies.com/laravel/template/public/companies">HR
+                                                    Policy</a>
+                                            </div>
+                                        </div>
+                                        <div class="company-bottom d-flex">
+                                            <ul>
+                                                <li>Policy Name : Work policy</li>
+                                                <li>Updated on : Today</li>
+                                            </ul>
+                                            <div class="company-bottom-links">
+                                                <a href="#"><i class="la la-download"></i></a>
+                                                <a href="#"><i class="la la-eye"></i></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="owl-item active" style="width: 265.3px; margin-right: 20px;">
+                                    <div class="company-grid company-soft-success">
+                                        <div class="company-top">
+                                            <div class="company-icon">
+                                                <span class="company-icon-success rounded-circle">EP</span>
+                                            </div>
+                                            <div class="company-link">
+                                                <a
+                                                    href="https://smarthr.dreamstechnologies.com/laravel/template/public/companies">Employer
+                                                    Policy</a>
+                                            </div>
+                                        </div>
+                                        <div class="company-bottom d-flex">
+                                            <ul>
+                                                <li>Policy Name : Parking</li>
+                                                <li>Updated on : 25 Jan 2024</li>
+                                            </ul>
+                                            <div class="company-bottom-links">
+                                                <a href="#"><i class="la la-download"></i></a>
+                                                <a href="#"><i class="la la-eye"></i></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="owl-item" style="width: 265.3px; margin-right: 20px;">
+                                    <div class="company-grid company-soft-info">
+                                        <div class="company-top">
+                                            <div class="company-icon">
+                                                <span class="company-icon-info rounded-circle">LP</span>
+                                            </div>
+                                            <div class="company-link">
+                                                <a
+                                                    href="https://smarthr.dreamstechnologies.com/laravel/template/public/companies">Leave
+                                                    Policy</a>
+                                            </div>
+                                        </div>
+                                        <div class="company-bottom d-flex">
+                                            <ul>
+                                                <li>Policy Name : Annual Leave</li>
+                                                <li>Updated on : 25 Jan 2023</li>
+                                            </ul>
+                                            <div class="company-bottom-links">
+                                                <a href="#"><i class="la la-download"></i></a>
+                                                <a href="#"><i class="la la-eye"></i></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="owl-item cloned" style="width: 265.3px; margin-right: 20px;">
+                                    <div class="company-grid company-soft-tertiary">
+                                        <div class="company-top">
+                                            <div class="company-icon">
+                                                <span class="company-icon-tertiary rounded-circle">HR</span>
+                                            </div>
+                                            <div class="company-link">
+                                                <a
+                                                    href="https://smarthr.dreamstechnologies.com/laravel/template/public/companies">HR
+                                                    Policy</a>
+                                            </div>
+                                        </div>
+                                        <div class="company-bottom d-flex">
+                                            <ul>
+                                                <li>Policy Name : Work policy</li>
+                                                <li>Updated on : Today</li>
+                                            </ul>
+                                            <div class="company-bottom-links">
+                                                <a href="#"><i class="la la-download"></i></a>
+                                                <a href="#"><i class="la la-eye"></i></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="owl-item cloned" style="width: 265.3px; margin-right: 20px;">
+                                    <div class="company-grid company-soft-success">
+                                        <div class="company-top">
+                                            <div class="company-icon">
+                                                <span class="company-icon-success rounded-circle">EP</span>
+                                            </div>
+                                            <div class="company-link">
+                                                <a
+                                                    href="https://smarthr.dreamstechnologies.com/laravel/template/public/companies">Employer
+                                                    Policy</a>
+                                            </div>
+                                        </div>
+                                        <div class="company-bottom d-flex">
+                                            <ul>
+                                                <li>Policy Name : Parking</li>
+                                                <li>Updated on : 25 Jan 2024</li>
+                                            </ul>
+                                            <div class="company-bottom-links">
+                                                <a href="#"><i class="la la-download"></i></a>
+                                                <a href="#"><i class="la la-eye"></i></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="owl-dots disabled"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
-
-    <!-- /Employee Tabs -->
-
 </div>
 
-
-
 @endsection
+
 
 @section('scripts')
 
@@ -428,8 +668,8 @@
         const yearSelect = document.getElementById('yearSelect');
         const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const monthNames = [
-            'January', 'February', 'March', 'April', 'May', 'June',
-            'July', 'August', 'September', 'October', 'November', 'December'
+            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'June',
+            'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'
         ];
 
         const holidays = {
@@ -648,6 +888,9 @@
             totalBox.innerText =
                 `Total Worked Hours: ${totalWorkedFormatted}\nTotal Late: ${totalLateFormatted}\nUnpaid Leave: ${unpaidLeaveCount}\nVacation Leave: ${vacationLeaveCount}\nSick Leave: ${sickLeaveCount}\nBirthday Leave: ${bdayLeaveCount}\nStatus: ${status}`;
             calendar.appendChild(totalBox);
+
+
+
         }
 
         function checkHoliday(date) {
@@ -978,7 +1221,7 @@
             const now = new Date().getTime();
             const timeRemaining = Math.max(Math.floor((endTime - now) / 1000), 0);
 
-            countdownElement.textContent = `Time remaining: ${formatTime(timeRemaining)}`;
+            countdownElement.textContent = `${formatTime(timeRemaining)}`;
 
             if (timeRemaining > 0) {
                 setTimeout(updateCountdown, 1000);
@@ -1020,7 +1263,7 @@
     resetButton.addEventListener('click', function () {
         localStorage.removeItem(countdownKey);
         localStorage.removeItem(lastStartKey);
-        countdownElement.textContent = "Time remaining: 1:00:00";
+        countdownElement.textContent = "1:00:00";
     });
 
     // Initialize the countdown if it's already set
@@ -1038,6 +1281,57 @@
     setTimeout(refreshPage, 1800000); // 30 minutes = 1800000 milliseconds
 
 </script>
+
+@if (session('success'))
+<script>
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "newestOnTop": false,
+        "progressBar": true,
+        "positionClass": "toast-top-right", // Or any position you prefer
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000", // 5 seconds
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    }
+    toastr.success("{{ session('success') }}");
+
+</script>
+@endif
+
+@if (session('error'))
+<script>
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "newestOnTop": false,
+        "progressBar": true,
+        "positionClass": "toast-top-right", // Or any position you prefer
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000", // 5 seconds
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    }
+    toastr.error("{{ session('error') }}");
+
+</script>
+@endif
+
+
+
 
 
 @endsection
