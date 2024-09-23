@@ -108,7 +108,7 @@
                 </div>
             </div>
             <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
-                <button type="submit" class="btn btn-success btn-block">Search</button>
+                <button type="submit" class="btn btn-danger btn-block">Search</button>
             </div>
         </div>
     </form>
@@ -126,6 +126,7 @@
                             <th>To</th>
                             <th>No of Days</th>
                             <th>Reason</th>
+                            <th>Date Requested</th>
                             <th class="text-center">Status</th>
                             <th class="text-right">Actions</th>
                         </tr>
@@ -157,6 +158,7 @@
                             <td>{{ $leave->end_date }}</td>
                             <td>{{ $leave->days }}</td>
                             <td>{{ $leave->reason }}</td>
+                            <td>{{ $leave->created_at }}</td>
                             <td class="text-center">
                                 <div class="dropdown action-label">
                                     <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#"
