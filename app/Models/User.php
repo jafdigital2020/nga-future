@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use App\Models\Salary;
 use App\Models\Payroll;
 use Carbon\CarbonInterval;
+use App\Models\Announcement;
 use App\Models\LeaveRequest;
 use App\Models\ShiftSchedule;
 use App\Models\EmployeeSalary;
@@ -247,6 +248,16 @@ class User extends Authenticatable
     public function subordinates()
     {
         return $this->hasMany(User::class, 'reporting_to');
+    }
+
+    public function announcement ()
+    {
+        return $this->hasMany(Announcement::class, 'users_id' , 'id');
+    }
+
+    public function postedBy()
+    {
+        return $this->hasMany(Announcement::class, 'posted_by');
     }
 
     public function checkIn()

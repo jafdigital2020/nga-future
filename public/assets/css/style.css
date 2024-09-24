@@ -10348,26 +10348,22 @@ ul.comment-list li ul.children {
     background-color: red;
 }
 
-
-
+@media (max-width: 767px) {
+    .header-left {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /* This ensures the logo is centered within its container */
+    }
+}
 
 @media (max-width: 767px) {
     .logoSide {
-        width: 50%;
-        /* For small devices */
+        max-width: 100%;
         margin: 0 auto;
-        /* Center the logo */
-    }
-
-    .main-drop .user-img img {
-        width: 80%;
-        /* Make user image responsive */
-        height: auto;
-        /* Maintain aspect ratio */
-        margin: 0 auto;
-        /* Center image */
     }
 }
+
 
 @media (max-width: 1024px) {
     .logoSide {
@@ -11236,12 +11232,12 @@ ul.comment-list li ul.children {
 }
 
 .notification-tab .nav-tabs li a:hover {
-    color: #FF902F;
+    color: #a70000;
 }
 
 .notification-tab .nav-tabs li a.active {
-    color: #FF902F;
-    border-bottom: 1px solid #FF902F;
+    color: #a70000;
+    border-bottom: 1px solid #a70000;
 }
 
 .notification-tab .nav-tabs li a i {
@@ -11251,6 +11247,10 @@ ul.comment-list li ul.children {
 
 .notification-tab .tab-content {
     padding-top: 0;
+}
+
+.employee-notification-list {
+    padding: 0;
 }
 
 .employee-noti-content .employee-notification-list .employee-notification-grid {
@@ -11315,6 +11315,7 @@ ul.comment-list li ul.children {
     color: #7A7C7F;
     padding-right: 5px;
     position: relative;
+    padding: 0;
 }
 
 .employee-noti-content .employee-notification-list .employee-notification-grid .employee-notification-content .nav li:last-child {

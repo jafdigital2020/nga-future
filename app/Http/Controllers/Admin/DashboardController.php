@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Models\User;
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
+use App\Models\SettingsHoliday;
 use App\Models\EmploymentRecord;
 use App\Models\EmployementSalary;
 use App\Models\ApprovedAttendance;
@@ -158,11 +159,24 @@ class DashboardController extends Controller
         
         $today = now()->format('Y-m-d');
 
+        $todayH = Carbon::today();
+
+        // Fetch total late statuses for today
+        $totalLateToday = EmployeeAttendance::whereDate('date', today())
+        ->where('status', 'Late') // Assuming the column is named `status` and holds the value 'Late'
+        ->count();
+    
+        // Get the nearest holiday after or equal to today
+        $nearestHoliday = SettingsHoliday::where('holidayDate', '>=', $todayH)
+                                          ->orderBy('holidayDate', 'asc')
+                                          ->first();
+
         $hasTimeIn = $user->employeeAttendance()->whereDate('date', $today)->exists();
         $hasBreakOut = $user->employeeAttendance()->whereDate('date', $today)->whereNotNull('breakOut')->exists();
         $hasBreakIn = $user->employeeAttendance()->whereDate('date', $today)->whereNotNull('breakIn')->exists();
         
         return view('admin.dashboard', compact(
+        'nearestHoliday',
         'user', 
         'empatt', 
         'all', 
@@ -187,6 +201,7 @@ class DashboardController extends Controller
         'hasBreakIn',
         'newUsersThisMonth',
         'percentageIncrease',
+        'totalLateToday',
         ));
     }
 

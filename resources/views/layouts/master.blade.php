@@ -26,30 +26,28 @@
     <link href="{{ asset('assets/css/line-awesome.min.css') }}" rel="stylesheet" />
     <!-- Chart CSS -->
     <link href="{{ asset('assets/plugins/morris/morris.css') }}" rel="stylesheet" />
-    <!-- Main CSS -->
-    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" />
-
-
     <!----FAVICON---->
     <link rel="icon" href="{{ url('assets/img/jaffavicon.png') }}" />
-
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="{{
                 asset('assets/fontawesome-free-6.4.0-web/css/all.min.css')
             }}" />
-
+    <!-- Line Awesome -->
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-
     <!-- Select2 CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/select2.min.css') }}" />
-
     <!-- Datetimepicker CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/bootstrap-datetimepicker.min.css') }}" />
-
     <!-- Datatable CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/dataTables.bootstrap4.min.css') }}" />
-
+    <!-- New -->
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/feather2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/ow.carousel.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/material.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/feather.css') }}" />
     @stack('styles')
 </head>
 
@@ -84,21 +82,7 @@
             <a id="mobile_btn" class="mobile_btn" href="#sidebar"><i class="fa fa-bars"></i></a>
             <!-- Header Menu -->
             <ul class="nav user-menu">
-                <!-- Search -->
-                <li class="nav-item">
-                    <div class="top-nav-search">
-                        <a href="javascript:void(0);" class="responsive-search">
-                            <i class="fa fa-search"></i>
-                        </a>
-                        <form action="search.html">
-                            <input class="form-control" type="text" placeholder="Search here" />
-                            <button class="btn" type="submit">
-                                <i class="fa fa-search"></i>
-                            </button>
-                        </form>
-                    </div>
-                </li>
-                <!-- /Search -->
+
 
                 <!-- Notifications -->
                 <li class="nav-item dropdown">
@@ -418,7 +402,7 @@
 
                             </ul>
                         </li>
-                        <li>
+                        <!-- <li>
                             <a href="policies.html"><i class="la la-file-pdf-o"></i>
                                 <span>Policies</span></a>
                         </li>
@@ -463,7 +447,7 @@
                                 <li><a href="budget-expenses.html">Budget Expenses</a></li>
                                 <li><a href="budget-revenues.html">Budget Revenues</a></li>
                             </ul>
-                        </li>
+                        </li> -->
 
                     </ul>
                 </div>
@@ -529,7 +513,7 @@
     <!-- Place jsPDF and any related scripts before the closing body tag -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
     @yield('scripts')
     <script>
