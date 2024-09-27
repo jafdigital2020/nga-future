@@ -1,5 +1,6 @@
 @extends('layouts.empmaster') @section('title', 'Dashboard')
 <meta name="csrf-token" content="{{ csrf_token() }}">
+
 <style>
     .clock-in-btn {
         display: inline-block;
@@ -101,9 +102,13 @@
                                         @endif</h4>
                                 </div>
                                 <div class="clock-in-btn">
-                                    <form action="{{ url('emp/dashboard') }}" method="POST">
+                                    <form id="clockInForm" action="{{ url('emp/dashboard') }}" method="POST">
                                         @csrf
-                                        <button type="submit" class="btn btn-warning">Clock-In</button>
+                                        <input type="hidden" name="latitude" id="latitude">
+                                        <input type="hidden" name="longitude" id="longitude">
+                                        <input type="hidden" name="location" id="location">
+                                        <button type="button" class="btn btn-warning"
+                                            id="checkInButton">Clock-In</button>
                                     </form>
                                 </div>
 
@@ -498,6 +503,86 @@
 
 
 @section('scripts')
+
+<!-- GOOGLE MAP API -->
+<script>
+    document.getElementById("checkInButton").addEventListener("click", getLocation);
+
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition, showError, {
+                enableHighAccuracy: true, // Request high accuracy
+                timeout: 5000, // Timeout in milliseconds
+                maximumAge: 0 // Do not use a cached position
+            });
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+    }
+
+    function showPosition(position) {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+
+        // accuray meters
+        if (position.coords.accuracy > 20) {
+            alert("Location accuracy is too low. Please try again.");
+            return;
+        }
+
+        // Call the function to reverse geocode and get the address
+        getAddressFromLatLng(latitude, longitude);
+    }
+
+    function showError(error) {
+        switch (error.code) {
+            case error.PERMISSION_DENIED:
+                alert("User denied the request for Geolocation.");
+                break;
+            case error.POSITION_UNAVAILABLE:
+                alert("Location information is unavailable.");
+                break;
+            case error.TIMEOUT:
+                alert("The request to get user location timed out.");
+                break;
+            case error.UNKNOWN_ERROR:
+                alert("An unknown error occurred.");
+                break;
+        }
+    }
+
+    function getAddressFromLatLng(latitude, longitude) {
+        const apiKey = 'AIzaSyCoZSVkyGR645u4B_OOFmepLzrRBB8Hgmc'; // Your Google Maps API Key
+        const geocodeUrl =
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`;
+
+        fetch(geocodeUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "OK") {
+                    const address = data.results[0].formatted_address; // Get the formatted address
+                    console.log("Latitude: " + latitude);
+                    console.log("Longitude: " + longitude);
+                    console.log("Location: " + address);
+
+                    // Store the location data in hidden fields
+                    document.getElementById("latitude").value = latitude;
+                    document.getElementById("longitude").value = longitude;
+                    document.getElementById("location").value = address;
+
+                    // Submit the form
+                    document.getElementById("clockInForm").submit();
+                } else {
+                    console.error("Geocoding failed: " + data.status);
+                }
+            })
+            .catch(error => console.error("Error fetching address:", error));
+    }
+
+</script>
+
+
+<!-- CAROUSEL -->
 <script>
     $(document).ready(function () {
         // Initialize the Owl Carousel
@@ -520,6 +605,7 @@
 
 </script>
 
+<!-- POLICY DOWNLOAD -->
 <script>
     function downloadPolicy(url) {
         if (url) {
@@ -531,6 +617,7 @@
 
 </script>
 
+<!-- TIME -->
 <script>
     function startTime() {
         const today = new Date();
@@ -555,6 +642,7 @@
 
 </script>
 
+<!-- CALENDAR -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const calendar = document.getElementById('calendar');
@@ -1012,6 +1100,7 @@
 
 </script>
 
+<!-- TIMER COUNTDOWN -->
 <script>
     const countdownElement = document.getElementById('countdown');
     const startButton = document.getElementById('startButton');
@@ -1082,6 +1171,7 @@
 
 </script>
 
+<!-- PAGE REFRESH -->
 <script>
     // Function to refresh the page
     function refreshPage() {
@@ -1093,6 +1183,7 @@
 
 </script>
 
+<!-- TOASTR ALERT NOTIFICATIONS -->
 @if (session('success'))
 <script>
     toastr.options = {

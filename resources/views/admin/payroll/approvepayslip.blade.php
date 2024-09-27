@@ -133,13 +133,27 @@
     </form>
     <!-- /Search Filter -->
 
+    <div class="d-flex align-items-center mb-3">
+        <div class="me-2">
+
+            <select id="bulk-action-dropdown" class="select floating">
+                <option value="" disabled selected>Select Bulk Action</option>
+                <option value="Payslip">Generate</option>
+            </select>
+        </div>
+        <div>
+            <button type="button" id="apply-bulk-action" class="btn btn-primary btn-sm">Apply</button>
+        </div>
+    </div>
+
 
     <div class="row">
         <div class="col-md-12">
             <div class="table-responsive">
-                <table class="table table-hover table-nowrap mb-0 datatable">
+                <table class="table table-hover table-nowrap mb-0">
                     <thead class="thead-light">
                         <tr>
+                            <th><input type="checkbox" name="" id="select_all_ids"></th>
                             <th>Employee</th>
                             <th>Department</th>
                             <th>From</th>
@@ -154,6 +168,8 @@
                     <tbody>
                         @foreach ($payslip as $pay)
                         <tr>
+                            <td><input type="checkbox" name="ids" class="checkbox_ids" id="" value="{{ $pay->id }}">
+                            </td>
                             <td>
                                 <h2 class="table-avatar">
                                     <a href="{{ url('hr/employee/edit/'.$pay->user->id) }}" class="avatar">
@@ -205,5 +221,57 @@
 @endsection
 
 @section('scripts')
+
+<script>
+    // Handle select all checkbox
+    document.getElementById('select_all_ids').addEventListener('change', function () {
+        const checkboxes = document.querySelectorAll('.checkbox_ids');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+    });
+
+    // Handle bulk action
+    document.getElementById('apply-bulk-action').addEventListener('click', function () {
+        const selectedAction = document.getElementById('bulk-action-dropdown').value;
+        const selectedIds = Array.from(document.querySelectorAll('.checkbox_ids:checked')).map(checkbox =>
+            checkbox.value);
+
+        if (selectedIds.length === 0) {
+            alert('Please select at least one item to apply the action.');
+            return;
+        }
+
+        if (!selectedAction) {
+            alert('Please select a bulk action to apply.');
+            return;
+        }
+
+        // AJAX request to handle bulk action
+        fetch(`/admin/approved/generate-payslip/bulk-action`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    action: selectedAction,
+                    ids: selectedIds
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Handle response
+                if (data.success) {
+                    alert(data.message);
+                    location.reload(); // Reload the page to see changes
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    });
+
+</script>
 
 @endsection

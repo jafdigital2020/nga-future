@@ -592,4 +592,49 @@ class PayrollController extends Controller
         }
     }
 
+    public function generatePayslipBulkAction(Request $request)
+    {
+        $this->validate($request, [
+            'action' => 'required|string',
+            'ids' => 'required|array',
+            'ids.*' => 'exists:payrolls,id', // Adjust based on your database structure
+        ]);
+
+        $action = $request->input('action');
+        $ids = $request->input('ids');
+
+        $successCount = 0;
+        $errorMessages = [];
+
+        foreach ($ids as $id) {
+            $payroll = Payroll::find($id);
+
+            if (!$payroll) {
+                continue; // Skip if the payroll entry is not found
+            }
+
+            if ($action === 'Payslip') {
+                if ($payroll->status === 'Payslip') {
+                    $errorMessages[] = "Payroll ID {$id} is already generated.";
+                    continue;
+                }
+                $payroll->status = 'Payslip';
+                $payroll->save();
+                $successCount++;
+            } 
+        }
+
+        if ($successCount > 0) {
+            return response()->json([
+                'success' => true,
+                'message' => "{$successCount} payroll entries successfully updated."
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'No payroll entries were updated. ' . implode(' ', $errorMessages)
+            ]);
+        }
+    }
+
 }

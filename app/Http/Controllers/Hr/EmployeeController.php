@@ -487,12 +487,18 @@ class EmployeeController extends Controller
             // If flexible time is enabled, save this state
             if ($shift) {
                 $shift->isFlexibleTime = true;
+                $shift->shiftStart = null;
+                $shift->lateThreshold = null;
+                $shift->shiftEnd = null;
                 $shift->save();
                 Alert::success('Flexible Time Set');
             } else {
                 // Create new shift schedule with flexible time
                 $shift = new ShiftSchedule();
                 $shift->users_id = $user->id;
+                $shift->shiftStart = null;
+                $shift->lateThreshold = null;
+                $shift->shiftEnd = null;
                 $shift->isFlexibleTime = true;
                 $shift->save();
                 Alert::success('Added Schedule with Flexible Time');

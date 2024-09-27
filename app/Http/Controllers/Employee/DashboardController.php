@@ -174,7 +174,7 @@ class DashboardController extends Controller
 
     public function store(Request $request)
     {
-        $request->user()->checkIn();
+        $request->user()->checkIn($request);
 
         return redirect('/emp/dashboard');
     }

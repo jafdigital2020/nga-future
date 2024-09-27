@@ -250,16 +250,16 @@ class AttendanceApproveController extends Controller
         $employeeName = $request->get('employee_name');
         $month = $request->get('month', date('m'));
         $year = $request->get('year', date('Y'));
-        $department = $request->get('department');
         $date = $request->get('date'); // Keep single date search
         $startDate = $request->get('start_date'); 
         $endDate = $request->get('end_date'); 
-
+        $department = $request->get('department'); // Ensure this is defined
+    
         $subordinateIds = User::where('reporting_to', $user->id)->pluck('id');
     
         // Query users with their attendance records filtered by date range, specific date, and optionally department
         $usersQuery = User::whereIn('id', $subordinateIds)
-            ->with(['employeeAttendance' => function ($query) use ($startDate, $endDate, $date, $month, $year, $department) {
+            ->with(['employeeAttendance' => function ($query) use ($startDate, $endDate, $date, $month, $year) {
                 // Filter by date range if both start_date and end_date are provided
                 if ($startDate && $endDate) {
                     $query->whereBetween('date', [$startDate, $endDate]);
@@ -269,12 +269,6 @@ class AttendanceApproveController extends Controller
                 } else {
                     // Otherwise, filter by the selected month and year
                     $query->whereMonth('date', $month)->whereYear('date', $year);
-                }
-    
-                if ($department) {
-                    $query->whereHas('user', function ($query) use ($department) {
-                        $query->where('department', $department);
-                    });
                 }
             }])
             ->when($employeeName, function ($query) use ($employeeName) {
@@ -300,12 +294,14 @@ class AttendanceApproveController extends Controller
                 }
             });
         
-        // Apply department filter directly on the users query
-        if ($department) {
-            $usersQuery->where('department', $department);
-        }
-    
         $users = $usersQuery->get();
+    
+        // Apply department filter based on the fetched users
+        if ($department) {
+            $users = $users->filter(function ($user) use ($department) {
+                return $user->department == $department;
+            });
+        }
     
         // Calculate totals for filtered data
         $totalLateSeconds = 0;
@@ -355,6 +351,7 @@ class AttendanceApproveController extends Controller
             'selectedEndDate' => $endDate, // Pass the selected end date to the view
         ]);
     }
+    
 
     public function updateTableAttendance(Request $request, $id)
     {

@@ -1,4 +1,34 @@
-@extends('layouts.hrmaster') @section('title', 'Attendance') @section('content')
+@extends('layouts.hrmaster') @section('title', 'Attendance')
+
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1050;
+        padding-top: 100px;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-dialog {
+        margin: 30px auto;
+        max-width: 600px;
+    }
+
+    .modal-content {
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 5px;
+    }
+
+</style>
+
+
+@section('content')
 <div class="content container-fluid">
     <!-- Page Header -->
     <div class="page-header">
@@ -123,9 +153,11 @@
                             <th>Time In</th>
                             <th>Time Out</th>
                             <th>Status</th>
-                            <th>Edited By</th>
+                            <th>Location</th>
+                            <th>Device</th>
                             <th>Total Late</th>
                             <th>Total Hours</th>
+                            <th>Edited By</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -167,6 +199,15 @@
                                 </span>
                             </td>
                             <td>
+                                <a href="#" class="address-link" data-latitude="{{ $attendance->latitude }}"
+                                    data-longitude="{{ $attendance->longitude }}">
+                                    View Location
+                                </a>
+                            </td>
+                            <td>{{ $attendance->device }}</td>
+                            <td>{{ $attendance->totalLate }}</td>
+                            <td>{{ $attendance->timeTotal }}</td>
+                            <td>
                                 @if($attendance->edited)
                                 {{ $attendance->edited->fName ?? $attendance->edited->name }}
                                 {{ $attendance->edited->lName ?? '' }}
@@ -174,8 +215,6 @@
                                 Not Edited
                                 @endif
                             </td>
-                            <td>{{ $attendance->totalLate }}</td>
-                            <td>{{ $attendance->timeTotal }}</td>
 
                             <td class="text-right">
                                 <div class="dropdown dropdown-action">
@@ -189,7 +228,8 @@
                                             data-break_out="{{ $attendance->breakOut }}"
                                             data-time_out="{{ $attendance->timeOut }}"
                                             data-total_hours="{{ $attendance->totalHours }}"
-                                            data-total_late="{{ $attendance->totalLate }}">
+                                            data-total_late="{{ $attendance->totalLate }}"
+                                            data-device="{{ $attendance->device }}">
                                             <i class="fa fa-pencil m-r-5"></i> Edit</a>
                                         <a class="dropdown-item delete-attendance" href="#"
                                             data-id="{{ $attendance->id }}">
@@ -204,7 +244,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="6">Total</th>
+                            <th colspan="7">Total</th>
 
                             <th>{{ $totalLate }}</th>
                             <th id="total_hours">{{ $total }}</th>
@@ -215,6 +255,27 @@
         </div>
     </div>
 </div>
+
+<!-- Modal for viewing location -->
+<div id="locationModal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Location on Map</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="map" style="width: 100%; height: 400px;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <!-- Edit attendance Modal -->
 <div id="edit_attendance" class="modal custom-modal fade" role="dialog">
@@ -271,6 +332,10 @@
                         <label>Total Hours</label>
                         <input class="form-control" type="text" name="totalHours" id="totalHours">
                     </div>
+                    <div class="form-group">
+                        <label>Device</label>
+                        <input class="form-control" type="text" name="device" id="device" readonly>
+                    </div>
                     <div class="submit-section">
                         <button type="submit" class="btn btn-primary submit-btn">Update</button>
                     </div>
@@ -315,6 +380,47 @@
 @section('scripts')
 
 <script>
+    // Listen for clicks on the 'View Location' links
+    document.querySelectorAll('.address-link').forEach(link => {
+        link.addEventListener('click', function (event) {
+            event.preventDefault();
+
+            // Get the latitude and longitude from the data attributes
+            const latitude = this.getAttribute('data-latitude');
+            const longitude = this.getAttribute('data-longitude');
+
+            // Open the modal
+            $('#locationModal').modal('show');
+
+            // Initialize the map with the given latitude and longitude
+            initMap(parseFloat(latitude), parseFloat(longitude));
+        });
+    });
+
+    // Initialize Google Map inside the modal
+    function initMap(lat, lng) {
+        // Define the location
+        const location = {
+            lat: lat,
+            lng: lng
+        };
+
+        // Create the map centered at the location
+        const map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 15,
+            center: location
+        });
+
+        // Add a marker at the location
+        const marker = new google.maps.Marker({
+            position: location,
+            map: map
+        });
+    }
+
+</script>
+
+<script>
     // Edit attendance request
     $('.edit-attendance').on('click', function () {
         var attId = $(this).data('id');
@@ -325,6 +431,7 @@
         var timeOut = $(this).data('time_out');
         var totalHours = $(this).data('total_hours');
         var totalLate = $(this).data('total_late');
+        var device = $(this).data('device');
 
         if (status === 'Approved') {
             alert('This leave request has already been approved and cannot be edited.');
@@ -339,6 +446,7 @@
         $('#timeOut').val(timeOut);
         $('#totalHours').val(totalHours);
         $('#totalLate').val(totalLate);
+        $('#device').val(device);
 
         $('#editAttendanceForm').attr('action', '/hr/attendance/edit/' +
             attId);

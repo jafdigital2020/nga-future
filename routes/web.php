@@ -116,6 +116,8 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::post('policy/upload', [App\Http\Controllers\Admin\PolicyController::class, 'policyStore'])->name('admin.policy.store');
     // Checkbox Function Processed
     Route::post('processed/bulk-action', [App\Http\Controllers\Admin\PayrollController::class, 'processedBulkAction']);
+    // Checkbox Function Payslip Generate
+    Route::post('approved/generate-payslip/bulk-action', [App\Http\Controllers\Admin\PayrollController::class, 'generatePayslipBulkAction']);
     // Notifications
     Route::get('/notifications/mark-as-read/{id}', function ($id) {
         $notification = auth()->user()->notifications()->find($id);
@@ -252,6 +254,10 @@ Route::prefix('hr')->middleware(['auth','isHr', 'sessionTimeout'])->group(functi
     Route::delete('/attendance/delete/{id}', [App\Http\Controllers\Hr\HRAttendanceController::class, 'destroyTableAttendance'])->name('hr.destroyTable');
     // Fetched Holiday to Dashboard
     Route::get('/dashboard/holidays', [App\Http\Controllers\Hr\DashboardController::class, 'getHolidays'])->name('holidays.getr');
+    // Checkbox Function Processed
+    Route::post('processed/bulk-action', [App\Http\Controllers\Hr\PayrollController::class, 'processedBulkAction']);
+    // Checkbox Function Payslip Generate
+    Route::post('approved/generate-payslip/bulk-action', [App\Http\Controllers\Hr\PayrollController::class, 'generatePayslipBulkAction']);
     Route::get('/notifications/clear', function () {
         auth()->user()->notifications()->delete();
         return redirect()->back();
