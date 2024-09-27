@@ -125,7 +125,6 @@
                             <th>From</th>
                             <th>To</th>
                             <th>No of Days</th>
-                            <th>Reason</th>
                             <th>Date Requested</th>
                             <th class="text-center">Status</th>
                             <th class="text-right">Actions</th>
@@ -157,7 +156,6 @@
                             <td>{{ $leave->start_date }}</td>
                             <td>{{ $leave->end_date }}</td>
                             <td>{{ $leave->days }}</td>
-                            <td>{{ $leave->reason }}</td>
                             <td>{{ $leave->created_at }}</td>
                             <td class="text-center">
                                 <div class="dropdown action-label">
@@ -207,6 +205,11 @@
                                     <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown"
                                         aria-expanded="false"><i class="material-icons">more_vert</i></a>
                                     <div class="dropdown-menu dropdown-menu-right">
+                                        <a class="dropdown-item view-leave" href="#" data-id="{{ $leave->id }}"
+                                            data-type="{{ $leave->type }}" data-start_date="{{ $leave->start_date }}"
+                                            data-end_date="{{ $leave->end_date }}" data-days="{{ $leave->days }}"
+                                            data-reason="{{ $leave->reason }}" data-status="{{ $leave->status }}">
+                                            <i class="fa fa-eye m-r-5"></i> View</a>
                                         <a class="dropdown-item edit-leave" href="#" data-id="{{ $leave->id }}"
                                             data-type="{{ $leave->type }}" data-start_date="{{ $leave->start_date }}"
                                             data-end_date="{{ $leave->end_date }}" data-days="{{ $leave->days }}"
@@ -342,6 +345,50 @@
 </div>
 <!-- /Edit Leave Modal -->
 
+<!-- View Leave Modal -->
+<div id="view_leave" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">View Leave</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="leave_id" id="leave_id">
+                <div class="form-group">
+                    <label>Leave Type</label>
+                    <input type="text" class="form-control" name="typeview" id="typeview" readonly>
+                </div>
+                <div class="form-group">
+                    <label>From <span class="text-danger">*</span></label>
+                    <div class="cal-icon">
+                        <input class="form-control datetimepicker" type="text" name="start_dateview" id="start_dateview"
+                            readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>To <span class="text-danger">*</span></label>
+                    <div class="cal-icon">
+                        <input class="form-control datetimepicker" type="text" name="end_dateview" id="end_dateview"
+                            readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Days</label>
+                    <input class="form-control" type="text" name="daysview" id="daysview" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Reason</label>
+                    <textarea class="form-control" name="reasonview" id="reasonview" rows="7" readonly></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /View Leave Modal -->
+
 <!-- Delete Leave Modal -->
 <div class="modal custom-modal fade" id="delete_approve" role="dialog">
     <div class="modal-dialog modal-dialog-centered">
@@ -469,6 +516,26 @@
             $('#editLeaveForm').attr('action', '/hr/leave/' +
                 leaveId); // Ensure the form action URL is correct
             $('#edit_leave').modal('show');
+        });
+
+        // View leave request
+        $('.view-leave').on('click', function () {
+            var leaveId = $(this).data('id');
+            var leaveType = $(this).data('type');
+            var startDate = $(this).data('start_date');
+            var endDate = $(this).data('end_date');
+            var days = $(this).data('days');
+            var reason = $(this).data('reason');
+            var status = $(this).data('status');
+
+            $('#leave_id').val(leaveId);
+            $('#typeview').val(leaveType);
+            $('#start_dateview').val(startDate);
+            $('#end_dateview').val(endDate);
+            $('#daysview').val(days);
+            $('#reasonview').val(reason);
+
+            $('#view_leave').modal('show');
         });
 
         // Delete leave request

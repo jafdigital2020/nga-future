@@ -61,8 +61,13 @@
                 <h3>Need Help?</h3>
             </p>
             <div class='line-wh'></div>
-            <button onclick="" class='b-support' title='Forgot Password?'> Forgot Password?</button>
-            <button onclick="" class='b-support' title='Contact Support'> Contact Support</button>
+            <button onclick="window.location.href='{{ route('password.request') }}'" class='b-support'
+                title='Forgot Password?'>
+                Forgot Password?
+            </button>
+            <button class="b-support" title="Contact Support" onclick="window.location.href='https://onejaf.com/'">
+                Contact Support
+            </button>
             <div class='line-wh'></div>
         </div>
     </div>

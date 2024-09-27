@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Employee;
 
 use Carbon\Carbon;
 use App\Models\User;
+use App\Models\Policy;
+use App\Models\Announcement;
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
 use App\Models\SettingsHoliday;
@@ -89,6 +91,8 @@ class DashboardController extends Controller
         $authUserId = auth()->user()->id;
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
+        $latestAnnouncement = Announcement::latest()->first();
+        $policies = Policy::all();
     
         $leaveApproved = LeaveRequest::where('users_id', auth()->user()->id)
                                   ->where('status', 'Approved')
@@ -138,7 +142,7 @@ class DashboardController extends Controller
                                           ->orderBy('holidayDate', 'asc')
                                           ->first();
         
-        return view('emp.dashboard', compact('user', 'empatt', 'all', 'total', 'latest', 'filteredData', 'supervisor', 'record', 'salrecord', 'leaveApproved', 'leavePending', 'nearestHoliday'));
+        return view('emp.dashboard', compact('policies','user', 'empatt', 'all', 'total', 'latest', 'filteredData', 'supervisor', 'record', 'salrecord', 'leaveApproved', 'leavePending', 'nearestHoliday', 'latestAnnouncement'));
     }
     
 
@@ -290,9 +294,11 @@ class DashboardController extends Controller
         return response()->json(['status' => 'New']);
     }
 
-    public function test()
+    public function getHolidays() 
     {
-        return view('emp.test');
+        $holidays = SettingsHoliday::all();
+        
+        return response()->json($holidays);
     }
 
 }

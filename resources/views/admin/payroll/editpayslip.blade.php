@@ -352,7 +352,8 @@
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Extra Mile / Bonus</label>
                             <div class="col-lg-9">
-                                <input type="text" name="bonus" id="bonus" class="form-control">
+                                <input type="text" name="bonus" id="bonus" class="form-control"
+                                    value="{{ $pay->bonus }}">
                             </div>
                         </div>
                         <div class="form-group row">

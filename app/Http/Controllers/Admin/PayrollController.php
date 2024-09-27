@@ -425,43 +425,41 @@ class PayrollController extends Controller
 
    public function payslipView(Request $request)
    {
-
-    $employeeName = $request->input('name');
-    $department = $request->input('department');
-    $cutoffPeriod = $request->input('cutoff_period'); 
-    $selectedYear = $request->input('year', now()->year);
-
-    $data = Payroll::query();
-
-    // Apply filters independently
-    if (!empty($employeeName)) {
-        $data->where('ename', 'like', "%$employeeName%");
-    }
-
-    if (!empty($department)) {
-        $data->where('department', $department);
-    }
-
-    if (!empty($selectedYear)) {
-        $data->where('year', $selectedYear);
-    }
-
-    // Add filter for cutoff_period if provided
-    if ($cutoffPeriod) {
-        $data->where('cut_off', $cutoffPeriod); // Search the cut_off column
-    }
-
-    $payslip = $data->get();
-
-    // Add filter for status being 'Payslip'
-    $data->where('status', 'Payslip');
-
-    // Assuming you have a list of departments to pass to the view
-    $departments = User::select('department')->distinct()->get();
-
-
-        return view('admin.payroll.payslip', compact('payslip', 'departments', 'cutoffPeriod', 'selectedYear'));
+       $employeeName = $request->input('name');
+       $department = $request->input('department');
+       $cutoffPeriod = $request->input('cutoff_period'); 
+       $selectedYear = $request->input('year', now()->year);
+   
+       $data = Payroll::query();
+   
+       // Apply filters independently
+       if (!empty($employeeName)) {
+           $data->where('ename', 'like', "%$employeeName%");
+       }
+   
+       if (!empty($department)) {
+           $data->where('department', $department);
+       }
+   
+       if (!empty($selectedYear)) {
+           $data->where('year', $selectedYear);
+       }
+   
+       if (!empty($cutoffPeriod)) {
+           $data->where('cut_off', $cutoffPeriod); // Search the cut_off column
+       }
+   
+       // Add filter for status being 'Payslip'
+       $data->where('status', 'Payslip');
+   
+       $payslip = $data->get();
+   
+       // Assuming you have a list of departments to pass to the view
+       $departments = Payroll::select('department')->distinct()->get();
+   
+       return view('admin.payroll.payslip', compact('payslip', 'departments', 'cutoffPeriod', 'selectedYear'));
    }
+   
 
    public function viewPayslip($id)
    {
@@ -533,5 +531,65 @@ class PayrollController extends Controller
         return view('admin.payroll.processededit', compact('pay'));
    }
 
-   
+   public function processedBulkAction(Request $request)
+    {
+        $this->validate($request, [
+            'action' => 'required|string',
+            'ids' => 'required|array',
+            'ids.*' => 'exists:payrolls,id', // Adjust based on your database structure
+        ]);
+
+        $action = $request->input('action');
+        $ids = $request->input('ids');
+
+        $successCount = 0;
+        $errorMessages = [];
+
+        foreach ($ids as $id) {
+            $payroll = Payroll::find($id);
+
+            if (!$payroll) {
+                continue; // Skip if the payroll entry is not found
+            }
+
+            if ($action === 'Approved') {
+                if ($payroll->status === 'Approved') {
+                    $errorMessages[] = "Payroll ID {$id} is already approved.";
+                    continue;
+                }
+                $payroll->status = 'Approved';
+                $payroll->save();
+                $successCount++;
+            } elseif ($action === 'Revision') {
+                if ($payroll->status === 'Revision') {
+                    $errorMessages[] = "Payroll ID {$id} is already in revision.";
+                    continue;
+                }
+                $payroll->status = 'Revision';
+                $payroll->save();
+                $successCount++;
+            } elseif ($action === 'Declined') {
+                if ($payroll->status === 'Declined') {
+                    $errorMessages[] = "Payroll ID {$id} is already declined.";
+                    continue;
+                }
+                $payroll->status = 'Declined';
+                $payroll->save();
+                $successCount++;
+            }
+        }
+
+        if ($successCount > 0) {
+            return response()->json([
+                'success' => true,
+                'message' => "{$successCount} payroll entries successfully updated."
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'No payroll entries were updated. ' . implode(' ', $errorMessages)
+            ]);
+        }
+    }
+
 }

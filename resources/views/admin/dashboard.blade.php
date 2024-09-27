@@ -1,40 +1,6 @@
 @extends('layouts.master') @section('title', 'One JAF')
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<style>
-    .clock-in-btn {
-        display: inline-block;
-        margin-left: 10px;
-    }
 
-    .clock-in-btn form,
-    .clock-in-btn button {
-        display: inline-block;
-        margin: 0;
-    }
-
-    /* Mobile View */
-    @media (max-width: 600px) {
-        .clock-in-btn {
-            display: block;
-            /* Stack elements vertically */
-            margin-left: 0;
-            /* Remove left margin */
-            margin-bottom: 10px;
-            /* Add space between buttons */
-        }
-
-        .clock-in-btn form,
-        .clock-in-btn button {
-            display: block;
-            /* Make forms and buttons take full width */
-            width: 100%;
-            /* Full width for better accessibility */
-            margin: 0;
-            /* Reset margin */
-        }
-    }
-
-</style>
 @section('content')
 
 <div class="content container-fluid">
@@ -90,7 +56,7 @@
                             <p class="mb-0">Overall Employees: {{ $totalUsers }}</p>
                             <hr style="color:#D3D3D4;">
                             <div class="view-attendance">
-                                <a href="#">
+                                <a href="{{ url('admin/employee-grid') }}">
                                     View Employees <i class="fa-solid fa-arrow-right"></i>
                                 </a>
                             </div>
@@ -205,8 +171,8 @@
                     <div class="statistic-header">
                         <h4>Important</h4>
                         <div class="important-notification">
-                            <a href="activities.html">
-                                View All <i class="fe fe-arrow-right-circle"></i>
+                            <a href="#">
+                                View All <i class="fa fa-arrow-right"></i>
                             </a>
                         </div>
                     </div>
@@ -218,73 +184,64 @@
                                     <i class="la la-bell"></i> Notifications
                                 </a>
                             </li>
-                            <li>
+                            <!-- <li>
                                 <a href="#" data-bs-toggle="tab" data-bs-target="#schedule_tab" aria-selected="false"
                                     tabindex="-1" role="tab">
                                     <i class="la la-list-alt"></i> Schedules
                                 </a>
-                            </li>
+                            </li> -->
                         </ul>
                         <div class="tab-content">
                             <div class="tab-pane active" id="notification_tab" role="tabpanel">
                                 <div class="employee-noti-content">
                                     <ul class="employee-notification-list">
+                                        @foreach(auth()->user()->unreadNotifications->take(3) as $notification)
                                         <li class="employee-notification-grid">
                                             <div class="employee-notification-icon">
-                                                <a href="activities.html">
-                                                    <span class="badge-soft-warning rounded-circle">SM</span>
+                                                <a
+                                                    href="{{ isset($notification->data['leave_type']) ? route('leave.searchadmin') : (isset($notification->data['total_worked']) ? route('approvedTime') : (isset($notification->data['missed_logout']) ? route('missedLogouts') : '#')) }}">
+                                                    <span class="badge-soft-warning rounded-circle">
+                                                        <!-- Display initials based on the employee's name or notification type -->
+                                                        @if(isset($notification->data['employee_name']))
+                                                        {{ strtoupper(substr($notification->data['employee_name'], 0, 2)) }}
+                                                        @else
+                                                        NT
+                                                        @endif
+                                                    </span>
                                                 </a>
                                             </div>
                                             <div class="employee-notification-content">
                                                 <h6>
-                                                    <a href="activities.html">
-                                                        Your annual compliance trai
+                                                    <a
+                                                        href="{{ isset($notification->data['leave_type']) ? route('leave.searchadmin') : (isset($notification->data['total_worked']) ? route('approvedTime') : (isset($notification->data['missed_logout']) ? route('missedLogouts') : '#')) }}">
+                                                        @if(isset($notification->data['leave_type']) &&
+                                                        isset($notification->data['employee_name']))
+                                                        {{ $notification->data['employee_name'] }} requested leave:
+                                                        {{ $notification->data['leave_type'] }}.
+                                                        @elseif(isset($notification->data['total_worked']) &&
+                                                        isset($notification->data['employee_name']))
+                                                        {{ $notification->data['employee_name'] }} submitted attendance:
+                                                        {{ $notification->data['cutoff'] }}.
+                                                        @elseif(isset($notification->data['leave_type']) &&
+                                                        !isset($notification->data['employee_name']))
+                                                        Your leave request for {{ $notification->data['leave_type'] }}
+                                                        has been approved.
+                                                        @elseif(isset($notification->data['missed_logout']))
+                                                        {{ $notification->data['employee_name'] }} missed logging out on
+                                                        {{ $notification->data['date'] }}.
+                                                        @endif
                                                     </a>
                                                 </h6>
                                                 <ul class="nav">
-                                                    <li>11:00 AM</li>
-                                                    <li>21 Apr 2024</li>
+                                                    <li>{{ $notification->created_at->format('h:i A') }}</li>
+                                                    <li>{{ $notification->created_at->format('d M Y') }}</li>
                                                 </ul>
                                             </div>
                                         </li>
-                                        <li class="employee-notification-grid">
-                                            <div class="employee-notification-icon">
-                                                <a href="activities.html">
-                                                    <span class="badge-soft-warning rounded-circle">DT</span>
-                                                </a>
-                                            </div>
-                                            <div class="employee-notification-content">
-                                                <h6>
-                                                    <a href="activities.html">
-                                                        Gentle remainder about train
-                                                    </a>
-                                                </h6>
-                                                <ul class="nav">
-                                                    <li>09:00 AM</li>
-                                                    <li>21 Apr 2024</li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        <li class="employee-notification-grid">
-                                            <div class="employee-notification-icon">
-                                                <a href="activities.html">
-                                                    <span class="badge-soft-danger rounded-circle">AU</span>
-                                                </a>
-                                            </div>
-                                            <div class="employee-notification-content">
-                                                <h6>
-                                                    <a href="activities.html">
-                                                        Our HR system will be down
-                                                    </a>
-                                                </h6>
-                                                <ul class="nav">
-                                                    <li>11:50 AM</li>
-                                                    <li>21 Apr 2024</li>
-                                                </ul>
-                                            </div>
-                                        </li>
+                                        @endforeach
                                     </ul>
                                 </div>
+
                             </div>
                             <div class="tab-pane fade" id="schedule_tab" role="tabpanel">
                                 <div class="employee-noti-content">
@@ -419,13 +376,12 @@
                     <div class="row align-items-center">
                         <div class="col-lg-9 col-md-12">
                             <div class="employee-month-details">
-                                <h4>Employee of the Month</h4>
-                                <p>We are really proud of the difference you have made which gives everybody the reason
-                                    to applaud &amp; appreciate.</p>
+                                <h4>{{ $latestAnnouncement->annTitle ?? 'No Announcement is Displayed' }}</h4>
+                                <p>{{$latestAnnouncement->annDescription ?? ''}}</p>
                             </div>
                             <div class="employee-month-content">
-                                <h6><strong>Congrats, Hanna</strong></h6>
-                                <p>UI/UX Team Lead</p>
+                                <h6><strong>{{ $latestAnnouncement->poster->fName ?? '' }}</strong></h6>
+                                <p>{{ $latestAnnouncement->poster->position ?? '' }}</p>
                             </div>
                             <!-- Add the button here -->
                             <div class="employee-month-button mt-3">
@@ -439,7 +395,7 @@
                         </div>
                         <div class="col-lg-3 col-md-12">
                             <div class="employee-month-img">
-                                <img src="https://smarthr.dreamstechnologies.com/laravel/template/public/assets/img/employee-img.png"
+                                <img src="{{ asset('images/' . ($latestAnnouncement->annImage ?? 'default.png')) }}"
                                     class="img-fluid" alt="User">
                             </div>
                         </div>
@@ -459,7 +415,7 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form method="POST" action="">
+                        <form method="POST" action="{{ route('admin.announcement') }}" enctype="multipart/form-data">
                             @csrf
                             <div class="form-group">
                                 <label for="">Title</label>
@@ -475,7 +431,7 @@
                                 </label>
                             </div>
                             <div class="submit-section">
-                                <button type="submit" class="btn btn-primary submit-btn">Create</button>
+                                <button type="submit" class="btn btn-primary submit-btn">Post</button>
                             </div>
                         </form>
                     </div>
@@ -503,177 +459,44 @@
                         </div>
                     </div>
                     <div class="company-slider owl-carousel owl-loaded owl-drag">
-
                         <div class="owl-stage-outer">
                             <div class="owl-stage"
                                 style="transform: translate3d(-570px, 0px, 0px); transition: all; width: 1998px;">
-                                <div class="owl-item cloned" style="width: 265.3px; margin-right: 20px;">
-                                    <div class="company-grid company-soft-success">
-                                        <div class="company-top">
-                                            <div class="company-icon">
-                                                <span class="company-icon-success rounded-circle">EP</span>
+                                <div class="owl-carousel owl-theme">
+                                    @foreach ($policies as $policy)
+                                    <div class="owl-item" style="width: 265.3px; margin-right: 20px;">
+                                        <div class="company-grid company-soft-success">
+                                            <div class="company-top">
+                                                <div class="company-icon">
+                                                    <span class="company-icon-success rounded-circle">EP</span>
+                                                </div>
+                                                <div class="company-link">
+                                                    <a href="#">{{ $policy->policyTitle }}</a>
+                                                </div>
                                             </div>
-                                            <div class="company-link">
-                                                <a
-                                                    href="https://smarthr.dreamstechnologies.com/laravel/template/public/companies">Employer
-                                                    Policy</a>
-                                            </div>
-                                        </div>
-                                        <div class="company-bottom d-flex">
-                                            <ul>
-                                                <li>Policy Name : Parking</li>
-                                                <li>Updated on : 25 Jan 2024</li>
-                                            </ul>
-                                            <div class="company-bottom-links">
-                                                <a href="#"><i class="la la-download"></i></a>
-                                                <a href="#"><i class="la la-eye"></i></a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="owl-item cloned" style="width: 265.3px; margin-right: 20px;">
-                                    <div class="company-grid company-soft-info">
-                                        <div class="company-top">
-                                            <div class="company-icon">
-                                                <span class="company-icon-info rounded-circle">LP</span>
-                                            </div>
-                                            <div class="company-link">
-                                                <a
-                                                    href="https://smarthr.dreamstechnologies.com/laravel/template/public/companies">Leave
-                                                    Policy</a>
-                                            </div>
-                                        </div>
-                                        <div class="company-bottom d-flex">
-                                            <ul>
-                                                <li>Policy Name : Annual Leave</li>
-                                                <li>Updated on : 25 Jan 2023</li>
-                                            </ul>
-                                            <div class="company-bottom-links">
-                                                <a href="#"><i class="la la-download"></i></a>
-                                                <a href="#"><i class="la la-eye"></i></a>
+                                            <div class="company-bottom d-flex">
+                                                <ul>
+                                                    <li>Policy Name : {{ $policy->policyName }}</li>
+                                                    <li>Updated on : {{ $policy->updated_at->format('d M Y') }}</li>
+                                                </ul>
+                                                <div class="company-bottom-links">
+                                                    @if ($policy->policyUpload)
+                                                    <a href="{{ asset('storage/' . $policy->policyUpload) }}"
+                                                        target="_blank">
+                                                        <i class="la la-eye"></i>
+                                                    </a>
+                                                    @else
+                                                    <span></span>
+                                                    @endif
+                                                    <a href="#"
+                                                        onclick="downloadPolicy('{{ asset('storage/' . $policy->policyUpload) }}')">
+                                                        <i class="la la-download"></i>
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="owl-item active" style="width: 265.3px; margin-right: 20px;">
-                                    <div class="company-grid company-soft-tertiary">
-                                        <div class="company-top">
-                                            <div class="company-icon">
-                                                <span class="company-icon-tertiary rounded-circle">HR</span>
-                                            </div>
-                                            <div class="company-link">
-                                                <a
-                                                    href="https://smarthr.dreamstechnologies.com/laravel/template/public/companies">HR
-                                                    Policy</a>
-                                            </div>
-                                        </div>
-                                        <div class="company-bottom d-flex">
-                                            <ul>
-                                                <li>Policy Name : Work policy</li>
-                                                <li>Updated on : Today</li>
-                                            </ul>
-                                            <div class="company-bottom-links">
-                                                <a href="#"><i class="la la-download"></i></a>
-                                                <a href="#"><i class="la la-eye"></i></a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="owl-item active" style="width: 265.3px; margin-right: 20px;">
-                                    <div class="company-grid company-soft-success">
-                                        <div class="company-top">
-                                            <div class="company-icon">
-                                                <span class="company-icon-success rounded-circle">EP</span>
-                                            </div>
-                                            <div class="company-link">
-                                                <a
-                                                    href="https://smarthr.dreamstechnologies.com/laravel/template/public/companies">Employer
-                                                    Policy</a>
-                                            </div>
-                                        </div>
-                                        <div class="company-bottom d-flex">
-                                            <ul>
-                                                <li>Policy Name : Parking</li>
-                                                <li>Updated on : 25 Jan 2024</li>
-                                            </ul>
-                                            <div class="company-bottom-links">
-                                                <a href="#"><i class="la la-download"></i></a>
-                                                <a href="#"><i class="la la-eye"></i></a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="owl-item" style="width: 265.3px; margin-right: 20px;">
-                                    <div class="company-grid company-soft-info">
-                                        <div class="company-top">
-                                            <div class="company-icon">
-                                                <span class="company-icon-info rounded-circle">LP</span>
-                                            </div>
-                                            <div class="company-link">
-                                                <a
-                                                    href="https://smarthr.dreamstechnologies.com/laravel/template/public/companies">Leave
-                                                    Policy</a>
-                                            </div>
-                                        </div>
-                                        <div class="company-bottom d-flex">
-                                            <ul>
-                                                <li>Policy Name : Annual Leave</li>
-                                                <li>Updated on : 25 Jan 2023</li>
-                                            </ul>
-                                            <div class="company-bottom-links">
-                                                <a href="#"><i class="la la-download"></i></a>
-                                                <a href="#"><i class="la la-eye"></i></a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="owl-item cloned" style="width: 265.3px; margin-right: 20px;">
-                                    <div class="company-grid company-soft-tertiary">
-                                        <div class="company-top">
-                                            <div class="company-icon">
-                                                <span class="company-icon-tertiary rounded-circle">HR</span>
-                                            </div>
-                                            <div class="company-link">
-                                                <a
-                                                    href="https://smarthr.dreamstechnologies.com/laravel/template/public/companies">HR
-                                                    Policy</a>
-                                            </div>
-                                        </div>
-                                        <div class="company-bottom d-flex">
-                                            <ul>
-                                                <li>Policy Name : Work policy</li>
-                                                <li>Updated on : Today</li>
-                                            </ul>
-                                            <div class="company-bottom-links">
-                                                <a href="#"><i class="la la-download"></i></a>
-                                                <a href="#"><i class="la la-eye"></i></a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="owl-item cloned" style="width: 265.3px; margin-right: 20px;">
-                                    <div class="company-grid company-soft-success">
-                                        <div class="company-top">
-                                            <div class="company-icon">
-                                                <span class="company-icon-success rounded-circle">EP</span>
-                                            </div>
-                                            <div class="company-link">
-                                                <a
-                                                    href="https://smarthr.dreamstechnologies.com/laravel/template/public/companies">Employer
-                                                    Policy</a>
-                                            </div>
-                                        </div>
-                                        <div class="company-bottom d-flex">
-                                            <ul>
-                                                <li>Policy Name : Parking</li>
-                                                <li>Updated on : 25 Jan 2024</li>
-                                            </ul>
-                                            <div class="company-bottom-links">
-                                                <a href="#"><i class="la la-download"></i></a>
-                                                <a href="#"><i class="la la-eye"></i></a>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    @endforeach
                                 </div>
                             </div>
                         </div>
@@ -685,13 +508,41 @@
     </div>
 </div>
 
-
-
-
-
 @endsection
 
 @section('scripts')
+<script>
+    $(document).ready(function () {
+        // Initialize the Owl Carousel
+        var $carousel = $('.company-slider').owlCarousel({
+            items: 2, // Number of items to show
+            loop: true, // Enable looping
+            margin: 20, // Margin between items
+            nav: false, // Disable default navigation
+            dots: false // Disable dots navigation
+        });
+
+        // Bind click events to your custom navigation buttons
+        $('.owl-prev').on('click', function () {
+            $carousel.trigger('prev.owl.carousel');
+        });
+        $('.owl-next').on('click', function () {
+            $carousel.trigger('next.owl.carousel');
+        });
+    });
+
+</script>
+
+<script>
+    function downloadPolicy(url) {
+        if (url) {
+            window.open(url, '_blank');
+        } else {
+            alert('No document available for download');
+        }
+    }
+
+</script>
 
 <script>
     function startTime() {
@@ -775,6 +626,55 @@
     });
 
 </script>
+
+@if (session('success'))
+<script>
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "newestOnTop": false,
+        "progressBar": true,
+        "positionClass": "toast-top-right", // Or any position you prefer
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000", // 5 seconds
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    }
+    toastr.success("{{ session('success') }}");
+
+</script>
+@endif
+
+@if (session('error'))
+<script>
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "newestOnTop": false,
+        "progressBar": true,
+        "positionClass": "toast-top-right", // Or any position you prefer
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000", // 5 seconds
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    }
+    toastr.error("{{ session('error') }}");
+
+</script>
+@endif
+
 
 
 @endsection

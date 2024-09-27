@@ -6,15 +6,15 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Announcement extends Model
+class Policy extends Model
 {
     use HasFactory;
-
     protected $fillable = [
-        'annTitle',
-        'annDescription',
-        'posted_by',
-        'annImage',
+        'policyTitle',
+        'policyName',
+        'policyDescription',
+        'policyUpload',
+        'uploaded_by',
     ];
 
     public function user()
@@ -22,8 +22,8 @@ class Announcement extends Model
         return $this->belongsTo(User::class, 'users_id');
     }
 
-    public function poster()
+    public function uploader()
     {
-        return $this->belongsTo(User::class, 'posted_by');
+        return $this->belongsTo(User::class, 'uploaded_by');
     }
 }

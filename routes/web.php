@@ -12,6 +12,8 @@ Route::get('/', function () {
 
 Auth::routes(['register' => false]);
 
+Auth::routes(['verify' => true]);
+
 // Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 // Admin Route
@@ -107,7 +109,14 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::get('sales/tax', [App\Http\Controllers\Admin\SalesController::class, 'tax'])->name('admin.tax');
     // Accounting
     Route::get('accounting/categories', [App\Http\Controllers\Admin\Accountingcontroller::class, 'categories'])->name('admin.categories');
-    
+    // Announcement
+    Route::post('dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'announcement'])->name('admin.announcement');
+    // Policy
+    Route::get('policy', [App\Http\Controllers\Admin\PolicyController::class, 'policy'])->name('admin.policy');
+    Route::post('policy/upload', [App\Http\Controllers\Admin\PolicyController::class, 'policyStore'])->name('admin.policy.store');
+    // Checkbox Function Processed
+    Route::post('processed/bulk-action', [App\Http\Controllers\Admin\PayrollController::class, 'processedBulkAction']);
+    // Notifications
     Route::get('/notifications/mark-as-read/{id}', function ($id) {
         $notification = auth()->user()->notifications()->find($id);
         if ($notification) {
@@ -151,6 +160,9 @@ Route::prefix('emp')->middleware(['auth','isEmployee', 'sessionTimeout'])->group
     Route::get('download', [App\Http\Controllers\Employee\PayslipController::class, 'download'])->name('emp.downloadPayslip');
     // Attendance
     Route::get('attendance', [App\Http\Controllers\Employee\AttendanceController::class, 'index'])->name('emp.attendance');
+    // Fetched Holiday to Dashboard
+    Route::get('/dashboard/holidays', [App\Http\Controllers\Employee\DashboardController::class, 'getHolidays'])->name('holidays.get');
+
     Route::get('/notifications/clear', function () {
         auth()->user()->notifications()->delete();
         return redirect()->back();
@@ -238,6 +250,8 @@ Route::prefix('hr')->middleware(['auth','isHr', 'sessionTimeout'])->group(functi
     Route::post('employee/create/validate-step-5', [App\Http\Controllers\Hr\EmployeeController::class, 'validateStep5'])->name('hrvalidate.step5');
     Route::post('/attendance/edit/{id}', [App\Http\Controllers\Hr\HRAttendanceController::class, 'updateTableAttendance'])->name('hr.updateTable');
     Route::delete('/attendance/delete/{id}', [App\Http\Controllers\Hr\HRAttendanceController::class, 'destroyTableAttendance'])->name('hr.destroyTable');
+    // Fetched Holiday to Dashboard
+    Route::get('/dashboard/holidays', [App\Http\Controllers\Hr\DashboardController::class, 'getHolidays'])->name('holidays.getr');
     Route::get('/notifications/clear', function () {
         auth()->user()->notifications()->delete();
         return redirect()->back();
@@ -292,6 +306,8 @@ Route::prefix('manager')->middleware(['auth', 'isManager', 'sessionTimeout'])->g
     Route::post('/leave/update/{id}', [\App\Http\Controllers\Manager\LeaveController::class, 'updateManager'])->name('leave.updatemanager');
     Route::delete('/leave/delete/{id}', [\App\Http\Controllers\Manager\LeaveController::class, 'destroyManager'])->name('leave.destroymanager');
     Route::post('employee/shift/{user_id}', [App\Http\Controllers\Manager\DepartmentController::class, 'shiftSchedule'])->name('manager.shift');
+    // Fetched Holiday to Dashboard
+     Route::get('/dashboard/holidays', [App\Http\Controllers\Manager\DashboardController::class, 'getHolidays'])->name('holidays.getm');
     Route::get('/notifications/clear', function () {
         auth()->user()->notifications()->delete();
         return redirect()->back();

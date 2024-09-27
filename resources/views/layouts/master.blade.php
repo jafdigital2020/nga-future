@@ -10,8 +10,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0" />
     <meta name="description" />
-    <meta name="keywords"
-        content="admin, estimates, bootstrap, business, corporate, creative, management, minimal, modern, accounts, invoice, html5, responsive, CRM, Projects" />
     <meta name="author" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -48,6 +46,11 @@
     <link rel="stylesheet" href="{{ asset('assets/css/ow.carousel.min.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/material.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/feather.css') }}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
+    <!-- Toastr -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"
+        integrity="sha512-vKMx8UnXk60zUwyUnUPM3HbQo8QfmNx7+ltw8Pm5zLusl1XIfwcxo8DbWCqMGKaWeNxWA8yrx5v3SaVpMvR3CA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     @stack('styles')
 </head>
 
@@ -402,10 +405,11 @@
 
                             </ul>
                         </li>
-                        <!-- <li>
-                            <a href="policies.html"><i class="la la-file-pdf-o"></i>
+                        <li class="{{ Request::is('admin/policy') ? 'active':'' }}">
+                            <a href="{{ url('admin/policy') }}"><i class="la la-file-pdf-o"></i>
                                 <span>Policies</span></a>
                         </li>
+                        <!-- 
                         <li class="menu-title">
                             <span>Training</span>
                         </li>
@@ -510,10 +514,14 @@
 
     <!-- EditTable -->
     <script src="{{asset('assets/js/edittable.js')}}"></script>
+
+
     <!-- Place jsPDF and any related scripts before the closing body tag -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <!-- Carousel Policy -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
 
     @yield('scripts')
     <script>

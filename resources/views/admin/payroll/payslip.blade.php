@@ -189,6 +189,8 @@
                                     <div class="dropdown-menu dropdown-menu-right">
                                         <a class="dropdown-item" href="{{ url('admin/payslip/view/'.$pay->id) }}"><i
                                                 class="fa fa-eye m-r-5"></i>View</a>
+                                        <a class="dropdown-item" href="{{ url('admin/payslip/edit/'.$pay->id) }}"><i
+                                                class="fa fa-pencil m-r-5"></i>Edit</a>
                                     </div>
                                 </div>
                             </td>

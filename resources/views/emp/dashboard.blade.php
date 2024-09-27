@@ -103,12 +103,12 @@
                                 <div class="clock-in-btn">
                                     <form action="{{ url('emp/dashboard') }}" method="POST">
                                         @csrf
-                                        <button type="submit" class="btn btn-danger">Clock-In</button>
+                                        <button type="submit" class="btn btn-warning">Clock-In</button>
                                     </form>
                                 </div>
 
                                 <div class="clock-in-btn">
-                                    <button type="submit" class="btn btn-outline-danger" data-toggle="modal"
+                                    <button type="submit" class="btn btn-outline-warning" data-toggle="modal"
                                         data-target="#exampleModal">
                                         Clock Out
                                     </button>
@@ -399,33 +399,32 @@
     <!-- Announcement & Policies -->
 
     <div class="row">
-
         <div class="col-xl-6 col-md-12 d-flex">
             <div class="card employee-month-card flex-fill">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-lg-9 col-md-12">
                             <div class="employee-month-details">
-                                <h4>Employee of the month</h4>
-                                <p>We are really proud of the difference you have made which gives everybody the reason
-                                    to
-                                    applaud &amp; appreciate</p>
+                                <h4>{{ $latestAnnouncement->annTitle ?? 'No Announcement is Displayed' }}</h4>
+                                <p>{{ $latestAnnouncement->annDescription ?? '' }}</p>
                             </div>
                             <div class="employee-month-content">
-                                <h6><strong>Congrats, Hanna</strong></h6>
-                                <p>UI/UX Team Lead</p>
+                                <h6><strong>{{ $latestAnnouncement->poster->fName ?? '' }}</strong></h6>
+                                <p>{{ $latestAnnouncement->poster->position ?? '' }}</p>
                             </div>
                         </div>
                         <div class="col-lg-3 col-md-12">
                             <div class="employee-month-img">
-                                <img src="https://smarthr.dreamstechnologies.com/laravel/template/public/assets/img/employee-img.png"
+                                <img src="{{ asset('images/' . ($latestAnnouncement->annImage ?? 'default.png')) }}"
                                     class="img-fluid" alt="User">
+                                <!-- Added parentheses for clarity and default image -->
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
 
 
         <div class="col-xl-6 col-md-12 d-flex">
@@ -445,177 +444,44 @@
                         </div>
                     </div>
                     <div class="company-slider owl-carousel owl-loaded owl-drag">
-
                         <div class="owl-stage-outer">
                             <div class="owl-stage"
                                 style="transform: translate3d(-570px, 0px, 0px); transition: all; width: 1998px;">
-                                <div class="owl-item cloned" style="width: 265.3px; margin-right: 20px;">
-                                    <div class="company-grid company-soft-success">
-                                        <div class="company-top">
-                                            <div class="company-icon">
-                                                <span class="company-icon-success rounded-circle">EP</span>
+                                <div class="owl-carousel owl-theme">
+                                    @foreach ($policies as $policy)
+                                    <div class="owl-item" style="width: 265.3px; margin-right: 20px;">
+                                        <div class="company-grid company-soft-success">
+                                            <div class="company-top">
+                                                <div class="company-icon">
+                                                    <span class="company-icon-success rounded-circle">EP</span>
+                                                </div>
+                                                <div class="company-link">
+                                                    <a href="#">{{ $policy->policyTitle }}</a>
+                                                </div>
                                             </div>
-                                            <div class="company-link">
-                                                <a
-                                                    href="https://smarthr.dreamstechnologies.com/laravel/template/public/companies">Employer
-                                                    Policy</a>
-                                            </div>
-                                        </div>
-                                        <div class="company-bottom d-flex">
-                                            <ul>
-                                                <li>Policy Name : Parking</li>
-                                                <li>Updated on : 25 Jan 2024</li>
-                                            </ul>
-                                            <div class="company-bottom-links">
-                                                <a href="#"><i class="la la-download"></i></a>
-                                                <a href="#"><i class="la la-eye"></i></a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="owl-item cloned" style="width: 265.3px; margin-right: 20px;">
-                                    <div class="company-grid company-soft-info">
-                                        <div class="company-top">
-                                            <div class="company-icon">
-                                                <span class="company-icon-info rounded-circle">LP</span>
-                                            </div>
-                                            <div class="company-link">
-                                                <a
-                                                    href="https://smarthr.dreamstechnologies.com/laravel/template/public/companies">Leave
-                                                    Policy</a>
-                                            </div>
-                                        </div>
-                                        <div class="company-bottom d-flex">
-                                            <ul>
-                                                <li>Policy Name : Annual Leave</li>
-                                                <li>Updated on : 25 Jan 2023</li>
-                                            </ul>
-                                            <div class="company-bottom-links">
-                                                <a href="#"><i class="la la-download"></i></a>
-                                                <a href="#"><i class="la la-eye"></i></a>
+                                            <div class="company-bottom d-flex">
+                                                <ul>
+                                                    <li>Policy Name : {{ $policy->policyName }}</li>
+                                                    <li>Updated on : {{ $policy->updated_at->format('d M Y') }}</li>
+                                                </ul>
+                                                <div class="company-bottom-links">
+                                                    @if ($policy->policyUpload)
+                                                    <a href="{{ asset('storage/' . $policy->policyUpload) }}"
+                                                        target="_blank">
+                                                        <i class="la la-eye"></i>
+                                                    </a>
+                                                    @else
+                                                    <span></span>
+                                                    @endif
+                                                    <a href="#"
+                                                        onclick="downloadPolicy('{{ asset('storage/' . $policy->policyUpload) }}')">
+                                                        <i class="la la-download"></i>
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="owl-item active" style="width: 265.3px; margin-right: 20px;">
-                                    <div class="company-grid company-soft-tertiary">
-                                        <div class="company-top">
-                                            <div class="company-icon">
-                                                <span class="company-icon-tertiary rounded-circle">HR</span>
-                                            </div>
-                                            <div class="company-link">
-                                                <a
-                                                    href="https://smarthr.dreamstechnologies.com/laravel/template/public/companies">HR
-                                                    Policy</a>
-                                            </div>
-                                        </div>
-                                        <div class="company-bottom d-flex">
-                                            <ul>
-                                                <li>Policy Name : Work policy</li>
-                                                <li>Updated on : Today</li>
-                                            </ul>
-                                            <div class="company-bottom-links">
-                                                <a href="#"><i class="la la-download"></i></a>
-                                                <a href="#"><i class="la la-eye"></i></a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="owl-item active" style="width: 265.3px; margin-right: 20px;">
-                                    <div class="company-grid company-soft-success">
-                                        <div class="company-top">
-                                            <div class="company-icon">
-                                                <span class="company-icon-success rounded-circle">EP</span>
-                                            </div>
-                                            <div class="company-link">
-                                                <a
-                                                    href="https://smarthr.dreamstechnologies.com/laravel/template/public/companies">Employer
-                                                    Policy</a>
-                                            </div>
-                                        </div>
-                                        <div class="company-bottom d-flex">
-                                            <ul>
-                                                <li>Policy Name : Parking</li>
-                                                <li>Updated on : 25 Jan 2024</li>
-                                            </ul>
-                                            <div class="company-bottom-links">
-                                                <a href="#"><i class="la la-download"></i></a>
-                                                <a href="#"><i class="la la-eye"></i></a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="owl-item" style="width: 265.3px; margin-right: 20px;">
-                                    <div class="company-grid company-soft-info">
-                                        <div class="company-top">
-                                            <div class="company-icon">
-                                                <span class="company-icon-info rounded-circle">LP</span>
-                                            </div>
-                                            <div class="company-link">
-                                                <a
-                                                    href="https://smarthr.dreamstechnologies.com/laravel/template/public/companies">Leave
-                                                    Policy</a>
-                                            </div>
-                                        </div>
-                                        <div class="company-bottom d-flex">
-                                            <ul>
-                                                <li>Policy Name : Annual Leave</li>
-                                                <li>Updated on : 25 Jan 2023</li>
-                                            </ul>
-                                            <div class="company-bottom-links">
-                                                <a href="#"><i class="la la-download"></i></a>
-                                                <a href="#"><i class="la la-eye"></i></a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="owl-item cloned" style="width: 265.3px; margin-right: 20px;">
-                                    <div class="company-grid company-soft-tertiary">
-                                        <div class="company-top">
-                                            <div class="company-icon">
-                                                <span class="company-icon-tertiary rounded-circle">HR</span>
-                                            </div>
-                                            <div class="company-link">
-                                                <a
-                                                    href="https://smarthr.dreamstechnologies.com/laravel/template/public/companies">HR
-                                                    Policy</a>
-                                            </div>
-                                        </div>
-                                        <div class="company-bottom d-flex">
-                                            <ul>
-                                                <li>Policy Name : Work policy</li>
-                                                <li>Updated on : Today</li>
-                                            </ul>
-                                            <div class="company-bottom-links">
-                                                <a href="#"><i class="la la-download"></i></a>
-                                                <a href="#"><i class="la la-eye"></i></a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="owl-item cloned" style="width: 265.3px; margin-right: 20px;">
-                                    <div class="company-grid company-soft-success">
-                                        <div class="company-top">
-                                            <div class="company-icon">
-                                                <span class="company-icon-success rounded-circle">EP</span>
-                                            </div>
-                                            <div class="company-link">
-                                                <a
-                                                    href="https://smarthr.dreamstechnologies.com/laravel/template/public/companies">Employer
-                                                    Policy</a>
-                                            </div>
-                                        </div>
-                                        <div class="company-bottom d-flex">
-                                            <ul>
-                                                <li>Policy Name : Parking</li>
-                                                <li>Updated on : 25 Jan 2024</li>
-                                            </ul>
-                                            <div class="company-bottom-links">
-                                                <a href="#"><i class="la la-download"></i></a>
-                                                <a href="#"><i class="la la-eye"></i></a>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    @endforeach
                                 </div>
                             </div>
                         </div>
@@ -632,6 +498,38 @@
 
 
 @section('scripts')
+<script>
+    $(document).ready(function () {
+        // Initialize the Owl Carousel
+        var $carousel = $('.company-slider').owlCarousel({
+            items: 2, // Number of items to show
+            loop: true, // Enable looping
+            margin: 20, // Margin between items
+            nav: false, // Disable default navigation
+            dots: false // Disable dots navigation
+        });
+
+        // Bind click events to your custom navigation buttons
+        $('.owl-prev').on('click', function () {
+            $carousel.trigger('prev.owl.carousel');
+        });
+        $('.owl-next').on('click', function () {
+            $carousel.trigger('next.owl.carousel');
+        });
+    });
+
+</script>
+
+<script>
+    function downloadPolicy(url) {
+        if (url) {
+            window.open(url, '_blank');
+        } else {
+            alert('No document available for download');
+        }
+    }
+
+</script>
 
 <script>
     function startTime() {
@@ -665,101 +563,28 @@
         const saveButton = document.getElementById('saveButton');
         const yearSelect = document.getElementById('yearSelect');
         const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const monthNames = [
-            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'June',
-            'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov',
+            'Dec'
         ];
 
-        const holidays = {
-            regular: [{
-                    name: "New Year's Day",
-                    date: '01-01'
+        function fetchHolidays(callback) {
+            $.ajax({
+                url: '/emp/dashboard/holidays/',
+                method: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    console.log("Fetched holidays: ", data); // Debugging line
+                    callback(data);
                 },
-                {
-                    name: 'Maundy Thursday',
-                    date: '03-28'
-                },
-                {
-                    name: 'Good Friday',
-                    date: '03-29'
-                },
-                {
-                    name: 'Araw ng Kagitingan',
-                    date: '04-09'
-                },
-                {
-                    name: "Eid'l Fitr",
-                    date: '04-10'
-                },
-                {
-                    name: 'Labor Day',
-                    date: '05-01'
-                },
-                {
-                    name: 'Independence Day',
-                    date: '06-12'
-                },
-                {
-                    name: "Eid’l Adha",
-                    date: '06-17'
-                },
-                {
-                    name: 'National Heroes Day',
-                    date: '08-26'
-                },
-                {
-                    name: 'Bonifacio Day',
-                    date: '11-30'
-                },
-                {
-                    name: 'Christmas Day',
-                    date: '12-25'
-                },
-                {
-                    name: 'Rizal Day',
-                    date: '12-30'
+                error: function (err) {
+                    console.error('Error fetching holidays:', err);
                 }
-            ],
-            special: [{
-                    name: 'Ninoy Aquino Day',
-                    date: '08-21'
-                },
-                {
-                    name: "All Saints' Day",
-                    date: '11-01'
-                },
-                {
-                    name: 'Feast of the Immaculate Conception of Mary',
-                    date: '12-08'
-                },
-                {
-                    name: 'Last Day of the Year',
-                    date: '12-31'
-                },
-                {
-                    name: 'Additional Special Day',
-                    date: '02-09'
-                },
-                {
-                    name: 'Chinese New Year',
-                    date: '02-10'
-                },
-                {
-                    name: 'Black Saturday',
-                    date: '03-30'
-                },
-                {
-                    name: 'All Souls\' Day',
-                    date: '11-02'
-                },
-                {
-                    name: 'Christmas Eve',
-                    date: '12-24'
-                }
-            ]
-        };
+            });
+        }
 
-        function renderCalendar(startDate, endDate, attendanceData, leaveData, status = 'new') {
+        function renderCalendar(startDate, endDate, attendanceData, leaveData, holidays, status = 'new') {
+            console.log("Rendering calendar from ", startDate, " to ", endDate); // Debugging line
+
             calendar.innerHTML = '';
 
             let totalWorkedSeconds = 0;
@@ -771,6 +596,7 @@
 
             let currentDate = new Date(startDate);
             while (currentDate <= endDate) {
+                console.log("Current date: ", currentDate); // Debugging line
                 const dayDiv = document.createElement('div');
                 dayDiv.className = 'day-att';
                 dayDiv.style.padding = '5px';
@@ -845,19 +671,14 @@
                     }
                 });
 
-                // Highlight holidays
-                const holiday = checkHoliday(currentDate);
+                // Check for holidays
+                const holiday = checkHoliday(currentDate, holidays);
                 if (holiday) {
                     const holidayDiv = document.createElement('div');
                     holidayDiv.className = 'holiday-button';
-                    holidayDiv.innerText = holiday.name;
+                    holidayDiv.innerText = holiday.title; // Use holiday title from the DB
 
-                    if (holiday.type === 'regular') {
-                        holidayDiv.style.backgroundColor = 'green';
-                    } else {
-                        holidayDiv.style.backgroundColor = 'black';
-                    }
-
+                    holidayDiv.style.backgroundColor = 'green'; // Highlight the holiday
                     holidayDiv.style.color = 'white';
                     holidayDiv.style.padding = '5px';
                     holidayDiv.style.marginTop = '5px';
@@ -887,18 +708,13 @@
                 `Total Worked Hours: ${totalWorkedFormatted}\nTotal Late: ${totalLateFormatted}\nUnpaid Leave: ${unpaidLeaveCount}\nVacation Leave: ${vacationLeaveCount}\nSick Leave: ${sickLeaveCount}\nBirthday Leave: ${bdayLeaveCount}\nStatus: ${status}`;
             calendar.appendChild(totalBox);
 
-
-
         }
 
-        function checkHoliday(date) {
+        function checkHoliday(date, holidays) {
             const formattedDate =
-                `${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-            const holiday = holidays.regular.find(h => h.date === formattedDate) || holidays.special.find(h => h
-                .date === formattedDate);
-            if (holiday) {
-                holiday.type = holidays.regular.some(h => h.date === formattedDate) ? 'regular' : 'special';
-            }
+                `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+            console.log("Checking holiday for: ", formattedDate); // Debugging line
+            const holiday = holidays.find(h => h.holidayDate === formattedDate);
             return holiday;
         }
 
@@ -1051,17 +867,14 @@
         function searchCalendar() {
             const monthIndex = parseInt(monthSelect.value);
             const year = parseInt(yearSelect.value);
-
             const {
                 startDate,
                 endDate
             } = getCutoffDates(monthIndex, year);
-            const selectedOptionText = monthSelect.options[monthSelect.selectedIndex].text;
-            const cutoff = `${selectedOptionText} ${year}`;
 
-            fetchStatus(cutoff, function (status) {
+            fetchHolidays(function (holidays) {
                 fetchAttendanceData(startDate, endDate, function (attendanceData, leaveData) {
-                    renderCalendar(startDate, endDate, attendanceData, leaveData, status);
+                    renderCalendar(startDate, endDate, attendanceData, leaveData, holidays);
                 });
             });
         }

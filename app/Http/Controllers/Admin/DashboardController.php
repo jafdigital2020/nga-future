@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use Carbon\Carbon;
 use App\Models\User;
+use App\Models\Policy;
+use App\Models\Announcement;
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
 use App\Models\SettingsHoliday;
@@ -57,6 +59,7 @@ class DashboardController extends Controller
             ]);
         }
     
+        $latestAnnouncement = Announcement::latest()->first();
         $total = EmployeeAttendance::sum('timeTotal');
         $all = DB::table('attendance')->get();
         $empatt = DB::table('attendance')->where('users_id', auth()->user()->id)->get();
@@ -174,6 +177,7 @@ class DashboardController extends Controller
         $hasTimeIn = $user->employeeAttendance()->whereDate('date', $today)->exists();
         $hasBreakOut = $user->employeeAttendance()->whereDate('date', $today)->whereNotNull('breakOut')->exists();
         $hasBreakIn = $user->employeeAttendance()->whereDate('date', $today)->whereNotNull('breakIn')->exists();
+        $policies = Policy::all();
         
         return view('admin.dashboard', compact(
         'nearestHoliday',
@@ -202,6 +206,8 @@ class DashboardController extends Controller
         'newUsersThisMonth',
         'percentageIncrease',
         'totalLateToday',
+        'latestAnnouncement',
+        'policies',
         ));
     }
 
@@ -340,5 +346,46 @@ class DashboardController extends Controller
         return response()->json(['status' => 'New']);
     }
 
+    public function announcement(Request $request)
+    {
+        // Validate the request input
+        $validated = $request->validate([
+            'annTitle' => 'required|string|max:255',
+            'annDescription' => 'required|string',
+            'annImage' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Ensure the validation uses 'annImage'
+        ]);
     
+        try {
+            $announcement = new Announcement();
+    
+            $imageName = 'default.png';
+           
+            if ($request->hasFile('annImage')) {
+                $file = $request->file('annImage'); 
+                $imageName = time() . '.' . $file->extension(); 
+                $destinationPath = public_path('images');
+                $file->move($destinationPath, $imageName); 
+                $announcement->annImage = $imageName; 
+            } else {
+                $announcement->annImage = $imageName; 
+            }
+    
+            // Assign other fields to the announcement model
+            $announcement->annTitle = $validated['annTitle'];
+            $announcement->annDescription = $validated['annDescription'];
+            $announcement->posted_by = Auth::user()->id;
+    
+            // Save the announcement
+            $announcement->save();
+    
+            // Redirect back with success message
+            return back()->with('success', 'Announcement is posted');
+            
+        } catch (\Exception $e) {
+            // Handle any errors that occur
+            return back()->with('error', 'An error occurred while posting the announcement: ' . $e->getMessage());
+        }
+    }
+    
+     
 }

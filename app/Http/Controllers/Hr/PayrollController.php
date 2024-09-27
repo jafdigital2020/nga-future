@@ -410,9 +410,9 @@ class PayrollController extends Controller
        if (!empty($cutoffPeriod)) {
            $data->where('cut_off', $cutoffPeriod); // Search the cut_off column
        }
-
-        // Add filter for status being 'Payslip'
-        $data->where('status', 'Payslip');
+   
+       // Add filter for status being 'Payslip'
+       $data->where('status', 'Payslip');
    
        $payslip = $data->get();
    
@@ -421,6 +421,7 @@ class PayrollController extends Controller
    
        return view('hr.payroll.payslip', compact('payslip', 'departments', 'cutoffPeriod', 'selectedYear'));
    }
+   
    
 
    public function viewPayslip($id)
