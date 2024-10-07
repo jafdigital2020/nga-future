@@ -9,6 +9,7 @@ use App\Models\EmployeeAttendance;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
+use App\Notifications\AttendanceApprovedNotification;
 
 class AttendanceApproveController extends Controller
 {
@@ -157,8 +158,10 @@ class AttendanceApproveController extends Controller
         $att->approved_by = $currentUser->id;
         $att->save();
 
-        Alert::success('Attendance Approved');
-        return redirect()->back();
+        // Notify the user
+        $user->notify(new AttendanceApprovedNotification($att));
+
+        return redirect()->back()->with('success', 'Timesheet Approved');
     }
 
     public function decline($id)

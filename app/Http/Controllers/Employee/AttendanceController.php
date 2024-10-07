@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Employee;
 use Carbon\Carbon;
 use App\Models\Attendance;
 use Illuminate\Http\Request;
+use App\Models\OvertimeRequest;
 use App\Models\EmployeeAttendance;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use RealRashid\SweetAlert\Facades\Alert;
+use Illuminate\Validation\ValidationException;
 use App\Http\Controllers\Admin\EmployeeController;
 
 class AttendanceController extends Controller
@@ -75,5 +78,42 @@ class AttendanceController extends Controller
         return view('emp.attendance.index', compact('att', 'empatt', 'all', 'total', 'latest', 'data', 'filteredData', 'totalTime', 'totalLate'));
     }
 
+    public function overtimeRequest(Request $request)
+    {
+        try {
+            // Validate the request
+            $validated = $request->validate([
+                'date' => 'required|date|after:today',
+                'reason' => 'required|string',
+            ], [
+                'date.after' => 'The date must be at least one day ahead.',
+                'date.required' => 'Please select a date for the overtime request.',
+                'date.date' => 'Please provide a valid date.',
+            ]);
+    
+            // Save the overtime request
+            $overtime = new OvertimeRequest();
+            $overtime->users_id = Auth::user()->id;
+            $overtime->date = $request->input('date');
+            $overtime->start_time = $request->input('start_time');
+            $overtime->end_time = $request->input('end_time');
+            $overtime->total_hours = $request->input('total_hours');
+            $overtime->reason = $request->input('reason');
+            $overtime->save();
+    
+            // Success message
+            return redirect()->back()->with('success', 'Submitted Successfully');
+    
+        } catch (ValidationException $e) {
+            // Handle validation errors with SweetAlert
+            foreach ($e->validator->errors()->all() as $error) {
+                Alert::error('Validation Error', $error);
+            }
+            return redirect()->back()->withInput();
+        } catch (\Exception $e) {
+            // Handle general errors
+            return redirect()->back()->with('error', 'An error occurred while submitting your overtime request.' );
+        }
+    }
 
 }

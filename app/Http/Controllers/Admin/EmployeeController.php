@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Exception;
 use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -605,8 +606,7 @@ class EmployeeController extends Controller
             
             $shift->save();
     
-            Alert::success('Employee Added Successfully', 'Employee Added');
-            return redirect()->route('admin.employeeindex');
+            return redirect()->route('admin.employeeindex')->with('success', 'Employee Added Successfully');
         } catch (\Illuminate\Validation\ValidationException $e) {
             Alert::error('Validation Error', $e->getMessage())->persistent(true);
             return redirect()->back()->withErrors($e->errors())->withInput();
@@ -710,5 +710,131 @@ class EmployeeController extends Controller
             'bdayLeave.required' => 'Birthday Leave field is required.',
         ]);
     }
+
+    public function bulkCreate(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:csv,txt',
+        ]);
+    
+        // Log start of the bulk upload process
+        Log::info('Bulk user creation process started.');
+    
+        // Get the current user count
+        $userCount = User::count();
+        Log::info('Current user count: ' . $userCount);
+        
+        // If the total user count is already at 11, prevent further creation
+        if ($userCount >= 100) {
+            return redirect()->back()->with('error', 'User limit reached. You cannot add more users.');
+        }
+    
+        if ($file = $request->file('file')) {
+            Log::info('File found. Starting file processing.');
+    
+            $fileData = fopen($file, 'r');
+            $header = fgetcsv($fileData); // Get header row
+    
+            $newUsersCount = 0;
+            $errors = []; // Collect errors here
+            $existingEmails = User::pluck('email')->toArray(); // Get existing emails
+            $existingEmpNumbers = User::pluck('empNumber')->toArray(); // Get existing empNumbers
+            $processedEmails = []; // Keep track of processed emails in the CSV
+            $processedEmpNumbers = []; // Keep track of processed empNumbers in the CSV
+    
+            while ($row = fgetcsv($fileData)) {
+                $newUsersCount++;
+    
+                // Combine header with row data
+                $userData = array_combine($header, $row);
+                Log::info('Processing row ' . $newUsersCount, $userData);
+    
+                // Check if adding this user will exceed the limit
+                if (User::count() >= 100) {
+                    $errors[] = "Row $newUsersCount: User limit reached. Cannot add more users.";
+                    continue;
+                }
+    
+                // Check if required fields are missing or invalid
+                if (empty($userData['fName']) || empty($userData['lName']) || empty($userData['email']) || empty($userData['password'])) {
+                    $errors[] = "Row $newUsersCount: Missing required fields (fName, lName, email, or password).";
+                    continue; // Skip this row
+                }
+    
+                // Validate email format
+                if (!filter_var($userData['email'], FILTER_VALIDATE_EMAIL)) {
+                    $errors[] = "Row $newUsersCount: Invalid email format.";
+                    continue; // Skip this row
+                }
+    
+                // Remove commas from mSalary and validate it
+                $userData['mSalary'] = str_replace(',', '', $userData['mSalary']);
+                if (!is_numeric($userData['mSalary'])) {
+                    $errors[] = "Row $newUsersCount: Salary must be a numeric value without commas.";
+                    continue; // Skip this row
+                }
+    
+                // Check for duplicates in the CSV file
+                if (in_array($userData['email'], $processedEmails)) {
+                    $errors[] = "Row $newUsersCount: Duplicate entry for email '{$userData['email']}' in the CSV file.";
+                    Log::warning("Row $newUsersCount: Duplicate email '{$userData['email']}' found in the CSV file.");
+                    continue; // Skip this row
+                }
+    
+                if (in_array($userData['empNumber'], $processedEmpNumbers)) {
+                    $errors[] = "Row $newUsersCount: Duplicate entry for employee number '{$userData['empNumber']}' in the CSV file.";
+                    Log::warning("Row $newUsersCount: Duplicate employee number '{$userData['empNumber']}' found in the CSV file.");
+                    continue; // Skip this row
+                }
+    
+                // Check for duplicates in the database
+                if (in_array($userData['email'], $existingEmails)) {
+                    $errors[] = "Row $newUsersCount: The email '{$userData['email']}' already exists in the database.";
+                    Log::warning("Row $newUsersCount: Email '{$userData['email']}' already exists in the database.");
+                    continue; // Skip this row
+                }
+    
+                if (in_array($userData['empNumber'], $existingEmpNumbers)) {
+                    $errors[] = "Row $newUsersCount: The employee number '{$userData['empNumber']}' already exists in the database.";
+                    Log::warning("Row $newUsersCount: Employee number '{$userData['empNumber']}' already exists in the database.");
+                    continue; // Skip this row
+                }
+    
+                // Add email and empNumber to processed arrays to track duplicates
+                $processedEmails[] = $userData['email'];
+                $processedEmpNumbers[] = $userData['empNumber'];
+    
+                // Concatenate name fields
+                $userData['name'] = $userData['fName'] . ' ' . ($userData['mName'] ?? '') . ' ' . $userData['lName'];
+    
+                // Hash the password
+                $userData['password'] = Hash::make($userData['password']);
+    
+                try {
+                    // Create the user
+                    User::create($userData);
+                } catch (\Exception $e) {
+                    // Log any unexpected errors
+                    Log::error('Error creating user on row ' . $newUsersCount . ': ' . $e->getMessage());
+                    $errors[] = "Row $newUsersCount: Failed to create user due to a database error.";
+                }
+            }
+    
+            fclose($fileData);
+    
+            // Check if any errors occurred
+            if (!empty($errors)) {
+                Log::error('Bulk upload errors: ', $errors);
+                // Format the errors for the UI
+                return redirect()->back()->with('error', 'There were errors in the bulk upload: ' . implode('<br>', $errors));
+            }
+    
+            return redirect()->back()->with('success', 'Users created successfully.');
+        }
+    
+        return redirect()->back()->with('error', 'No file was uploaded.');
+    }
+    
+    
 
 }

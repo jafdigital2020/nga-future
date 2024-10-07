@@ -162,7 +162,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="{{ route('store.leave') }}" method="POST">
+                <form action="{{ route('store.leave') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="form-group">
                         <label>Leave Type <span class="text-danger">*</span></label>
@@ -196,6 +196,10 @@
                         <label>Remaining Leaves <span class="text-danger">*</span></label>
                         <input class="form-control" readonly
                             value="{{ $user->vacLeave + $user->sickLeave + $user->bdayLeave  }}" type="text">
+                    </div>
+                    <div class="form-group">
+                        <label>Attached File <span class="text-danger">*</span></label>
+                        <input class="form-control" type="file" name="attached_file" id="attached_file">
                     </div>
                     <div class="form-group">
                         <label>Leave Reason <span class="text-danger">*</span></label>

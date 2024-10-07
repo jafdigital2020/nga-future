@@ -190,6 +190,7 @@
                             <th>Sick Leave</th>
                             <th>Birthday Leave</th>
                             <th>Unpaid Leave</th>
+                            <th>Date Submitted</th>
                             <th class="text-center">Status</th>
                             <th class="text-right">Actions</th>
                         </tr>
@@ -220,6 +221,7 @@
                             <td>{{ $att->sickLeave }}</td>
                             <td>{{ $att->bdayLeave }}</td>
                             <td>{{ $att->unpaidLeave }}</td>
+                            <td>{{ $att->created_at->format('Y-m-d') }}</td>
                             <td class="text-center">
                                 <div class="dropdown action-label">
                                     <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#"

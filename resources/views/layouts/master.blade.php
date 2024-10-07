@@ -105,32 +105,32 @@
                         </div>
                         <div class="noti-content">
                             <ul class="notification-list">
-                                @foreach(auth()->user()->unreadNotifications as $notification)
-                                <li class="notification-message">
-                                    <a href="{{ isset($notification->data['leave_type']) ? route('leave.searchadmin') : (isset($notification->data['total_worked']) ? route('approvedTime') : (isset($notification->data['missed_logout']) ? route('missedLogouts') : '#')) }}"
-                                        class="notification-link" data-id="{{ $notification->id }}">
+                                @foreach(auth()->user()->unreadNotifications->unique('id') as $notification)
+                                <li class="notification-message unread" data-id="{{ $notification->id }}">
+                                    <a href="{{ isset($notification->data['leave_type']) ? route('leave.searchadmin') : (isset($notification->data['total_worked']) ? route('attendance.searchadmin') : (isset($notification->data['total_hours']) ? url('admin/overtime') : '#')) }}"
+                                        class="notification-link">
                                         <div class="media">
                                             <span class="avatar">
-                                                <!-- Display the requester's image -->
                                                 <img alt="Profile Image"
                                                     src="{{ asset('images/' . ($notification->data['image'] ?? 'default.png')) }}" />
                                             </span>
                                             <div class="media-body">
+                                                <!-- Leave Notification -->
                                                 @if(isset($notification->data['leave_type']) &&
                                                 isset($notification->data['employee_name']))
-                                                <!-- Leave Request Notification -->
                                                 <p class="noti-details">
                                                     <span
                                                         class="noti-title">{{ $notification->data['employee_name'] }}</span>
                                                     requested a leave:
                                                     <span
                                                         class="noti-title">{{ $notification->data['leave_type'] }}</span>
-                                                    from <span>{{ $notification->data['start_date'] }}</span> to
+                                                    from
+                                                    <span>{{ $notification->data['start_date'] }}</span> to
                                                     <span>{{ $notification->data['end_date'] }}</span>.
                                                 </p>
+                                                <!-- Attendance Notification -->
                                                 @elseif(isset($notification->data['total_worked']) &&
                                                 isset($notification->data['employee_name']))
-                                                <!-- Attendance Submission Notification -->
                                                 <p class="noti-details">
                                                     <span
                                                         class="noti-title">{{ $notification->data['employee_name'] }}</span>
@@ -140,19 +140,30 @@
                                                     <span>{{ $notification->data['total_worked'] }}</span>,
                                                     Late Hours: <span>{{ $notification->data['total_late'] }}</span>.
                                                 </p>
+                                                <!-- Overtime Notification -->
+                                                @elseif(isset($notification->data['total_hours']) &&
+                                                isset($notification->data['employee_name']))
+                                                <p class="noti-details">
+                                                    <span
+                                                        class="noti-title">{{ $notification->data['employee_name'] }}</span>
+                                                    submitted an overtime request for
+                                                    <span>{{ $notification->data['total_hours'] }}</span> hours on
+                                                    <span>{{ $notification->data['date'] }}</span>.
+                                                </p>
+                                                <!-- Approved Leave (No Employee Name) -->
                                                 @elseif(isset($notification->data['leave_type']) &&
                                                 !isset($notification->data['employee_name']))
-                                                <!-- Leave Request Approved Notification -->
                                                 <p class="noti-details">
                                                     Your leave request for
                                                     <span
                                                         class="noti-title">{{ $notification->data['leave_type'] }}</span>
-                                                    from <span>{{ $notification->data['start_date'] }}</span> to
+                                                    from
+                                                    <span>{{ $notification->data['start_date'] }}</span> to
                                                     <span>{{ $notification->data['end_date'] }}</span> has been
                                                     approved.
                                                 </p>
-                                                @elseif(isset($notification->data['missed_logout']))
                                                 <!-- Missed Logout Notification -->
+                                                @elseif(isset($notification->data['missed_logout']))
                                                 <p class="noti-details">
                                                     <span
                                                         class="noti-title">{{ $notification->data['employee_name'] }}</span>
@@ -177,6 +188,7 @@
                     </div>
                 </li>
                 <!-- /Notifications -->
+
 
 
                 <!-- Message Notifications -->
@@ -360,12 +372,24 @@
                             <span>Admin</span>
                         </li>
 
-                        <li class="{{ Request::is('admin/employee-grid') ? 'active':'' }}">
-                            <a href="{{ url('admin/employee-grid') }}"
-                                class="{{ Request::is('admin/employee-grid') ? 'active':'' }}"><i
-                                    class="la la-user-secret"></i>
-                                <span>Employees</span></a>
+                        <li class="submenu">
+                            <a href="#"><i class="la la-user"></i>
+                                <span> Employee </span>
+                                <span class="menu-arrow"></span></a>
+                            <ul style="display: none">
+                                <li class="{{ Request::is('admin/employee-grid') ? 'active':'' }}">
+                                    <a href="{{ url('admin/employee-grid') }}">
+                                        View
+                                    </a>
+                                </li>
+                                <li class="{{ Request::is('admin/employee/create') ? 'active':'' }}">
+                                    <a href="{{ url('/admin/employee/create') }}">
+                                        Create
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
+
                         <li class="{{ Request::is('admin/leave') ? 'active':'' }}">
                             <a href="{{ url('admin/leave') }}"><i class="la la-rocket"></i>
                                 <span>Leave</span></a>
@@ -380,7 +404,7 @@
                         </li>
 
                         <li class="menu-title">
-                            <span>Payroll</span>
+                            <span>Payroll Section</span>
                         </li>
                         <li class="submenu">
                             <a href="#"><i class="la la-money"></i>
@@ -406,7 +430,37 @@
                                 <li class="{{ Request::is('admin/payslip') ? 'active':'' }}">
                                     <a href="{{ url('admin/payslip') }}"> Generated Payslip </a>
                                 </li>
+                            </ul>
+                        </li>
 
+                        <li class="menu-title">
+                            <span>Request Section</span>
+                        </li>
+                        <li class="{{ Request::is('admin/overtime') ? 'active':'' }}">
+                            <a href="{{ url('admin/overtime') }}"><i class="la la-clock"></i>
+                                <span>Overtime</span></a>
+                        </li>
+                        <!-- Shift And Schedules -->
+
+                        <li class="menu-title">
+                            <span>Shift Management</span>
+                        </li>
+                        <li class="submenu">
+                            <a href="#"><i class="la la-clock"></i>
+                                <span> Shift and Schedules </span>
+                                <span class="menu-arrow"></span></a>
+                            <ul style="display: none">
+                                <li class="{{ Request::is('admin/shift/daily') ? 'active':'' }}">
+                                    <a href="{{ url('admin/shift/daily') }}">
+                                        Daily Scheduling
+                                    </a>
+                                </li>
+
+                                <li class="{{ Request::is('admin/shift/list') ? 'active':'' }}">
+                                    <a href="{{ url('admin/shift/list') }}">
+                                        Add Shift
+                                    </a>
+                                </li>
                             </ul>
                         </li>
                         <li class="{{ Request::is('admin/policy') ? 'active':'' }}">
@@ -527,6 +581,7 @@
     <!-- Carousel Policy -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
 
+
     @yield('scripts')
     <script>
         $(".datetimepicker").datetimepicker({
@@ -536,7 +591,58 @@
 
     </script>
 
+
     @stack('scripts')
+
+
+    @if (session('success'))
+    <script>
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": true,
+            "positionClass": "toast-top-right", // Or any position you prefer
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000", // 5 seconds
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        }
+        toastr.success("{{ session('success') }}");
+
+    </script>
+    @endif
+
+    @if (session('error'))
+    <script>
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": true,
+            "positionClass": "toast-top-right", // Or any position you prefer
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000", // 5 seconds
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        }
+        toastr.error("{{ session('error') }}");
+
+    </script>
+    @endif
+
 
 </body>
 

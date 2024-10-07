@@ -526,10 +526,10 @@
         const longitude = position.coords.longitude;
 
         // accuray meters
-        if (position.coords.accuracy > 20) {
-            alert("Location accuracy is too low. Please try again.");
-            return;
-        }
+        // if (position.coords.accuracy > 20) {
+        //     alert("Location accuracy is too low. Please try again.");
+        //     return;
+        // }
 
         // Call the function to reverse geocode and get the address
         getAddressFromLatLng(latitude, longitude);
@@ -538,13 +538,17 @@
     function showError(error) {
         switch (error.code) {
             case error.PERMISSION_DENIED:
-                alert("User denied the request for Geolocation.");
+                if (confirm("Location access was denied. Would you like to try again?")) {
+                    getLocation(); // Retry geolocation request
+                } else {
+                    alert("Please enable location access in your browser settings.");
+                }
                 break;
             case error.POSITION_UNAVAILABLE:
                 alert("Location information is unavailable.");
                 break;
             case error.TIMEOUT:
-                alert("The request to get user location timed out.");
+                alert("The request to get user location timed out. Please try again.");
                 break;
             case error.UNKNOWN_ERROR:
                 alert("An unknown error occurred.");
@@ -1176,57 +1180,6 @@
     setTimeout(refreshPage, 1800000); // 30 minutes = 1800000 milliseconds
 
 </script>
-
-@if (session('success'))
-<script>
-    toastr.options = {
-        "closeButton": true,
-        "debug": false,
-        "newestOnTop": false,
-        "progressBar": true,
-        "positionClass": "toast-top-right", // Or any position you prefer
-        "preventDuplicates": false,
-        "onclick": null,
-        "showDuration": "300",
-        "hideDuration": "1000",
-        "timeOut": "5000", // 5 seconds
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut"
-    }
-    toastr.success("{{ session('success') }}");
-
-</script>
-@endif
-
-@if (session('error'))
-<script>
-    toastr.options = {
-        "closeButton": true,
-        "debug": false,
-        "newestOnTop": false,
-        "progressBar": true,
-        "positionClass": "toast-top-right", // Or any position you prefer
-        "preventDuplicates": false,
-        "onclick": null,
-        "showDuration": "300",
-        "hideDuration": "1000",
-        "timeOut": "5000", // 5 seconds
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut"
-    }
-    toastr.error("{{ session('error') }}");
-
-</script>
-@endif
-
-
-
 
 
 @endsection

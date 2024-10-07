@@ -15,6 +15,16 @@
                     <li class="breadcrumb-item active">Payslip</li>
                 </ul>
             </div>
+            <div class="col-auto float-right ml-auto">
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-white no-print" data-toggle="modal" data-target="#summaryReportModal">
+                        <i class="fa fa-file"></i> Summary Report
+                    </button>
+                    <button class="btn btn-white no-print" onclick="downloadCSV()">
+                        <i class="fa fa-download"></i> Download as CSV
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
     <!-- /Page Header -->
@@ -88,9 +98,9 @@
                             Cut-off</option>
                         <option value="August 2nd Cut-off"
                             {{ $cutoffPeriod == 'August 2nd Cut-off' ? 'selected' : '' }}>August 2nd Cut-off</option>
-                        <option value="August - September 1st Cut-off"
-                            {{ $cutoffPeriod == 'August - September 1st Cut-off' ? 'selected' : '' }}>August -
-                            September 1st Cut-off</option>
+                        <option value="August - September 1st Cut-off "
+                            {{ $cutoffPeriod == 'August - September 1st Cut-off ' ? 'selected' : '' }}>August -
+                            September 1st Cut-off 2024</option>
                         <option value="September 2nd Cut-off"
                             {{ $cutoffPeriod == 'September 2nd Cut-off' ? 'selected' : '' }}>September 2nd Cut-off
                         </option>
@@ -166,6 +176,9 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @php
+                        $netPayTotalSum = 0; // Initialize the total
+                        @endphp
                         @foreach ($payslip as $pay)
                         <tr>
                             <td><input type="checkbox" name="ids" class="checkbox_ids" id="" value="{{ $pay->id }}">
@@ -200,6 +213,9 @@
                             <td>{{ $pay->cut_off }}</td>
                             <td>{{ $pay->totalHours }}</td>
                             <td>₱{{ number_format($pay->netPayTotal, 2) }}</td>
+                            @php
+                            $netPayTotalSum += $pay->netPayTotal; // Add the current netPayTotal to the sum
+                            @endphp
                             <td>
                                 <form action="{{ url('hr/approved/payslip/' . $pay->id) }}" method="POST">
                                     @csrf
@@ -209,7 +225,49 @@
                         </tr>
                         @endforeach
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="8" class="text-right"><strong>Total Net Pay:</strong></td>
+                            <td><strong style="color:red;">₱{{ number_format($netPayTotalSum, 2) }}</strong></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
                 </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Report Modal -->
+<div class="modal fade" id="summaryReportModal" tabindex="-1" aria-labelledby="summaryReportLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="summaryReportLabel">Summary Report</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @php
+                // Initialize summary variables
+                $totalEmployees = count($payslip); // Total number of employees (entries)
+                $totalHours = 0; // Initialize total hours
+                $netPayTotalSum = 0; // Initialize total net pay
+
+                foreach ($payslip as $pay) {
+                // Safely convert to float in case values are null or non-numeric
+                $totalHours += floatval($pay->totalHours); // Sum of total hours worked
+                $netPayTotalSum += floatval($pay->netPayTotal); // Sum of net pay
+                }
+                @endphp
+                <p><strong>Total Employees:</strong> {{ $totalEmployees }}</p>
+                <p><strong>Total Hours Worked:</strong> {{ number_format($totalHours, 2) }} hours</p>
+                <p><strong>Total Net Pay:</strong> ₱{{ number_format($netPayTotalSum, 2) }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -248,7 +306,7 @@
         }
 
         // AJAX request to handle bulk action
-        fetch(`/hr/approved/generate-payslip/bulk-action`, {
+        fetch(`/admin/approved/generate-payslip/bulk-action`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -271,6 +329,38 @@
             })
             .catch(error => console.error('Error:', error));
     });
+
+</script>
+
+<script>
+    function downloadCSV() {
+        let csv = 'Employee Name, Department, From, To, Month, Cut-Off, Total Hours, Net Pay\n';
+        @foreach($payslip as $pay)
+        csv +=
+            "{{ $pay->user->fName ?? '' }} {{ $pay->user->mName ?? '' }} {{ $pay->user->lName ?? $pay->user->name }}";
+        csv += ',';
+        csv += "{{ $pay->user->department }}"; // Add department back
+        csv += ',';
+        csv += "{{ $pay->start_date }}";
+        csv += ',';
+        csv += "{{ $pay->end_date }}";
+        csv += ',';
+        csv += "{{ $pay->month }}";
+        csv += ',';
+        csv += "{{ $pay->cut_off }}";
+        csv += ',';
+        csv += "{{ $pay->totalHours }}";
+        csv += ',';
+        csv += "{{ $pay->netPayTotal }}"; // Keep Net Pay without encoding issues
+        csv += '\n';
+        @endforeach
+
+        let hiddenElement = document.createElement('a');
+        hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+        hiddenElement.target = '_blank';
+        hiddenElement.download = 'approved_payslip_report.csv';
+        hiddenElement.click();
+    }
 
 </script>
 

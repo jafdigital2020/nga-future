@@ -126,6 +126,7 @@
                             <th>To</th>
                             <th>No of Days</th>
                             <th>Date Requested</th>
+                            <th>Attached File</th>
                             <th class="text-center">Status</th>
                             <th class="text-right">Actions</th>
                         </tr>
@@ -156,7 +157,16 @@
                             <td>{{ $leave->start_date }}</td>
                             <td>{{ $leave->end_date }}</td>
                             <td>{{ $leave->days }}</td>
-                            <td>{{ $leave->created_at }}</td>
+                            <td>{{ $leave->created_at->format('Y-m-d') }}</td>
+                            <td>
+                                @if ($leave->attached_file)
+                                <a href="{{ asset('storage/' . $leave->attached_file) }}" target="_blank">
+                                    View Attached File
+                                </a>
+                                @else
+                                No document uploaded
+                                @endif
+                            </td>
                             <td class="text-center">
                                 <div class="dropdown action-label">
                                     <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#"
@@ -513,7 +523,7 @@
             $('#dayse').val(days);
             $('#reasone').val(reason);
 
-            $('#editLeaveForm').attr('action', '/hr/leave/' +
+            $('#editLeaveForm').attr('action', '/admin/leave/' +
                 leaveId); // Ensure the form action URL is correct
             $('#edit_leave').modal('show');
         });

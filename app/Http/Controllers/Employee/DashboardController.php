@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Notifications\AttendanceSubmissionNotification;
 
 class DashboardController extends Controller
 {
@@ -235,6 +236,8 @@ class DashboardController extends Controller
             'birthday_leave' => 'required|integer',
             'status' => 'required|string|in:pending,approved,rejected,sent'
         ]);
+
+        $user = Auth::user();
     
         // Check if the attendance record already exists for the same user and cutoff
         $existingAttendance = ApprovedAttendance::where('users_id', Auth::id())
@@ -268,6 +271,30 @@ class DashboardController extends Controller
     
             // Save the record to the database
             $attendance->save();
+
+            // Get the authenticated user
+            $user = Auth::user();
+
+            // Get the supervisor for the user's department
+            $supervisor = $user->supervisor;
+
+            // Get all HR users
+            $hrUsers = User::where('role_as', User::ROLE_HR)->get();
+
+            // Get all Admin users
+            $adminUsers = User::where('role_as', User::ROLE_ADMIN)->get();
+
+            // Combine HR, Admin, and Supervisor to avoid duplicates
+            $notifiableUsers = collect([$supervisor])
+                ->merge($hrUsers)
+                ->merge($adminUsers)
+                ->unique('id')  // Ensure no user is notified more than once
+                ->filter();  // Remove any null values (in case supervisor is null)
+
+            // Notify all unique users
+            foreach ($notifiableUsers as $notifiableUser) {
+                $notifiableUser->notify(new AttendanceSubmissionNotification($attendance, $user));
+            }
     
             // Return a success response
             return response()->json(['message' => 'Attendance saved successfully.'], 200);
@@ -279,7 +306,6 @@ class DashboardController extends Controller
             return response()->json(['message' => 'Error saving attendance.', 'error' => $e->getMessage()], 500);
         }
     }
-    
 
     public function getStatus(Request $request)
     {

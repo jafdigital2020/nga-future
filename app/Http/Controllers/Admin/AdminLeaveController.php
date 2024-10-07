@@ -264,27 +264,27 @@ class AdminLeaveController extends Controller
     public function update(Request $request, $id)
     {
         $leave = LeaveRequest::findOrFail($id);
-
+    
         if ($leave->status == 'Approved') {
             Alert::error('This leave request has already been approved and cannot be edited.');
             return redirect()->back();
         }
-
-        $user = auth()->user();
+    
+        $user = $leave->user;
         $leaveType = $request->input('typee');
         $requestedDays = $request->input('dayse');
         $startDate = $request->input('start_datee');
         $endDate = $request->input('end_datee');
-
+    
         // Define valid leave types
         $validLeaveTypes = ['Vacation Leave', 'Sick Leave', 'Birthday Leave', 'Unpaid Leave'];
-
+    
         // Check if the leave type is valid
         if (!in_array($leaveType, $validLeaveTypes)) {
             Alert::error('Invalid leave type selected');
             return redirect()->back();
         }
-
+    
         // Check leave balance
         if ($leaveType == 'Vacation Leave') {
             if ($user->vacLeave < $requestedDays) {
@@ -302,9 +302,10 @@ class AdminLeaveController extends Controller
                 return redirect()->back();
             }
         }
-
-        // Check for overlapping leave requests
+    
+        // Check for overlapping leave requests, excluding the current leave request
         $overlappingLeave = LeaveRequest::where('users_id', $user->id)
+            ->where('id', '!=', $id)  // Exclude the current leave request from the overlap check
             ->where(function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('start_date', [$startDate, $endDate])
                     ->orWhereBetween('end_date', [$startDate, $endDate])
@@ -312,22 +313,24 @@ class AdminLeaveController extends Controller
                     ->orWhereRaw('? BETWEEN start_date AND end_date', [$endDate]);
             })
             ->exists();
-
+    
         if ($overlappingLeave) {
             Alert::error('You already have a leave request within the selected dates');
             return redirect()->back();
         }
-
+    
+        // Update the leave request
         $leave->type = $leaveType;
         $leave->start_date = $startDate;
         $leave->end_date = $endDate;
         $leave->days = $requestedDays;
         $leave->reason = $request->input('reason');
         $leave->save();
-
+    
         Alert::success('Leave request updated successfully');
         return redirect()->back();
     }
+    
 
     public function destroy($id)
     {

@@ -14,10 +14,6 @@
                     <li class="breadcrumb-item active">Employee</li>
                 </ul>
             </div>
-            <div class="col-auto float-right ml-auto">
-                <a href="#" class="btn add-btn"><i class="fa fa-file"></i> Request
-                    Attendance</a>
-            </div>
         </div>
     </div>
     <!-- /Page Header -->
@@ -117,4 +113,10 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+
+
+
 @endsection

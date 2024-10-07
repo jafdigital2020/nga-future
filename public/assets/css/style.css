@@ -9578,7 +9578,7 @@ ul.comment-list li ul.children {
         top: 0;
         width: 60px;
         z-index: 10;
-        margin-top: 20px;
+
     }
 
     #toggle_btn {
@@ -9936,7 +9936,6 @@ ul.comment-list li ul.children {
 
     .mobile-user-menu {
         display: block;
-        margin-top: 20px;
     }
 
     .search-box {

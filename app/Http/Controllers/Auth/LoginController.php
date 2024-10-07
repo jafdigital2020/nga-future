@@ -45,6 +45,7 @@ class LoginController extends Controller
             return redirect('manager/dashboard')->with('status', 'Welcome To One JAF');
         } elseif (Auth::user()->role_as == '6') { // 6 Marketing Manager
             return redirect('manager/dashboard')->with('status', 'Welcome To One JAF');
+            
         } else { // Redirect all other roles to /
             return redirect('/')->with('status', 'Please coordinate with our HR department to access your account. Thank you.');
         }

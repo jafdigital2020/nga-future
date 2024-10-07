@@ -202,5 +202,21 @@ class SettingsController extends Controller
         return view('admin.settings.leavetype', compact('ltype'));
     }
     
+    public function leaveTypeStore(Request $request)
+    {
+        try {
+            $type = new LeaveType();
+            $type->leaveType = $request->input('leaveType');
+            $type->leaveDays = $request->input('leaveDays');
+            $type->status = $request->input('status');
+            
+            $type->save();
+    
+            return back()->with('success', 'Leave Type Added.');
+        } catch (\Exception $e) {
+
+            return back()->withErrors(['error' => 'Failed to add Leave Type: ' . $e->getMessage()]);
+        }
+    }
     
 }

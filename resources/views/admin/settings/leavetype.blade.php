@@ -10,7 +10,7 @@
             <div class="col">
                 <h3 class="page-title">Leave Type</h3>
                 <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url('admin/dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item active">Leave Type</li>
                 </ul>
             </div>
@@ -30,18 +30,17 @@
                         <tr>
                             <th>#</th>
                             <th>Leave Type</th>
-                            <th>Leave Days</th>
+                            <th>Leave Credit</th>
                             <th>Status</th>
                             <th class="text-right">Action</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @foreach($ltype as $type)
                         <tr>
-                            <td>
-                                1
-                            </td>
-                            <td>Casual Leave</td>
-                            <td>12 Days</td>
+                            <td>{{ $type->id }}</td>
+                            <td>{{ $type->leaveType }}</td>
+                            <td>{{ $type->leaveDays }}</td>
                             <td>
                                 <div class="dropdown action-label">
                                     <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#"
@@ -70,74 +69,7 @@
                                 </div>
                             </td>
                         </tr>
-                        <tr>
-                            <td>
-                                2
-                            </td>
-                            <td>Medical Leave</td>
-                            <td>12 Days</td>
-                            <td>
-                                <div class="dropdown action-label">
-                                    <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#"
-                                        data-toggle="dropdown" aria-expanded="false">
-                                        <i class="fa fa-dot-circle-o text-danger"></i> Inactive
-                                    </a>
-                                    <div class="dropdown-menu dropdown-menu-right">
-                                        <a class="dropdown-item" href="#"><i
-                                                class="fa fa-dot-circle-o text-success"></i> Active</a>
-                                        <a class="dropdown-item" href="#"><i class="fa fa-dot-circle-o text-danger"></i>
-                                            Inactive</a>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="text-right">
-                                <div class="dropdown dropdown-action">
-                                    <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown"
-                                        aria-expanded="false"><i class="material-icons">more_vert</i></a>
-                                    <div class="dropdown-menu dropdown-menu-right">
-                                        <a class="dropdown-item" href="#" data-toggle="modal"
-                                            data-target="#edit_leavetype"><i class="fa fa-pencil m-r-5"></i> Edit</a>
-                                        <a class="dropdown-item" href="#" data-toggle="modal"
-                                            data-target="#delete_leavetype"><i class="fa fa-trash-o m-r-5"></i>
-                                            Delete</a>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                3
-                            </td>
-                            <td>Loss of Pay</td>
-                            <td>-</td>
-                            <td>
-                                <div class="dropdown action-label">
-                                    <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#"
-                                        data-toggle="dropdown" aria-expanded="false">
-                                        <i class="fa fa-dot-circle-o text-success"></i> Active
-                                    </a>
-                                    <div class="dropdown-menu dropdown-menu-right">
-                                        <a class="dropdown-item" href="#"><i
-                                                class="fa fa-dot-circle-o text-success"></i> Active</a>
-                                        <a class="dropdown-item" href="#"><i class="fa fa-dot-circle-o text-danger"></i>
-                                            Inactive</a>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="text-right">
-                                <div class="dropdown dropdown-action">
-                                    <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown"
-                                        aria-expanded="false"><i class="material-icons">more_vert</i></a>
-                                    <div class="dropdown-menu dropdown-menu-right">
-                                        <a class="dropdown-item" href="#" data-toggle="modal"
-                                            data-target="#edit_leavetype"><i class="fa fa-pencil m-r-5"></i> Edit</a>
-                                        <a class="dropdown-item" href="#" data-toggle="modal"
-                                            data-target="#delete_leavetype"><i class="fa fa-trash-o m-r-5"></i>
-                                            Delete</a>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>
@@ -157,17 +89,18 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form>
+                <form action="{{ route('settings.leaveTypeStore') }}" method="POST">
+                    @csrf
                     <div class="form-group">
                         <label>Leave Type <span class="text-danger">*</span></label>
-                        <input class="form-control" type="text">
+                        <input class="form-control" type="text" name="leaveType" id="leaveType" required>
                     </div>
                     <div class="form-group">
-                        <label>Number of days <span class="text-danger">*</span></label>
-                        <input class="form-control" type="text">
+                        <label>Leave Credits<span class="text-danger">*</span></label>
+                        <input class="form-control" type="text" name="leaveDays" id="leaveDays" required>
                     </div>
                     <div class="submit-section">
-                        <button class="btn btn-primary submit-btn">Submit</button>
+                        <button type="submit" class="btn btn-primary submit-btn">Submit</button>
                     </div>
                 </form>
             </div>
@@ -236,5 +169,54 @@
 
 
 @section('scripts')
+
+<!-- TOASTR ALERT NOTIFICATIONS -->
+@if (session('success'))
+<script>
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "newestOnTop": false,
+        "progressBar": true,
+        "positionClass": "toast-top-right", // Or any position you prefer
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000", // 5 seconds
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    }
+    toastr.success("{{ session('success') }}");
+
+</script>
+@endif
+
+@if (session('error'))
+<script>
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "newestOnTop": false,
+        "progressBar": true,
+        "positionClass": "toast-top-right", // Or any position you prefer
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000", // 5 seconds
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    }
+    toastr.error("{{ session('error') }}");
+
+</script>
+@endif
 
 @endsection

@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use App\Models\ShiftSchedule;
 use App\Models\EmployeeSalary;
 use App\Models\BankInformation;
+use App\Models\OvertimeRequest;
 use App\Models\EmploymentRecord;
 use App\Models\EmployementSalary;
 use Laravel\Sanctum\HasApiTokens;
@@ -268,6 +269,17 @@ class User extends Authenticatable
         return $this->hasMany(Policy::class, 'uploaded_by');
     }
 
+    public function OTapproved()
+    {
+        return $this->hasMany(Policy::class, 'approved_by');
+    }
+
+    public function otrequest()
+    {
+        return $this->hasMany(OvertimeRequest::class, 'users_id' , 'id');
+    }
+
+
     public function checkIn(Request $request)
     {
         try {
@@ -322,7 +334,7 @@ class User extends Authenticatable
     
                 // Calculate timeEnd based on allowedHours
                 $allowedHours = Carbon::parse($shiftSchedule->allowedHours)->secondsSinceMidnight();
-                $calculatedTimeEnd = $timeIn->copy()->addSeconds($allowedHours);
+                $calculatedTimeEnd = $timeIn->copy()->addSeconds($allowedHours)->addHour();
     
                 // If calculated timeEnd exceeds shiftEnd, cap timeEnd to shiftEnd
                 if ($calculatedTimeEnd->greaterThan($shiftEnd)) {

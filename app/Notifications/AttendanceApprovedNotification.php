@@ -7,22 +7,19 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class AttendanceSubmissionNotification extends Notification
+class AttendanceApprovedNotification extends Notification
 {
     use Queueable;
 
     protected $attendance;
-    protected $employee;
-
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct($attendance, $employee)
+    public function __construct($attendance)
     {
         $this->attendance = $attendance;
-        $this->employee = $employee;
     }
 
     /**
@@ -33,7 +30,7 @@ class AttendanceSubmissionNotification extends Notification
      */
     public function via($notifiable)
     {
-        return ['database'];  // Notify via both database and email
+        return ['database'];
     }
 
     /**
@@ -45,13 +42,9 @@ class AttendanceSubmissionNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('Attendance Submission by ' . $this->employee->name)
-            ->line($this->employee->name . ' has submitted attendance for ' . $this->attendance->month)
-            ->line('Worked Hours: ' . $this->attendance->totalHours)
-            ->line('Late Hours: ' . $this->attendance->totalLate)
-            ->line('Status: ' . $this->attendance->status)
-            ->action('View Attendance', url('/attendance'))
-            ->line('Thank you for using our application!');
+                    ->line('The introduction to the notification.')
+                    ->action('Notification Action', url('/'))
+                    ->line('Thank you for using our application!');
     }
 
     /**
@@ -63,12 +56,13 @@ class AttendanceSubmissionNotification extends Notification
     public function toArray($notifiable)
     {
         return [
-            'message' => $this->employee->name . ' has submitted attendance for ' . $this->attendance->month,
-            'employee_name' => $this->employee->name,
+            'message' => 'Your attendance for the cutoff period ' . $this->attendance->cut_off . ' has been approved.',
+            'attendance_id' => $this->attendance->id,
+            'cutoff' => $this->attendance->cut_off,
+            'start_date' => $this->attendance->start_date,
+            'end_date' => $this->attendance->end_date,
             'total_worked' => $this->attendance->totalHours,
             'total_late' => $this->attendance->totalLate,
-            'cutoff' => $this->attendance->cut_off,
-            'status' => $this->attendance->status,
         ];
     }
 }

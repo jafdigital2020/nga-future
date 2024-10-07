@@ -122,32 +122,32 @@
                         </div>
                         <div class="noti-content">
                             <ul class="notification-list">
-                                @foreach(auth()->user()->unreadNotifications as $notification)
-                                <li class="notification-message">
-                                    <a href="{{ isset($notification->data['leave_type']) ? route('leave.searchr') : (isset($notification->data['total_worked']) ? route('approvedTime') : '#') }}"
-                                        class="notification-link" data-id="{{ $notification->id }}">
+                                @foreach(auth()->user()->unreadNotifications->unique('id') as $notification)
+                                <li class="notification-message unread" data-id="{{ $notification->id }}">
+                                    <a href="{{ isset($notification->data['leave_type']) ? route('leave.searchr') : (isset($notification->data['total_worked']) ? route('approvedTime') : (isset($notification->data['total_hours']) ? url('hr/overtime') : '#')) }}"
+                                        class="notification-link">
                                         <div class="media">
                                             <span class="avatar">
-                                                <!-- Display the requester's image -->
                                                 <img alt="Profile Image"
                                                     src="{{ asset('images/' . ($notification->data['image'] ?? 'default.png')) }}" />
                                             </span>
                                             <div class="media-body">
+                                                <!-- Leave Notification -->
                                                 @if(isset($notification->data['leave_type']) &&
                                                 isset($notification->data['employee_name']))
-                                                <!-- Leave Request Notification -->
                                                 <p class="noti-details">
                                                     <span
                                                         class="noti-title">{{ $notification->data['employee_name'] }}</span>
                                                     requested a leave:
                                                     <span
                                                         class="noti-title">{{ $notification->data['leave_type'] }}</span>
-                                                    from <span>{{ $notification->data['start_date'] }}</span> to
+                                                    from
+                                                    <span>{{ $notification->data['start_date'] }}</span> to
                                                     <span>{{ $notification->data['end_date'] }}</span>.
                                                 </p>
+                                                <!-- Attendance Notification -->
                                                 @elseif(isset($notification->data['total_worked']) &&
                                                 isset($notification->data['employee_name']))
-                                                <!-- Attendance Submission Notification -->
                                                 <p class="noti-details">
                                                     <span
                                                         class="noti-title">{{ $notification->data['employee_name'] }}</span>
@@ -157,16 +157,35 @@
                                                     <span>{{ $notification->data['total_worked'] }}</span>,
                                                     Late Hours: <span>{{ $notification->data['total_late'] }}</span>.
                                                 </p>
+                                                <!-- Overtime Notification -->
+                                                @elseif(isset($notification->data['total_hours']) &&
+                                                isset($notification->data['employee_name']))
+                                                <p class="noti-details">
+                                                    <span
+                                                        class="noti-title">{{ $notification->data['employee_name'] }}</span>
+                                                    submitted an overtime request for
+                                                    <span>{{ $notification->data['total_hours'] }}</span> hours on
+                                                    <span>{{ $notification->data['date'] }}</span>.
+                                                </p>
+                                                <!-- Approved Leave (No Employee Name) -->
                                                 @elseif(isset($notification->data['leave_type']) &&
                                                 !isset($notification->data['employee_name']))
-                                                <!-- Leave Request Approved Notification -->
                                                 <p class="noti-details">
                                                     Your leave request for
                                                     <span
                                                         class="noti-title">{{ $notification->data['leave_type'] }}</span>
-                                                    from <span>{{ $notification->data['start_date'] }}</span> to
+                                                    from
+                                                    <span>{{ $notification->data['start_date'] }}</span> to
                                                     <span>{{ $notification->data['end_date'] }}</span> has been
                                                     approved.
+                                                </p>
+                                                <!-- Missed Logout Notification -->
+                                                @elseif(isset($notification->data['missed_logout']))
+                                                <p class="noti-details">
+                                                    <span
+                                                        class="noti-title">{{ $notification->data['employee_name'] }}</span>
+                                                    missed logging out on
+                                                    <span>{{ $notification->data['date'] }}</span>.
                                                 </p>
                                                 @endif
                                                 <p class="noti-time">
@@ -394,6 +413,21 @@
                             <a href="{{ url('hr/attendance') }}"><i class="la la-calendar"></i>
                                 <span>Attendance</span></a>
                         </li>
+                        <li class="submenu">
+                            <a href="#"><i class="la la-clock"></i>
+                                <span> Overtime Section </span>
+                                <span class="menu-arrow"></span></a>
+                            <ul style="display: none">
+                                <li class="{{ Request::is('hr/overtime') ? 'active':'' }}">
+                                    <a href="{{ url('hr/overtime') }}">
+                                        Overtime Request
+                                    </a>
+                                </li>
+                                <li class="{{ Request::is('hr/overtime/approval') ? 'active':'' }}">
+                                    <a href="{{ url('hr/overtime/approval') }}"> Overtime Approval </a>
+                                </li>
+
+                            </ul>
                         </li>
                         <li class="{{ Request::is('hr/timesheet') ? 'active':'' }}">
                             <a href="{{ url('hr/timesheet') }}"><i class="las la-calendar-check"></i>
@@ -562,7 +596,53 @@
 
     </script>
 
+    @if (session('success'))
+    <script>
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": true,
+            "positionClass": "toast-top-right", // Or any position you prefer
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000", // 5 seconds
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        }
+        toastr.success("{{ session('success') }}");
 
+    </script>
+    @endif
+
+    @if (session('error'))
+    <script>
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": true,
+            "positionClass": "toast-top-right", // Or any position you prefer
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000", // 5 seconds
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        }
+        toastr.error("{{ session('error') }}");
+
+    </script>
+    @endif
 
 
 </body>

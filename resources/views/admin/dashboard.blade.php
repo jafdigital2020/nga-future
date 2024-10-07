@@ -1,5 +1,20 @@
 @extends('layouts.master') @section('title', 'One JAF')
 <meta name="csrf-token" content="{{ csrf_token() }}">
+<style>
+    a.mobile_btn {
+        margin-top: 20px;
+    }
+
+    .mobile-user-menu {
+        display: block;
+        margin-top: 25px;
+    }
+
+    .logoSide {
+        margin-top: 0px;
+    }
+
+</style>
 
 @section('content')
 
@@ -110,24 +125,7 @@
                                             <p>Late<br>Today</p>
                                         </div>
                                     </div>
-                                    <!-- <div class="col-md-4">
-                                        <div class="attendance-details">
-                                            <h4 class="text-purple"></h4>
-                                            <p>Vacation Leave</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="attendance-details">
-                                            <h4 class="text-info"></h4>
-                                            <p>Sick <br>Leave</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="attendance-details">
-                                            <h4 class="text-danger"></h4>
-                                            <p>Birthday Leave</p>
-                                        </div>
-                                    </div> -->
+
                                 </div>
                             </div>
                             <div class="view-attendance">
@@ -243,123 +241,7 @@
                                 </div>
 
                             </div>
-                            <div class="tab-pane fade" id="schedule_tab" role="tabpanel">
-                                <div class="employee-noti-content">
-                                    <ul class="employee-notification-list">
-                                        <li class="employee-notification-grid">
-                                            <div class="employee-notification-icon">
-                                                <a href="activities.html">
-                                                    <span class="rounded-circle">
-                                                        <img src="assets/img/avatar/avatar-2.jpg"
-                                                            class="img-fluid rounded-circle" alt="User">
-                                                    </span>
-                                                </a>
-                                            </div>
-                                            <div class="employee-notification-content">
-                                                <h6>
-                                                    <a href="activities.html">
-                                                        John has requested feedba
-                                                    </a>
-                                                </h6>
-                                                <ul class="nav">
-                                                    <li>10:30 AM</li>
-                                                    <li>21 Apr 2024</li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        <li class="employee-notification-grid">
-                                            <div class="employee-notification-icon">
-                                                <a href="activities.html">
-                                                    <span class="badge-soft-danger rounded-circle">HR</span>
-                                                </a>
-                                            </div>
-                                            <div class="employee-notification-content">
-                                                <h6>
-                                                    <a href="activities.html">
-                                                        Your leave request has been
-                                                    </a>
-                                                </h6>
-                                                <ul class="nav">
-                                                    <li>02:10 PM</li>
-                                                    <li>21 Apr 2024</li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        <li class="employee-notification-grid">
-                                            <div class="employee-notification-icon">
-                                                <a href="activities.html">
-                                                    <span class="badge-soft-info rounded-circle">ER</span>
-                                                </a>
-                                            </div>
-                                            <div class="employee-notification-content">
-                                                <h6>
-                                                    <a href="activities.html">
-                                                        You’re enrolled in upcom....
-                                                    </a>
-                                                </h6>
-                                                <ul class="nav">
-                                                    <li>12:40 PM</li>
-                                                    <li>21 Apr 2024</li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        <li class="employee-notification-grid">
-                                            <div class="employee-notification-icon">
-                                                <a href="activities.html">
-                                                    <span class="badge-soft-warning rounded-circle">SM</span>
-                                                </a>
-                                            </div>
-                                            <div class="employee-notification-content">
-                                                <h6>
-                                                    <a href="activities.html">
-                                                        Your annual compliance trai
-                                                    </a>
-                                                </h6>
-                                                <ul class="nav">
-                                                    <li>11:00 AM</li>
-                                                    <li>21 Apr 2024</li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        <li class="employee-notification-grid">
-                                            <div class="employee-notification-icon">
-                                                <a href="activities.html">
-                                                    <span class="badge-soft-warning rounded-circle">DT</span>
-                                                </a>
-                                            </div>
-                                            <div class="employee-notification-content">
-                                                <h6>
-                                                    <a href="activities.html">
-                                                        Gentle remainder about train
-                                                    </a>
-                                                </h6>
-                                                <ul class="nav">
-                                                    <li>09:00 AM</li>
-                                                    <li>21 Apr 2024</li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        <li class="employee-notification-grid">
-                                            <div class="employee-notification-icon">
-                                                <a href="activities.html">
-                                                    <span class="badge-soft-danger rounded-circle">AU</span>
-                                                </a>
-                                            </div>
-                                            <div class="employee-notification-content">
-                                                <h6>
-                                                    <a href="activities.html">
-                                                        Our HR system will be down
-                                                    </a>
-                                                </h6>
-                                                <ul class="nav">
-                                                    <li>11:50 AM</li>
-                                                    <li>21 Apr 2024</li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -674,7 +556,5 @@
 
 </script>
 @endif
-
-
 
 @endsection

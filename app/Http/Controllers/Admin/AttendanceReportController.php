@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
+use App\Notifications\AttendanceApprovedNotification;
 
 class AttendanceReportController extends Controller
 {
@@ -269,17 +270,23 @@ class AttendanceReportController extends Controller
     public function approve($id)
     {
         $att = ApprovedAttendance::findOrFail($id);
+    
+        // Log the attendance data
+        Log::info('Attendance Data', [
+            'cutoff' => $att->cut_off,
+            'start_date' => $att->start_date,
+            'end_date' => $att->end_date,
+        ]);
+    
         $user = $att->user;
-        $currentUser = auth()->user();
-
-        $user->save();
-
         $att->status = 'Approved';
-        $att->approved_by = $currentUser->id;
+        $att->approved_by = auth()->user()->id;
         $att->save();
-
-        Alert::success('Attendance Approved');
-        return redirect()->back();
+    
+        // Notify the user
+        $user->notify(new AttendanceApprovedNotification($att));
+    
+        return redirect()->back()->with('success', 'Timesheet Approved');
     }
 
     public function decline($id)

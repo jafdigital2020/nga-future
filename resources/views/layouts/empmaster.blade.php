@@ -115,8 +115,9 @@
                 <li class="nav-item dropdown">
                     <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
                         <i class="fa fa-bell-o"></i>
-                        <span class="badge badge-pill"
-                            id="notification-count">{{ auth()->user()->unreadNotifications->count() }}</span>
+                        <span class="badge badge-pill" id="notification-count">
+                            {{ auth()->user()->unreadNotifications->count() }}
+                        </span>
                     </a>
                     <div class="dropdown-menu notifications">
                         <div class="topnav-dropdown-header">
@@ -126,51 +127,75 @@
                         <div class="noti-content">
                             <ul class="notification-list">
                                 @foreach(auth()->user()->unreadNotifications as $notification)
+                                @php
+                                // Set dynamic variables based on notification type
+                                $notificationType = class_basename($notification->type);
+                                $data = $notification->data;
+                                $userName = $data['employee_name'] ?? auth()->user()->name;
+                                @endphp
+
                                 <li class="notification-message">
-                                    <a href="{{ isset($notification->data['leave_type']) ? route('leave.searchemp') : (isset($notification->data['total_worked']) ? route('approvedTime') : '#') }}"
+                                    <a href="{{ isset($data['leave_type']) ? route('leave.searchemp') : (isset($data['total_worked']) ? url('emp/dashboard') : '#') }}"
                                         class="notification-link" data-id="{{ $notification->id }}">
                                         <div class="media">
                                             <span class="avatar">
+                                                <!-- Display the requester's image -->
                                                 <img alt="Profile Image"
-                                                    src="{{ asset('images/' . auth()->user()->image) }}" />
+                                                    src="{{ asset('images/' . ($notification->data['image'] ?? 'default.png')) }}" />
                                             </span>
                                             <div class="media-body">
-                                                @if(isset($notification->data['leave_type']) &&
-                                                isset($notification->data['employee_name']))
-                                                <!-- Leave Request Notification -->
                                                 <p class="noti-details">
-                                                    <span
-                                                        class="noti-title">{{ $notification->data['employee_name'] }}</span>
-                                                    requested a leave:
-                                                    <span
-                                                        class="noti-title">{{ $notification->data['leave_type'] }}</span>
-                                                    from <span>{{ $notification->data['start_date'] }}</span> to
-                                                    <span>{{ $notification->data['end_date'] }}</span>.
-                                                </p>
-                                                @elseif(isset($notification->data['total_worked']) &&
-                                                isset($notification->data['employee_name']))
-                                                <!-- Attendance Submission Notification -->
-                                                <p class="noti-details">
-                                                    <span
-                                                        class="noti-title">{{ $notification->data['employee_name'] }}</span>
-                                                    submitted attendance for
-                                                    <span class="noti-title">{{ $notification->data['cutoff'] }}</span>.
+                                                    @if(isset($data['leave_type']) && isset($data['employee_name']))
+                                                    <!-- Leave Request Notification -->
+                                                    <span class="noti-title">{{ $userName }}</span> requested a leave:
+                                                    <span class="noti-title">{{ $data['leave_type'] }}</span> from
+                                                    <span>{{ $data['start_date'] }}</span> to
+                                                    <span>{{ $data['end_date'] }}</span>.
+
+                                                    @elseif(isset($data['leave_type']) &&
+                                                    !isset($data['employee_name']))
+                                                    <!-- Leave Request Approved Notification -->
+                                                    Your leave request for <span
+                                                        class="noti-title">{{ $data['leave_type'] }}</span> from
+                                                    <span>{{ $data['start_date'] }}</span> to
+                                                    <span>{{ $data['end_date'] }}</span> has been
+                                                    <span class="noti-title">approved</span>.
+
+                                                    @elseif($notificationType == 'AttendanceApprovedNotification' &&
+                                                    isset($data['cutoff']))
+                                                    <!-- Attendance Approved Notification -->
+                                                    Your attendance for the cutoff period <span
+                                                        class="noti-title">{{ $data['cutoff'] }}</span>
+                                                    (from <span>{{ $data['start_date'] }}</span> to
+                                                    <span>{{ $data['end_date'] }}</span>)
+                                                    has been <span class="noti-title">approved</span>.
+
+                                                    @elseif($notificationType == 'AttendanceDeclinedNotification')
+                                                    <!-- Attendance Declined Notification -->
+                                                    Your attendance has been <span class="noti-title">declined</span>.
+
+                                                    @elseif(isset($data['total_worked']))
+                                                    <!-- Attendance Submission Notification -->
+                                                    <span class="noti-title">{{ $userName }}</span> submitted attendance
+                                                    for
+                                                    <span class="noti-title">{{ $data['cutoff'] ?? 'Unknown' }}</span>.
                                                     Worked Hours:
-                                                    <span>{{ $notification->data['total_worked'] }}</span>,
-                                                    Late Hours: <span>{{ $notification->data['total_late'] }}</span>.
+                                                    <span>{{ $data['total_worked'] }}</span>, Late Hours:
+                                                    <span>{{ $data['total_late'] }}</span>.
+                                                    @elseif($notificationType == 'PayslipGeneratedNotification')
+                                                    Your payslip for the period from <span
+                                                        class="noti-title">{{ $data['start_date'] }}</span> to
+                                                    <span class="noti-title">{{ $data['end_date'] }}</span> in the year
+                                                    <span class="noti-title">{{ $data['year'] }}</span> has been
+                                                    generated.
+                                                    @elseif($notificationType == 'OvertimeRequestStatusUpdated')
+                                                    <!-- Overtime Request Status Updated Notification -->
+                                                    Your overtime request for <span
+                                                        class="noti-title">{{ $data['total_hours'] }}</span> hours on
+                                                    <span>{{ $data['date'] }}</span> has been <span
+                                                        class="noti-title">{{ $data['status'] }}</span>.
+                                                    @endif
                                                 </p>
-                                                @elseif(isset($notification->data['leave_type']) &&
-                                                !isset($notification->data['employee_name']))
-                                                <!-- Leave Request Approved Notification -->
-                                                <p class="noti-details">
-                                                    Your leave request for
-                                                    <span
-                                                        class="noti-title">{{ $notification->data['leave_type'] }}</span>
-                                                    from <span>{{ $notification->data['start_date'] }}</span> to
-                                                    <span>{{ $notification->data['end_date'] }}</span> has been
-                                                    approved.
-                                                </p>
-                                                @endif
                                                 <p class="noti-time">
                                                     <span
                                                         class="notification-time">{{ $notification->created_at->diffForHumans() }}</span>
@@ -188,7 +213,6 @@
                     </div>
                 </li>
                 <!-- /Notifications -->
-
 
                 <!-- Message Notifications -->
                 <!-- <li class="nav-item dropdown">
@@ -406,6 +430,10 @@
                             <a href="{{ url('emp/attendance') }}"><i class="la la-calendar"></i>
                                 <span>Attendance</span></a>
                         </li>
+                        <li class="{{ Request::is('emp/overtime') ? 'active':'' }}">
+                            <a href="{{ url('emp/overtime') }}"><i class="la la-clock"></i>
+                                <span>Overtime</span></a>
+                        </li>
                         <li class="{{ Request::is('emp/leave') ? 'active':'' }}">
                             <a href="{{ url('emp/leave') }}"><i class="la la-rocket"></i>
                                 <span>Leave</span></a>
@@ -580,6 +608,55 @@
         });
 
     </script>
+
+    @if (session('success'))
+    <script>
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": true,
+            "positionClass": "toast-top-right", // Or any position you prefer
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000", // 5 seconds
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        }
+        toastr.success("{{ session('success') }}");
+
+    </script>
+    @endif
+
+    @if (session('error'))
+    <script>
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": true,
+            "positionClass": "toast-top-right", // Or any position you prefer
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000", // 5 seconds
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        }
+        toastr.error("{{ session('error') }}");
+
+    </script>
+    @endif
+
 
 </body>
 

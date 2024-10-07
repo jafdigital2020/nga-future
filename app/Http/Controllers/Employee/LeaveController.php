@@ -23,96 +23,102 @@ class LeaveController extends Controller
    }
 
    public function storeLeave(Request $request)
-    {
-        $user = auth()->user();
-        $leaveType = $request->input('type');
-        $requestedDays = $request->input('total_days');
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
-
-        // Define valid leave types
-        $validLeaveTypes = ['Vacation Leave', 'Sick Leave', 'Birthday Leave', 'Unpaid Leave'];
-
-        // Check if the leave type is valid
-        if (!in_array($leaveType, $validLeaveTypes)) {
-            Alert::error('Invalid leave type selected');
-            return redirect()->back();
-        }
-
-        // Check leave balance
-        if ($leaveType == 'Vacation Leave') {
-            if ($user->vacLeave < $requestedDays) {
-                Alert::error('Insufficient vacation leave balance');
-                return redirect()->back();
-            }
-        } elseif ($leaveType == 'Sick Leave') {
-            if ($user->sickLeave < $requestedDays) {
-                Alert::error('Insufficient sick leave balance');
-                return redirect()->back();
-            }
-        } elseif ($leaveType == 'Birthday Leave') {
-            if ($user->bdayLeave < $requestedDays) {
-                Alert::error('Insufficient birthday leave balance');
-                return redirect()->back();
-            }
-        }
-
-        // Check for overlapping leave requests
-        $overlappingLeave = LeaveRequest::where('users_id', $user->id)
-            ->where(function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('start_date', [$startDate, $endDate])
-                    ->orWhereBetween('end_date', [$startDate, $endDate])
-                    ->orWhereRaw('? BETWEEN start_date AND end_date', [$startDate])
-                    ->orWhereRaw('? BETWEEN start_date AND end_date', [$endDate]);
-            })
-            ->exists();
-
-        if ($overlappingLeave) {
-            Alert::error('You already have a leave request within the selected dates');
-            return redirect()->back();
-        }
-
-        // Save leave request
-        $leaveRequest = new LeaveRequest();
-        $leaveRequest->users_id = $user->id;
-        $leaveRequest->name = $user->name;
-        $leaveRequest->start_date = $startDate;
-        $leaveRequest->end_date = $endDate;
-        $leaveRequest->days = $requestedDays;
-        $leaveRequest->reason = $request->input('reason');
-        $leaveRequest->type = $leaveType;
-        $leaveRequest->status = 'Pending';
-        $leaveRequest->save();
-
-        // Get the supervisor for the user's department
-        $supervisor = $user->supervisor;
-
-        // Get all HR users
-        $hrUsers = User::where('role_as', User::ROLE_HR)->get();
-
-        // Get all Admin users
-        $adminUsers = User::where('role_as', User::ROLE_ADMIN)->get();
-
-        // Notify the supervisor
-        if ($supervisor && $supervisor != 'Management') {
-            $supervisor->notify(new LeaveRequestNotification($leaveRequest, $user));  // Pass the leave request and user to the notification
-        }
-
-        // Notify all HR users
-        foreach ($hrUsers as $hr) {
-            $hr->notify(new LeaveRequestNotification($leaveRequest, $user));  // Pass the leave request and user to the notification
-        }
-
-        // Notify all Admin users
-        foreach ($adminUsers as $admin) {
-            $admin->notify(new LeaveRequestNotification($leaveRequest, $user));  // Pass the leave request and user to the notification
-        }
+   {
+       $user = auth()->user();
+       $leaveType = $request->input('type');
+       $requestedDays = $request->input('total_days');
+       $startDate = $request->input('start_date');
+       $endDate = $request->input('end_date');
+   
+       // Define valid leave types
+       $validLeaveTypes = ['Vacation Leave', 'Sick Leave', 'Birthday Leave', 'Unpaid Leave'];
+   
+       // Check if the leave type is valid
+       if (!in_array($leaveType, $validLeaveTypes)) {
+           Alert::error('Invalid leave type selected');
+           return redirect()->back();
+       }
+   
+       // Check leave balance
+       if ($leaveType == 'Vacation Leave') {
+           if ($user->vacLeave < $requestedDays) {
+               Alert::error('Insufficient vacation leave balance');
+               return redirect()->back();
+           }
+       } elseif ($leaveType == 'Sick Leave') {
+           if ($user->sickLeave < $requestedDays) {
+               Alert::error('Insufficient sick leave balance');
+               return redirect()->back();
+           }
+       } elseif ($leaveType == 'Birthday Leave') {
+           if ($user->bdayLeave < $requestedDays) {
+               Alert::error('Insufficient birthday leave balance');
+               return redirect()->back();
+           }
+       }
+   
+       // Check for overlapping leave requests
+       $overlappingLeave = LeaveRequest::where('users_id', $user->id)
+           ->where(function ($query) use ($startDate, $endDate) {
+               $query->whereBetween('start_date', [$startDate, $endDate])
+                   ->orWhereBetween('end_date', [$startDate, $endDate])
+                   ->orWhereRaw('? BETWEEN start_date AND end_date', [$startDate])
+                   ->orWhereRaw('? BETWEEN start_date AND end_date', [$endDate]);
+           })
+           ->exists();
+   
+       if ($overlappingLeave) {
+           Alert::error('You already have a leave request within the selected dates');
+           return redirect()->back();
+       }
+   
+       // Handle file upload
+       $filePath = null;
+       if ($request->hasFile('attached_file')) {
+           $file = $request->file('attached_file');
+           $filePath = $file->store('leave_attachments', 'public'); // Store in 'storage/app/public/leave_attachments'
+       }
+   
+       // Save leave request
+       $leaveRequest = new LeaveRequest();
+       $leaveRequest->users_id = $user->id;
+       $leaveRequest->name = $user->name;
+       $leaveRequest->start_date = $startDate;
+       $leaveRequest->end_date = $endDate;
+       $leaveRequest->days = $requestedDays;
+       $leaveRequest->reason = $request->input('reason');
+       $leaveRequest->type = $leaveType;
+       $leaveRequest->status = 'Pending';
+       $leaveRequest->attached_file = $filePath;  // Store the file path in the attached_file column
+       $leaveRequest->save();
+   
+       // Get the supervisor for the user's department
+       $supervisor = $user->supervisor;
+   
+       // Get all HR users
+       $hrUsers = User::where('role_as', User::ROLE_HR)->get();
+   
+       // Get all Admin users
+       $adminUsers = User::where('role_as', User::ROLE_ADMIN)->get();
 
 
-        Alert::success('Leave Request Sent');
+       $notifiableUsers = collect([$supervisor])
+       ->merge($hrUsers)
+       ->merge($adminUsers)
+       ->unique('id')  // Ensure no user is notified more than once
+       ->filter();  // Remove any null values (in case supervisor is null)
 
-        return redirect()->back();
-    }
+      // Notify all unique users
+        foreach ($notifiableUsers as $notifiableUser) {
+        $notifiableUser->notify(new LeaveRequestNotification($leaveRequest, $user));
+       }
+   
+   
+       Alert::success('Leave Request Sent');
+   
+       return redirect()->back();
+   }
+   
 
     public function update(Request $request, $id)
     {

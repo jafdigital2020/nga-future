@@ -304,6 +304,7 @@ class EmployeeController extends Controller
         $user->mSalary = $request->input('mSalary');
         $user->vacLeave = $request->input('vacLeave');
         $user->sickLeave = $request->input('sickLeave');
+        $user->bdayLeave = $request->input('bdayLeave');
         $user->reporting_to = $request->input('reporting_to');
         
         if ($request->filled('password')) {
