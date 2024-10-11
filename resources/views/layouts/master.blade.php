@@ -55,6 +55,12 @@
     <script async defer
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCoZSVkyGR645u4B_OOFmepLzrRBB8Hgmc&callback=initMap">
     </script>
+    <!-- Select Date Range -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
     @stack('styles')
 </head>
 
@@ -417,12 +423,12 @@
                                     </a>
                                 </li>
 
-                                <li>
+                                <li class="{{ Request::is('admin/processed') ? 'active':'' }}">
                                     <a href="{{ url('admin/processed') }}">
                                         Processed Timesheet
                                     </a>
                                 </li>
-                                <li>
+                                <li class="{{ Request::is('admin/approved/payslip') ? 'active':'' }}">
                                     <a href="{{ url('admin/approved/payslip') }}">
                                         Approved Payslip
                                     </a>
@@ -439,6 +445,10 @@
                         <li class="{{ Request::is('admin/overtime') ? 'active':'' }}">
                             <a href="{{ url('admin/overtime') }}"><i class="la la-clock"></i>
                                 <span>Overtime</span></a>
+                        </li>
+                        <li class="{{ Request::is('admin/attendance-certificate') ? 'active':'' }}">
+                            <a href="{{ url('admin/attendance-certificate') }}"><i class="la la-file"></i>
+                                <span>Attendance Certificate</span></a>
                         </li>
                         <!-- Shift And Schedules -->
 
@@ -580,8 +590,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <!-- Carousel Policy -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
-
-
+    <!-- Flatpickr -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
     @yield('scripts')
     <script>
         $(".datetimepicker").datetimepicker({

@@ -135,8 +135,14 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::post('overtime/approve/{id}', [App\Http\Controllers\Admin\OvertimeController::class, 'approveOT'])->name('ot.approveadmin');
     Route::post('overtime/reject/{id}', [App\Http\Controllers\Admin\OvertimeController::class, 'rejectOT'])->name('ot.rejectadmin');
     // Shift and Schedules
-    Route::get('shift/daily', [App\Http\Controllers\Admin\ShiftController::class, 'shiftDaily'])->name('admin.dailyShift');
+    Route::get('shift/daily/', [App\Http\Controllers\Admin\ShiftController::class, 'shiftDaily'])->name('admin.dailyShift');
     Route::get('shift/list', [App\Http\Controllers\Admin\ShiftController::class, 'shiftList'])->name('admin.shiftList');
+    Route::post('shift/list/add', [App\Http\Controllers\Admin\ShiftController::class, 'storeShift'])->name('admin.shiftadd');
+    Route::post('shift/daily/add', [App\Http\Controllers\Admin\ShiftController::class, 'dailyScheduling'])->name('admin.dailyschedule');
+    Route::post('shift/daily/edit/{id}', [App\Http\Controllers\Admin\ShiftController::class, 'dailySchedulingEdit'])->name('admin.dailyscheduleEdit');
+    Route::post('shift/assign', [App\Http\Controllers\Admin\ShiftController::class, 'assignSchedule'])->name('admin.assignschedule');
+    Route::get('shift/list/employee-search', [App\Http\Controllers\Admin\ShiftController::class, 'getEmployeesByDepartment'])->name('getEmployeesByDepartment');
+    Route::post('shift/list/assign', [App\Http\Controllers\Admin\ShiftController::class, 'assignScheduleList'])->name('admin.assignShiftList');
     // Notifications
     Route::get('/notifications/mark-as-read/{id}', function ($id) {
         $notification = auth()->user()->notifications()->find($id);

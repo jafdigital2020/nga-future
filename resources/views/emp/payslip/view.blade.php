@@ -37,12 +37,23 @@
                         <h4 class="payslip-title">Payslip for {{ $view->cut_off }}</h4>
                         <div class="row">
                             <div class="col-sm-6 m-b-20">
+                                @if($themeSettings && $themeSettings->logo)
                                 <img src="{{ asset('images/' . $themeSettings->logo) }}" class="inv-logo" alt="">
+                                @else
+                                <img src="{{ asset('images/default-logo.png') }}" class="inv-logo" alt="Default Logo">
+                                @endif
                                 <ul class="list-unstyled mb-0">
-                                    <li>{{ $companySettings->company }}</li>
-                                    <li>{{ $companySettings->comAddress }}</li>
-                                    <li>{{ $companySettings->city }}, {{ $companySettings->country }},
-                                        {{ $companySettings->postalCode }}</li>
+                                    @if($companySettings)
+                                    <li>{{ $companySettings->company ?? 'Company Name Not Available' }}</li>
+                                    <li>{{ $companySettings->comAddress ?? 'Address Not Available' }}</li>
+                                    <li>
+                                        {{ $companySettings->city ?? 'City Not Available' }},
+                                        {{ $companySettings->country ?? 'Country Not Available' }},
+                                        {{ $companySettings->postalCode ?? 'Postal Code Not Available' }}
+                                    </li>
+                                    @else
+                                    <li>Company information is not available.</li>
+                                    @endif
                                 </ul>
                             </div>
                             <div class="col-sm-6 m-b-20">

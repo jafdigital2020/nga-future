@@ -33,6 +33,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
+
+
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -285,20 +287,25 @@ class User extends Authenticatable
         try {
             $now = $this->freshTimestamp();
     
+            // Get the current date
+            $currentDate = Carbon::now('Asia/Manila')->toDateString();
+    
             // Check if the user has already timed in for the day
             $employeeAttendance = $this->employeeAttendance()
-                ->where('date', Carbon::now('Asia/Manila')->toDateString())
+                ->where('date', $currentDate)
                 ->first();
     
             if ($employeeAttendance) {
                 return back()->with('error', 'You have already timed in!');
             }
     
-            // Get the user's shift schedule
-            $shiftSchedule = ShiftSchedule::where('users_id', auth()->user()->id)->first();
+            // Get the user's shift schedule for the current date
+            $shiftSchedule = ShiftSchedule::where('users_id', auth()->user()->id)
+                ->where('date', $currentDate) // Check for the current date
+                ->first();
     
             if (!$shiftSchedule) {
-                return back()->with('error', 'Shift schedule not found.');
+                return back()->with('error', 'Shift schedule not found for today.');
             }
     
             $timeIn = Carbon::now('Asia/Manila');
@@ -358,7 +365,7 @@ class User extends Authenticatable
             // Create the attendance record
             $this->employeeAttendance()->create([
                 'name' => auth()->user()->fName . ' ' . auth()->user()->lName,
-                'date' => Carbon::now('Asia/Manila')->toDateString(),
+                'date' => $currentDate,
                 'timeIn' => $timeIn->format('h:i:s A'),
                 'status' => $status,
                 'totalLate' => $totalLate,
@@ -380,6 +387,7 @@ class User extends Authenticatable
             return back()->with('error', 'An unexpected error occurred. Please try again later.');
         }
     }
+    
     
 
 

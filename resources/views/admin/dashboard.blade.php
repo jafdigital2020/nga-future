@@ -212,21 +212,64 @@
                                                 <h6>
                                                     <a
                                                         href="{{ isset($notification->data['leave_type']) ? route('leave.searchadmin') : (isset($notification->data['total_worked']) ? route('approvedTime') : (isset($notification->data['missed_logout']) ? route('missedLogouts') : '#')) }}">
+                                                        <!-- Leave Notification -->
                                                         @if(isset($notification->data['leave_type']) &&
                                                         isset($notification->data['employee_name']))
-                                                        {{ $notification->data['employee_name'] }} requested leave:
-                                                        {{ $notification->data['leave_type'] }}.
+                                                        <p class="noti-details">
+                                                            <span
+                                                                class="noti-title">{{ $notification->data['employee_name'] }}</span>
+                                                            requested a leave:
+                                                            <span
+                                                                class="noti-title">{{ $notification->data['leave_type'] }}</span>
+                                                            from
+                                                            <span>{{ $notification->data['start_date'] }}</span> to
+                                                            <span>{{ $notification->data['end_date'] }}</span>.
+                                                        </p>
+                                                        <!-- Attendance Notification -->
                                                         @elseif(isset($notification->data['total_worked']) &&
                                                         isset($notification->data['employee_name']))
-                                                        {{ $notification->data['employee_name'] }} submitted attendance:
-                                                        {{ $notification->data['cutoff'] }}.
+                                                        <p class="noti-details">
+                                                            <span
+                                                                class="noti-title">{{ $notification->data['employee_name'] }}</span>
+                                                            submitted attendance for
+                                                            <span
+                                                                class="noti-title">{{ $notification->data['cutoff'] }}</span>.
+                                                            Worked Hours:
+                                                            <span>{{ $notification->data['total_worked'] }}</span>,
+                                                            Late Hours:
+                                                            <span>{{ $notification->data['total_late'] }}</span>.
+                                                        </p>
+                                                        <!-- Overtime Notification -->
+                                                        @elseif(isset($notification->data['total_hours']) &&
+                                                        isset($notification->data['employee_name']))
+                                                        <p class="noti-details">
+                                                            <span
+                                                                class="noti-title">{{ $notification->data['employee_name'] }}</span>
+                                                            submitted an overtime request for
+                                                            <span>{{ $notification->data['total_hours'] }}</span> hours
+                                                            on
+                                                            <span>{{ $notification->data['date'] }}</span>.
+                                                        </p>
+                                                        <!-- Approved Leave (No Employee Name) -->
                                                         @elseif(isset($notification->data['leave_type']) &&
                                                         !isset($notification->data['employee_name']))
-                                                        Your leave request for {{ $notification->data['leave_type'] }}
-                                                        has been approved.
+                                                        <p class="noti-details">
+                                                            Your leave request for
+                                                            <span
+                                                                class="noti-title">{{ $notification->data['leave_type'] }}</span>
+                                                            from
+                                                            <span>{{ $notification->data['start_date'] }}</span> to
+                                                            <span>{{ $notification->data['end_date'] }}</span> has been
+                                                            approved.
+                                                        </p>
+                                                        <!-- Missed Logout Notification -->
                                                         @elseif(isset($notification->data['missed_logout']))
-                                                        {{ $notification->data['employee_name'] }} missed logging out on
-                                                        {{ $notification->data['date'] }}.
+                                                        <p class="noti-details">
+                                                            <span
+                                                                class="noti-title">{{ $notification->data['employee_name'] }}</span>
+                                                            missed logging out on
+                                                            <span>{{ $notification->data['date'] }}</span>.
+                                                        </p>
                                                         @endif
                                                     </a>
                                                 </h6>

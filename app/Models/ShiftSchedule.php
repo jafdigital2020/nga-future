@@ -18,11 +18,19 @@ class ShiftSchedule extends Model
        'shiftEnd',
        'isFlexibleTime',
        'allowedHours',
+       'shift_id',
+       'date',
+       'break_time',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class, 'users_id', 'id');
+    }
+
+    public function shift()
+    {
+        return $this->belongsTo(Shift::class, 'shift_id');
     }
 
 }
