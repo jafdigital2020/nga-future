@@ -10,8 +10,7 @@ Route::get('/', function () {
 });
 
 
-Auth::routes(['register' => true]);
-
+Auth::routes(['register' => false]);
 
 
 // Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
@@ -43,6 +42,7 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::post('employee/update-record/{user_id}', [\App\Http\Controllers\Admin\EmployeeController::class , 'employmentStore'])->name('employment.storeadmin');
     Route::post('employee/update-salary/{user_id}', [\App\Http\Controllers\Admin\EmployeeController::class, 'employmentSalaryStore'])->name('employment.salaryadmin');
     Route::post('employee/shift/{user_id}', [App\Http\Controllers\Admin\EmployeeController::class, 'shiftSchedule'])->name('admin.shift');
+    Route::post('employee/leave-credits/{id}', [App\Http\Controllers\Admin\EmployeeController::class, 'leaveCredits'])->name('admin.leaveCredits');
     // Leave
     Route::get('/leave', [\App\Http\Controllers\Admin\AdminLeaveController::class, 'index'])->name('leave.searchadmin');
     Route::post('/leave/{id}/approve', [\App\Http\Controllers\Admin\AdminLeaveController::class, 'approve'])->name('leave.approveadmin');
@@ -88,6 +88,10 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::post('/timesheet/approve/{id}', [App\Http\Controllers\Admin\AttendanceReportController::class, 'updateAttendance'])->name('adminTimesheet.updateAttendance');
     Route::delete('/timesheet/delete/{id}', [App\Http\Controllers\Admin\AttendanceReportController::class, 'destroyAttendance'])->name('admin.deleteAttendance');
     Route::get('/timesheet/view/{id}', [App\Http\Controllers\Admin\AttendanceReportController::class, 'viewTimesheet'])->name('admin.timesheetView');
+    Route::get('payroll/preview/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'previewPayroll'])->name('payroll.preview');
+    Route::post('payroll/preview/process/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'processPreview'])->name('payroll.previewProcess');
+    Route::post('payroll/process/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'processPayroll'])->name('payroll.process');
+    Route::post('processed/update', [App\Http\Controllers\Admin\PayrollController::class, 'updateSalary'])->name('salary.update');
     // Create Employee
     Route::post('employee/create/validate-step-1', [App\Http\Controllers\Admin\EmployeeController::class, 'validateStep1'])->name('adminvalidate.step1');
     Route::post('employee/create/validate-step-2', [App\Http\Controllers\Admin\EmployeeController::class, 'validateStep2'])->name('adminvalidate.step2');
@@ -143,6 +147,36 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::post('shift/assign', [App\Http\Controllers\Admin\ShiftController::class, 'assignSchedule'])->name('admin.assignschedule');
     Route::get('shift/list/employee-search', [App\Http\Controllers\Admin\ShiftController::class, 'getEmployeesByDepartment'])->name('getEmployeesByDepartment');
     Route::post('shift/list/assign', [App\Http\Controllers\Admin\ShiftController::class, 'assignScheduleList'])->name('admin.assignShiftList');
+    // Attendance Request
+    Route::get('request/attendance', [App\Http\Controllers\Admin\RequestController::class, 'attendance'])->name('admin.requestAttendance');
+    // Deductions
+    Route::get('deduction', [App\Http\Controllers\Admin\DeductionController::class, 'deductions'])->name('admin.deductions');
+    Route::post('deduction/create', [App\Http\Controllers\Admin\DeductionController::class, 'deductionCreate'])->name('admin.createDeduction');
+    Route::post('deduction/edit/{id}', [App\Http\Controllers\Admin\DeductionController::class, 'deductionEdit'])->name('admin.editDeduction');
+    Route::delete('deduction/delete/{id}', [App\Http\Controllers\Admin\DeductionController::class, 'deductionDestroy'])->name('admin.destroyDeduction');
+    // Deduction For User
+    Route::get('deduction/user', [App\Http\Controllers\Admin\DeductionController::class, 'userDeductionsIndex'])->name('admin.userDeductionsIndex');
+    Route::get('deduction/user/employee-search', [App\Http\Controllers\Admin\DeductionController::class, 'getEmployeesByDepartmentDeduction'])->name('getEmployeesByDepartmentDeduction');
+    Route::post('deduction/user/assigned', [App\Http\Controllers\Admin\DeductionController::class, 'storeUserDeduction'])->name('admin.storeUserDeduction');
+    Route::delete('deduction/user/delete/{id}', [App\Http\Controllers\Admin\DeductionController::class, 'deleteUserDeduction'])->name('admin.deleteUserDeduction');
+    // Earnings
+    Route::get('earning', [App\Http\Controllers\Admin\EarningController::class, 'earnings'])->name('admin.earnings');
+    Route::post('earning/create', [App\Http\Controllers\Admin\EarningController::class, 'earningCreate'])->name('admin.createEarning');
+    Route::post('earning/edit/{id}', [App\Http\Controllers\Admin\EarningController::class, 'earningEdit'])->name('admin.editEarning');
+    Route::delete('earning/delete/{id}', [App\Http\Controllers\Admin\EarningController::class, 'earningDestroy'])->name('admin.destroyEarning');
+    // Earning For User
+    Route::get('earning/user', [App\Http\Controllers\Admin\EarningController::class, 'userEarningsIndex'])->name('admin.userEarningsIndex');
+    Route::get('earning/user/employee-search', [App\Http\Controllers\Admin\EarningController::class, 'getEmployeesByDepartmentEarning'])->name('getEmployeesByDepartmentEarning');
+    Route::post('earning/user/assigned', [App\Http\Controllers\Admin\EarningController::class, 'storeUserEarning'])->name('admin.storeUserEarning');
+    Route::delete('earning/user/delete/{id}', [App\Http\Controllers\Admin\EarningController::class, 'deleteUserEarning'])->name('admin.deleteUserEarning');
+    // Loan
+    Route::get('loan', [App\Http\Controllers\Admin\LoanController::class, 'loan'])->name('admin.loan');
+    Route::post('loan/create', [App\Http\Controllers\Admin\LoanController::class, 'loanStore'])->name('admin.storeloan');
+    Route::post('loan/complete/{id}', [App\Http\Controllers\Admin\LoanController::class, 'loanComplete'])->name('admin.loanComplete');
+    Route::post('loan/hold/{id}', [App\Http\Controllers\Admin\LoanController::class, 'loanHold'])->name('admin.loanHold');
+    Route::post('loan/active/{id}', [App\Http\Controllers\Admin\LoanController::class, 'loanActive'])->name('admin.loanActive');
+    Route::post('loan/edit/{id}', [App\Http\Controllers\Admin\LoanController::class, 'loanEdit'])->name('admin.loanEdit');
+    Route::delete('loan/delete/{id}', [App\Http\Controllers\Admin\LoanController::class, 'loanDestroy'])->name('admin.loanDestroy');
     // Notifications
     Route::get('/notifications/mark-as-read/{id}', function ($id) {
         $notification = auth()->user()->notifications()->find($id);
@@ -152,7 +186,6 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
         }
         return response()->json(['status' => 'error'], 404);
     })->name('notifications.read');
-
 
     Route::get('/notifications/clear', function () {
         auth()->user()->notifications()->delete();
@@ -298,6 +331,7 @@ Route::prefix('hr')->middleware(['auth','isHr', 'sessionTimeout'])->group(functi
     Route::get('overtime/approval', [App\Http\Controllers\Hr\OvertimeController::class, 'overTime'])->name('hr.overtime');
     Route::post('overtime/approve/{id}', [App\Http\Controllers\Hr\OvertimeController::class, 'approveOT'])->name('ot.approvehr');
     Route::post('overtime/reject/{id}', [App\Http\Controllers\Hr\OvertimeController::class, 'rejectOT'])->name('ot.rejecthr');
+
     // Notification
     Route::get('/notifications/clear', function () {
         auth()->user()->notifications()->delete();

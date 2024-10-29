@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use Exception;
 use Carbon\Carbon;
 use App\Models\User;
+use App\Models\LeaveType;
+use App\Models\LeaveCredit;
 use Illuminate\Http\Request;
 use App\Models\ShiftSchedule;
 use App\Models\BankInformation;
@@ -218,15 +220,16 @@ class EmployeeController extends Controller
     {
         $data = User::find($request->emp_delete_id);
         $data->delete();
-        return back();
+        return redirect()->back()->with('success', 'Deleted Successfully!');
     }
 
     public function edit($user_id)
     {
-        $user = User::with('contactEmergency', 'bankInfo', 'employmentRecord','employmentSalary','shiftSchedule')->findOrFail($user_id);
+        $user = User::with('contactEmergency', 'bankInfo', 'employmentRecord','employmentSalary','shiftSchedule' ,'leaveCredits')->findOrFail($user_id);
         $department = $user->department;
         $supervisor = $user->supervisor;
         $users = User::all();
+        $leaveTypes = LeaveType::all();
 
         switch ($user->role_as) {
             case 1:
@@ -241,13 +244,13 @@ class EmployeeController extends Controller
             default:
                 $user->role_as_text = 'Unknown';
         }
-        return view('admin.employee.edit', compact('user', 'supervisor', 'users'));
+        return view('admin.employee.edit', compact('user', 'supervisor', 'users', 'leaveTypes'));
     }
 
     public function update(Request $request, $user_id)
     {
         $user = User::findOrFail($user_id);
-
+    
         // Create a Validator instance
         $validator = Validator::make($request->all(), [
             'empNumber' => 'required|string',
@@ -275,8 +278,7 @@ class EmployeeController extends Controller
         if ($validator->fails()) {
             // Get all validation error messages
             $errors = $validator->errors();
-
-            // Check for specific field errors and set the message accordingly
+    
             if ($errors->has('reporting_to')) {
                 $errorMessage = $errors->first('reporting_to');
             } elseif ($errors->has('empNumber')) {
@@ -290,10 +292,9 @@ class EmployeeController extends Controller
             } elseif ($errors->has('mSalary')) {
                 $errorMessage = $errors->first('mSalary');
             } else {
-                // General error message if no specific field error
                 $errorMessage = 'Please correct the errors and try again.';
             }
-
+    
             Alert::error('Validation Error', $errorMessage);
             return redirect()->back()->withErrors($validator)->withInput();
         }
@@ -312,8 +313,6 @@ class EmployeeController extends Controller
         $user->position = $request->input('position');
         $user->email = $request->input('email');
         $user->mSalary = $request->input('mSalary');
-        $user->vacLeave = $request->input('vacLeave');
-        $user->sickLeave = $request->input('sickLeave');
         $user->reporting_to = $request->input('reporting_to');
         
         if ($request->filled('password')) {
@@ -328,11 +327,53 @@ class EmployeeController extends Controller
         }
         
         $user->save();
-        
-        notify()->success('Employee Updated');
-        return redirect()->back();
+    
+        return redirect()->back()->with('success', 'Employee Updated!');
     }
-
+    
+    public function leaveCredits(Request $request, $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+    
+            // Validate leave credits input
+            $validator = Validator::make($request->all(), [
+                'leave_credits.*' => 'required|numeric|min:0',
+            ], [
+                'leave_credits.*.required' => 'Leave credit is required.',
+                'leave_credits.*.numeric' => 'Leave credit must be a number.',
+                'leave_credits.*.min' => 'Leave credit cannot be negative.',
+            ]);
+    
+            if ($validator->fails()) {
+                return redirect()->back()->with('error', $validator);
+            }
+    
+            // Update leave credits for the user
+            $leaveCreditsData = $request->input('leave_credits', []);
+            foreach ($leaveCreditsData as $leaveTypeId => $remainingCredits) {
+                // Create or update leave credits
+                LeaveCredit::updateOrCreate(
+                    [
+                        'user_id' => $user->id,
+                        'leave_type_id' => $leaveTypeId,
+                    ],
+                    [
+                        'remaining_credits' => $remainingCredits
+                    ]
+                );
+            }
+    
+            return redirect()->back()->with('success', 'Leave Updated!');
+    
+        } catch (\Exception $e) {
+            // Log the exception for debugging purposes
+            \Log::error('Error updating leave credits for user ID ' . $id . ': ' . $e->getMessage());
+    
+            return redirect()->back()->with('error', 'Something went wrong while updating leave credits. Please try again.');
+        }
+    }
+    
     public function government (Request $request, $user_id)
     {
         $user = User::findOrFail($user_id);
@@ -484,77 +525,23 @@ class EmployeeController extends Controller
         ]);
     }
 
-    public function shiftSchedule(Request $request, $user_id)
+    public function createView()
     {
-        // Find the user and their shift schedule
-        $user = User::with('shiftSchedule')->findOrFail($user_id);
-        $shift = ShiftSchedule::where('users_id', $user->id)->first();
-
-        // Determine if flexible time is enabled
-        $flexibleTime = $request->input('flexibleTime') == '1';
-
-        if ($flexibleTime) {
-            // If flexible time is enabled, save this state
-            if ($shift) {
-                $shift->isFlexibleTime = true;
-                $shift->shiftStart = null;
-                $shift->lateThreshold = null;
-                $shift->shiftEnd = null;
-                $shift->save();
-                Alert::success('Flexible Time Set');
-            } else {
-                // Create new shift schedule with flexible time
-                $shift = new ShiftSchedule();
-                $shift->users_id = $user->id;
-                $shift->shiftStart = null;
-                $shift->lateThreshold = null;
-                $shift->shiftEnd = null;
-                $shift->isFlexibleTime = true;
-                $shift->save();
-                Alert::success('Added Schedule with Flexible Time');
-            }
-        } else {
-            // If flexible time is not enabled, save shift details
-            $shiftStart = Carbon::parse($request->input('shiftStart'))->format('H:i:s');
-            $lateThreshold = Carbon::parse($request->input('lateThreshold'))->format('H:i:s');
-            $shiftEnd = Carbon::parse($request->input('shiftEnd'))->format('H:i:s');
-
-            if ($shift) {
-                // Update existing shift
-                $shift->shiftStart = $shiftStart;
-                $shift->lateThreshold = $lateThreshold;
-                $shift->shiftEnd = $shiftEnd;
-                $shift->isFlexibleTime = false;
-                $shift->allowedHours = $request->input('allowedHours');
-                $shift->save();
-                Alert::success('Shift Successfully Changed');
-            } else {
-                // Create new shift
-                $shift = new ShiftSchedule();
-                $shift->users_id = $user->id;
-                $shift->shiftStart = $shiftStart;
-                $shift->lateThreshold = $lateThreshold;
-                $shift->shiftEnd = $shiftEnd;
-                $shift->isFlexibleTime = false;
-                $shift->allowedHours = $request->input('allowedHours');
-                $shift->save();
-                Alert::success('Added Schedule');
-            }
-        }
-
-        return redirect()->back();
+        $users = User::all(); // Get all users if needed
+        $availableLeaveTypes = LeaveType::all(); // Get all leave types
+    
+        // Initialize assigned leave types and leave credits if necessary
+        $assignedLeaveTypes = []; // You may set this based on some logic
+        $leaveCredits = []; // This can be used to track user-specific leave credits
+    
+        return view('admin.employee.create', compact('users', 'availableLeaveTypes', 'assignedLeaveTypes', 'leaveCredits'));
     }
-
-    public function createView ()
-    {
-        $users = User::all();
-
-        return view('admin.employee.create', compact('users'));
-    }
-
+    
+    
     public function create(Request $request)
     {
         try {
+
             // Handle image upload
             $imageName = 'default.png';
             if ($request->hasFile('image')) {
@@ -584,28 +571,30 @@ class EmployeeController extends Controller
                 'philHealth' => $request->input('philHealth'),
                 'tin' => $request->input('tin'),
                 'department' => $request->input('department'),
-                'bdayLeave' => $request->input('bdayLeave'),
-                'vacLeave' => $request->input('vacLeave'),
-                'sickLeave' => $request->input('sickLeave'),
                 'reporting_to' => $request->input('reporting_to'),
                 'image' => $imageName,
             ]);
     
-            // Handle shift schedule
-            $shift = ShiftSchedule::firstOrNew(['users_id' => $user->id]);
-            $flexibleTime = $request->input('flexibleTime') == '1';
-    
-            if ($flexibleTime) {
-                $shift->isFlexibleTime = true;
-            } else {
-                $shift->shiftStart = Carbon::parse($request->input('shiftStart'))->format('H:i:s');
-                $shift->lateThreshold = Carbon::parse($request->input('lateThreshold'))->format('H:i:s');
-                $shift->shiftEnd = Carbon::parse($request->input('shiftEnd'))->format('H:i:s');
-                $shift->isFlexibleTime = false;
+            // Handle leave credits
+            $leaveTypes = $request->input('leave_types'); // This should be an array of leave type IDs
+            if ($leaveTypes && is_array($leaveTypes)) {
+                foreach ($leaveTypes as $leaveTypeId) {
+                    // Check if the leave type exists
+                    $leaveType = LeaveType::find($leaveTypeId);
+                    if ($leaveType) {
+                        // Save leave credits for the user
+                        LeaveCredit::create([
+                            'user_id' => $user->id,
+                            'leave_type_id' => $leaveTypeId,
+                            'remaining_credits' => $leaveType->leaveDays, // Set initial credits based on leaveDays
+                        ]);
+                    } else {
+                        // Handle the case where the leave type does not exist
+                        Log::warning("Leave type ID {$leaveTypeId} does not exist. Skipping leave credit assignment for user ID {$user->id}.");
+                    }
+                }
             }
-            
-            $shift->save();
-    
+     
             return redirect()->route('admin.employeeindex')->with('success', 'Employee Added Successfully');
         } catch (\Illuminate\Validation\ValidationException $e) {
             Alert::error('Validation Error', $e->getMessage())->persistent(true);
@@ -616,6 +605,8 @@ class EmployeeController extends Controller
             return redirect()->back()->withInput();
         }
     }
+    
+    
     
     public function validateStep1(Request $request)
     {
@@ -698,18 +689,20 @@ class EmployeeController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function validateStep5 (Request $request)
+    public function validateStep5(Request $request)
     {
         $validatedData = $request->validate([
-            'sickLeave' => 'required|integer',
-            'vacLeave' => 'required|integer',
-            'bdayLeave' => 'required|integer',
-        ], [
-            'sickLeave.required' => 'Sick Leave field is required.',
-            'vacLeave.required' => 'Vacation Leave field is required.',
-            'bdayLeave.required' => 'Birthday Leave field is required.',
+            'leave_types' => 'required|array',
+            'leave_types.*' => 'integer|min:0', 
+            'leave_types.required' => 'At least one leave type must be selected.',
+            'leave_types.array' => 'Invalid leave types selection.',
+            'leave_types.*.integer' => 'Leave days must be a valid integer.',
+            'leave_types.*.min' => 'Leave days cannot be negative.',
         ]);
+    
+        return $validatedData; 
     }
+    
 
     public function bulkCreate(Request $request)
     {

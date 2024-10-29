@@ -6,6 +6,7 @@ use Exception;
 use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Models\OvertimeCredits;
 use App\Models\OvertimeRequest;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
@@ -19,6 +20,7 @@ class OvertimeController extends Controller
     public function overtimeIndex()
     {
         $user= Auth::user()->id;
+        $otCredits = OvertimeCredits::where('users_id', $user)->first();
         $overtime = OvertimeRequest::where('users_id', $user)->get();
         // Pending Count
         $pendingCount = OvertimeRequest::where('users_id', $user)->where('status', 'Pending')->count();
@@ -30,22 +32,32 @@ class OvertimeController extends Controller
         ->whereMonth('date', Carbon::now()->month)
         ->get()
         ->sum(function ($overtime) {
-            // Split the total_hours into hours, minutes, and seconds
             list($hours, $minutes, $seconds) = explode(':', $overtime->total_hours);
-            
-            // Convert to decimal hours (including half-hour increments)
+
             $totalHours = (int)$hours + ((int)$minutes / 60);
             
-            // Return the decimal representation, rounding up if minutes are >= 30
-            return round($totalHours * 2) / 2; // Round to nearest 0.5
+
+            return round($totalHours * 2) / 2; 
         });
-        // Total Approved OT
+
+        if ($otCredits) {
+            $timeParts = explode(':', $otCredits->otCredits);
+            $hours = (int)$timeParts[0];
+            $minutes = (int)$timeParts[1];
+        
+            // Convert minutes to decimal
+            $decimalHours = $hours + ($minutes / 60);
+        } else {
+            $decimalHours = 0; 
+        }
+  
+     
         $totalRequestsThisMonth = OvertimeRequest::where('users_id', $user)
         ->where('status', 'Approved')
         ->whereMonth('date', Carbon::now()->month)
         ->count(); 
 
-        return view('emp.overtime.index', compact('overtime', 'pendingCount', 'rejectedCount', 'approvedHours', 'totalRequestsThisMonth'));
+        return view('emp.overtime.index', compact('overtime', 'pendingCount', 'rejectedCount', 'approvedHours', 'totalRequestsThisMonth', 'otCredits', 'decimalHours'));
     }
 
     public function overtimeRequest(Request $request)
@@ -57,6 +69,7 @@ class OvertimeController extends Controller
                 'reason' => 'required|string',
                 'start_time' => 'required|date_format:H:i', 
                 'end_time' => 'required|date_format:H:i|after:start_time', 
+                'total_hours' => 'required|date_format:H:i:s', // Validate total_hours as time
             ], [
                 'date.after' => 'The date must be at least one day ahead.',
                 'date.required' => 'Please select a date for the overtime request.',
@@ -64,10 +77,29 @@ class OvertimeController extends Controller
                 'start_time.required' => 'Please provide a start time for the overtime request.',
                 'end_time.required' => 'Please provide an end time for the overtime request.',
                 'end_time.after' => 'End time must be after the start time.',
+                'total_hours.required' => 'Please provide the total overtime hours.',
+                'total_hours.date_format' => 'Please provide the total overtime in the format HH:MM:SS.',
             ]);
     
+            // Get user's overtime credits in H:i:s format
+            $user = Auth::user();
+            $overtimeCredits = OvertimeCredits::where('users_id', $user->id)->first();
+    
+            if (!$overtimeCredits || $overtimeCredits->otCredits == '00:00:00') {
+                return redirect()->back()->withErrors(['overtime_credits' => 'You have no overtime credits remaining.']);
+            }
+    
+            // Convert total_hours and overtimeCredits to seconds for comparison
+            $total_hours_seconds = Carbon::createFromFormat('H:i:s', $request->input('total_hours'))->secondsSinceMidnight();
+            $otCredits_seconds = Carbon::createFromFormat('H:i:s', $overtimeCredits->otCredits)->secondsSinceMidnight();
+    
+            // Check if user has enough credits
+            if ($otCredits_seconds < $total_hours_seconds) {
+                return redirect()->back()->withErrors(['overtime_credits' => 'You do not have enough overtime credits to cover this request.']);
+            }
+    
             // Check for existing overtime requests on the same date and time
-            $existingRequest = OvertimeRequest::where('users_id', Auth::user()->id)
+            $existingRequest = OvertimeRequest::where('users_id', $user->id)
                 ->where('date', $request->input('date'))
                 ->where('start_time', $request->input('start_time'))
                 ->where('end_time', $request->input('end_time'))
@@ -79,24 +111,17 @@ class OvertimeController extends Controller
     
             // Save the overtime request
             $overtime = new OvertimeRequest();
-            $overtime->users_id = Auth::user()->id;
+            $overtime->users_id = $user->id;
             $overtime->date = $request->input('date');
             $overtime->start_time = $request->input('start_time');
             $overtime->end_time = $request->input('end_time');
-            $overtime->total_hours = $request->input('total_hours');
+            $overtime->total_hours = $request->input('total_hours'); // Save total_hours in H:i:s format
             $overtime->reason = $request->input('reason');
             $overtime->save();
     
-            // Define $user for notifications
-            $user = Auth::user();
-    
-            // Get the supervisor for the user's department
+            // Notify supervisors, HR, and Admin users
             $supervisor = $user->supervisor;
-        
-            // Get all HR users
             $hrUsers = User::where('role_as', User::ROLE_HR)->get();
-        
-            // Get all Admin users
             $adminUsers = User::where('role_as', User::ROLE_ADMIN)->get();
     
             $notifiableUsers = collect([$supervisor])
@@ -104,13 +129,13 @@ class OvertimeController extends Controller
                 ->merge($adminUsers)
                 ->unique('id')  // Ensure no user is notified more than once
                 ->filter();  // Remove any null values (in case supervisor is null)
-        
+    
             foreach ($notifiableUsers as $notifiableUser) {
                 $notifiableUser->notify(new OvertimeRequestSubmitted($overtime, $user));
             }
     
             // Success message
-            return redirect()->back()->with('success', 'Submitted Successfully');
+            return redirect()->back()->with('success', 'Overtime request submitted successfully.');
             
         } catch (ValidationException $e) {
             // Handle validation errors with SweetAlert
@@ -119,7 +144,6 @@ class OvertimeController extends Controller
             }
             return redirect()->back()->withInput();
         } catch (\Exception $e) {
-            
             Alert::error('An error occurred while submitting your overtime request.');
             return redirect()->back();
         }

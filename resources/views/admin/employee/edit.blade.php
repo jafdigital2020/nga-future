@@ -16,10 +16,10 @@
                     <li class="breadcrumb-item active">Employee</li>
                 </ul>
             </div>
-            <div class="col-auto float-right ml-auto">
+            <!-- <div class="col-auto float-right ml-auto">
                 <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_shift"><i class="fa fa-plus"></i>
                     Shift Schedule</a>
-            </div>
+            </div> -->
         </div>
     </div>
     <!-- /Page Header -->
@@ -77,7 +77,7 @@
                                         <li>
                                             <div class="title">Phone:</div>
                                             <div class="text"><a href="tel:{{ $user->phoneNumber }}"
-                                                    style="color:red;">{{ $user->phoneNumber }}</a></div>
+                                                    style="color:red;">{{ $user->phoneNumber  ?? 'N/A'}}</a></div>
                                         </li>
                                         <li>
                                             <div class="title">Email:</div>
@@ -86,19 +86,19 @@
                                         </li>
                                         <li>
                                             <div class="title">Birthday:</div>
-                                            <div class="text">{{ $user->birthday }}</div>
+                                            <div class="text">{{ $user->birthday ?? 'N/A' }}</div>
                                         </li>
                                         <li>
                                             <div class="title">Address:</div>
-                                            <div class="text">{{ $user->completeAddress }}</div>
+                                            <div class="text">{{ $user->completeAddress ?? 'N/A' }}</div>
                                         </li>
                                         <li>
                                             <div class="title">Type of contract:</div>
-                                            <div class="text">{{ $user->typeOfContract }}</div>
+                                            <div class="text">{{ $user->typeOfContract ?? 'N/A' }}</div>
                                         </li>
                                         <li>
                                             <div class="title">Date Hired:</div>
-                                            <div class="text">{{ $user->dateHired }}</div>
+                                            <div class="text">{{ $user->dateHired ?? 'N/A' }}</div>
                                         </li>
                                     </ul>
                                 </div>
@@ -133,7 +133,7 @@
 
     <div class="tab-content">
 
-        <!-- Profile Info Tab -->
+        <!-- Profile Info Card -->
         <div id="emp_profile" class="pro-overview tab-pane fade show active">
             <div class="row">
                 <div class="col-md-6 d-flex">
@@ -224,8 +224,7 @@
                 </div>
             </div>
             <div class="row">
-
-                <div class="col-md-6 d-flex">
+                <div class="col-md-4 d-flex">
                     <div class="card profile-box flex-fill">
                         <div class="card-body">
                             <h3 class="card-title">Government Mandates <a href="#" class="edit-icon" data-toggle="modal"
@@ -251,10 +250,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6 d-flex">
+                <div class="col-md-4 d-flex">
                     <div class="card profile-box flex-fill">
                         <div class="card-body">
-
                             <h3 class="card-title">Bank Information<a href="#" class="edit-icon" data-toggle="modal"
                                     data-target="#bank_info"><i class="fa fa-pencil"></i></a></h3>
                             @if($user->bankInfo->isNotEmpty())
@@ -278,6 +276,29 @@
                             @else
                             <p>No bank details available.</p>
                             @endif
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex">
+                    <div class="card profile-box flex-fill">
+                        <div class="card-body">
+                            <h3 class="card-title">Leave Credits<a href="#" class="edit-icon" data-toggle="modal"
+                                    data-target="#leave_credits"><i class="fa fa-pencil"></i></a></h3>
+                            @if($leaveTypes->isNotEmpty())
+                            @foreach ($leaveTypes as $leaveType)
+                            <ul class="personal-info">
+                                <li>
+                                    <div class="title">{{ $leaveType->leaveType  }}</div>
+                                    <div class="text">
+                                        {{ optional($user->leaveCredits->where('leave_type_id', $leaveType->id)->first())->remaining_credits ?? 0 }}
+                                    </div>
+                                </li>
+                            </ul>
+                            @endforeach
+                            @else
+                            <p>No leave assign.</p>
+                            @endif
+
                         </div>
                     </div>
                 </div>
@@ -641,6 +662,7 @@
                 </div>
             </div>
         </div>
+        <!-- /Emp Tab -->
 
         <!-- Employment Record Modal -->
         <div id="add_employee_record" class="modal custom-modal fade" role="dialog">
@@ -715,7 +737,7 @@
             </div>
         </div>
         <!-- /Employment Record Modal -->
-        <!-- /Emp Tab -->
+
 
         <!-- Emp Salary Tab -->
         <div class="tab-pane fade" id="emp_salary">
@@ -995,34 +1017,19 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="row">
-                        <!-- Vac leave -->
-                        <div class="col-sm-4">
+                        @foreach($leaveTypes as $leaveType)
+                        <div class="col-sm-3">
                             <div class="form-group">
-                                <label>Vacation Leave</label>
-                                <input type="number" class="form-control" name="vacLeave" id="vacLeave"
-                                    value="{{ $user->vacLeave ?? 0 }}" required>
+                                <label>{{ $leaveType->leaveType }}</label>
+                                <input type="number" class="form-control" name="leave_credits[{{ $leaveType->id }}]"
+                                    id="leave_credits_{{ $leaveType->id }}"
+                                    value="{{ optional($user->leaveCredits->where('leave_type_id', $leaveType->id)->first())->remaining_credits ?? 0 }}"
+                                    required>
                             </div>
                         </div>
-
-
-                        <!-- Sick leave -->
-                        <div class="col-sm-4">
-                            <div class="form-group">
-                                <label>Sick Leave</label>
-                                <input type="number" class="form-control" name="sickLeave" id="sickLeave"
-                                    value="{{ $user->sickLeave ?? 0 }}" required>
-                            </div>
-                        </div>
-
-                        <!-- Bday Leave -->
-                        <div class="col-sm-4">
-                            <div class="form-group">
-                                <label>Bday Leave</label>
-                                <input type="number" class="form-control" name="bdayLeave" id="bdayLeave"
-                                    value="{{ $user->bdayLeave ?? 0 }}" required>
-                            </div>
-                        </div>
+                        @endforeach
                     </div>
                     <div class="row">
                         <div class="col-md-12">
@@ -1358,7 +1365,6 @@
 <!-- /Bank Information Modal -->
 
 <!-- Changepassword Info Modal -->
-
 <div id="change_password" class="modal custom-modal fade" role="dialog">
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
@@ -1416,122 +1422,50 @@
         </div>
     </div>
 </div>
-
 <!-- /Changepassword Info Modal -->
 
-<!--  Shift Schedule Modal -->
-<div id="add_shift" class="modal custom-modal fade" role="dialog">
+<!-- Leave Credits Modal -->
+<div id="leave_credits" class="modal custom-modal fade" role="dialog">
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"> Shift Schedule </h5>
+                <h5 class="modal-title">Leave Credits</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <form action="{{ url('admin/employee/shift/' . $user->id) }}" method="POST">
+                <form action="{{ url('admin/employee/leave-credits/' .$user->id) }}" method="POST">
                     @csrf
                     <div class="row">
                         <div class="col-md-12">
-                            @forelse ($user->shiftSchedule as $shift)
                             <div class="row">
+                                @foreach($leaveTypes as $leaveType)
                                 <div class="col-sm-4">
                                     <div class="form-group">
-                                        <label class="col-form-label">Flexible Time</label>
-                                        <div class="custom-control custom-switch">
-                                            <input type="checkbox" onchange="toggleShiftFields(this)"
-                                                class="custom-control-input" id="flexibleTime{{ $shift->id }}"
-                                                name="flexibleTime" value="1"
-                                                {{ $shift->flexibleTime ? 'checked' : '' }}>
-                                            <!-- Checked if flexibleTime is true -->
-                                            <label class="custom-control-label"
-                                                for="flexibleTime{{ $shift->id }}"></label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-sm-8">
-                                    <div class="form-group">
-                                        <label for="" class="col-form-label">Allowed hours</label>
-                                        <input type="text" class="form-control" id="allowedHours" name="allowedHours"
-                                            value="{{ $shift->allowedHours ?? '' }}" placeholder="HH:MM:SS"
-                                            pattern="[0-9]{2}:[0-9]{2}:[0-9]{2}">
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label>Shift Start</label>
-                                        <input type="time" name="shiftStart" id="shiftStart{{ $shift->id }}"
-                                            class="form-control"
-                                            value="{{ $shift->flexibleTime ? '' : $shift->shiftStart }}"
-                                            {{ $shift->flexibleTime ? 'disabled' : '' }} required>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label>Late Threshold</label>
-                                        <input type="time" name="lateThreshold" id="lateThreshold{{ $shift->id }}"
-                                            class="form-control"
-                                            value="{{ $shift->flexibleTime ? '' : $shift->lateThreshold }}"
-                                            {{ $shift->flexibleTime ? 'disabled' : '' }} required>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label>Shift End</label>
-                                        <input type="time" name="shiftEnd" id="shiftEnd{{ $shift->id }}"
-                                            class="form-control"
-                                            value="{{ $shift->flexibleTime ? '' : $shift->shiftEnd }}"
-                                            {{ $shift->flexibleTime ? 'disabled' : '' }} required>
-                                    </div>
-                                </div>
-                            </div>
-                            @empty
-                            <div class="row">
-                                <div class="col-sm-12">
-                                    <div class="form-group">
-                                        <label class="col-form-label">Flexible Time</label>
-                                        <div class="custom-control custom-switch">
-                                            <input type="checkbox" onchange="toggleShiftFields(this)"
-                                                class="custom-control-input" id="flexibleTime" name="flexibleTime"
-                                                value="1"> <!-- Default is off -->
-                                            <label class="custom-control-label" for="flexibleTime"></label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label>Shift Start</label>
-                                        <input type="time" name="shiftStart" id="shiftStart" class="form-control"
+                                        <label>{{ $leaveType->leaveType }}</label>
+                                        <input type="number" class="form-control"
+                                            name="leave_credits[{{ $leaveType->id }}]"
+                                            id="leave_credits_{{ $leaveType->id }}"
+                                            value="{{ optional($user->leaveCredits->where('leave_type_id', $leaveType->id)->first())->remaining_credits ?? 0 }}"
                                             required>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label>Late Threshold</label>
-                                        <input type="time" name="lateThreshold" id="lateThreshold" class="form-control"
-                                            required>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label>Shift End</label>
-                                        <input type="time" name="shiftEnd" id="shiftEnd" class="form-control" required>
-                                    </div>
-                                </div>
+                                @endforeach
                             </div>
-                            @endforelse
                         </div>
-                        <div class="submit-section">
-                            <button class="btn btn-primary submit-btn" type="submit"> Submit </button>
-                        </div>
+                    </div>
+                    <div class="submit-section">
+                        <button class="btn btn-primary submit-btn" type="submit"> Submit </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
-<!-- Shift Schedule Modal -->
+<!-- /Leave Credits -->
+
+
 
 @endsection
 

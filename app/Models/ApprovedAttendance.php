@@ -10,7 +10,7 @@ class ApprovedAttendance extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
+        'users_id',
         'name', '
         start_date', 
         'end_date', 
@@ -19,9 +19,8 @@ class ApprovedAttendance extends Model
         'totalHours', 
         'totalLate', 
         'otHours', 
-        'vacLeave', 
-        'sickLeave', 
-        'bdayLeave',
+        'approvedOvertime',
+        'paidLeave',
         'unpaidLeave', 
         'status', 
         'approved_by',
@@ -35,6 +34,11 @@ class ApprovedAttendance extends Model
     public function approved()
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function salaryTable()
+    {
+        return $this->hasOne(SalaryTable::class, 'approved_attendance_id');
     }
 
 }

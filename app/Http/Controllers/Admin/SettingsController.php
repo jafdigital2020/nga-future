@@ -209,7 +209,8 @@ class SettingsController extends Controller
             $type->leaveType = $request->input('leaveType');
             $type->leaveDays = $request->input('leaveDays');
             $type->status = $request->input('status');
-            
+            $type->is_paid = $request->input('is_paid');
+
             $type->save();
     
             return back()->with('success', 'Leave Type Added.');

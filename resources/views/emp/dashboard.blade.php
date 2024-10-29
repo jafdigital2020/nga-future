@@ -675,21 +675,20 @@
             });
         }
 
-        function renderCalendar(startDate, endDate, attendanceData, leaveData, holidays, status = 'new') {
-            console.log("Rendering calendar from ", startDate, " to ", endDate); // Debugging line
+        function renderCalendar(startDate, endDate, attendanceData, leaveData, holidays, overtimeData, status =
+            'new') {
+            console.log("Rendering calendar from ", startDate, " to ", endDate);
 
             calendar.innerHTML = '';
 
             let totalWorkedSeconds = 0;
             let totalLateSeconds = 0;
-            let unpaidLeaveCount = 0;
-            let vacationLeaveCount = 0;
-            let sickLeaveCount = 0;
-            let bdayLeaveCount = 0;
+            let totalOvertimeSeconds = 0; // Counter for total overtime
+            let paidLeaveCount = 0; // Counter for paid leaves
+            let unpaidLeaveCount = 0; // Counter for unpaid leaves
 
             let currentDate = new Date(startDate);
             while (currentDate <= endDate) {
-                console.log("Current date: ", currentDate); // Debugging line
                 const dayDiv = document.createElement('div');
                 dayDiv.className = 'day-att';
                 dayDiv.style.padding = '5px';
@@ -700,12 +699,14 @@
                     `${monthNames[currentDate.getMonth()]} ${currentDate.getDate()}, ${currentDate.getFullYear()}, ${daysOfWeek[currentDate.getDay()]}`;
                 dayDiv.appendChild(dateHeader);
 
+                // Check for attendance on this day
                 const dayData = attendanceData.find(item => {
                     const itemDate = new Date(item.date);
                     return itemDate.getDate() === currentDate.getDate() &&
                         itemDate.getMonth() === currentDate.getMonth() &&
                         itemDate.getFullYear() === currentDate.getFullYear();
                 });
+
                 if (dayData) {
                     const timeIn = document.createElement('div');
                     timeIn.className = 'calendar-text';
@@ -738,7 +739,7 @@
                     }
                 }
 
-                // Check for leave data on this day and status is Approved
+                // Check for approved leave on this day
                 const leaveOnDay = leaveData.filter(leave => {
                     const leaveStart = new Date(leave.start_date);
                     const leaveEnd = new Date(leave.end_date);
@@ -748,30 +749,49 @@
 
                 leaveOnDay.forEach(leave => {
                     const leaveTypeDiv = document.createElement('div');
-                    leaveTypeDiv.className =
-                        'calendar-text leave-type-button';
-                    leaveTypeDiv.innerText = leave.type;
-                    dayDiv.appendChild(leaveTypeDiv);
+                    leaveTypeDiv.className = 'calendar-text leave-type-button';
+                    leaveTypeDiv.innerText = leave.leave_type.leaveType;
 
-                    if (leave.type === 'Unpaid Leave') {
+                    if (leave.leave_type.is_paid) {
+                        leaveTypeDiv.style.backgroundColor = 'green';
+                        paidLeaveCount++;
+                    } else {
+                        leaveTypeDiv.style.backgroundColor = 'red';
                         unpaidLeaveCount++;
-                    } else if (leave.type === 'Vacation Leave') {
-                        vacationLeaveCount++;
-                    } else if (leave.type === 'Sick Leave') {
-                        sickLeaveCount++;
-                    } else if (leave.type === 'Birthday Leave') {
-                        bdayLeaveCount++;
                     }
+
+                    leaveTypeDiv.style.color = 'white';
+                    leaveTypeDiv.style.padding = '5px';
+                    leaveTypeDiv.style.borderRadius = '5px';
+                    leaveTypeDiv.style.marginTop = '5px';
+                    dayDiv.appendChild(leaveTypeDiv);
                 });
+
+                // Check for approved overtime on this day
+                const overtimeOnDay = overtimeData.find(ot => {
+                    const otDate = new Date(ot.date);
+                    return otDate.getDate() === currentDate.getDate() &&
+                        otDate.getMonth() === currentDate.getMonth() &&
+                        otDate.getFullYear() === currentDate.getFullYear();
+                });
+
+                if (overtimeOnDay) {
+                    const overtimeDiv = document.createElement('div');
+                    overtimeDiv.className = 'calendar-text overtime-approved';
+                    overtimeDiv.innerText = "Approved Overtime: " + overtimeOnDay.total_hours;
+                    dayDiv.appendChild(overtimeDiv);
+
+                    const otParts = overtimeOnDay.total_hours.split(':').map(Number);
+                    totalOvertimeSeconds += otParts[0] * 3600 + otParts[1] * 60 + otParts[2];
+                }
 
                 // Check for holidays
                 const holiday = checkHoliday(currentDate, holidays);
                 if (holiday) {
                     const holidayDiv = document.createElement('div');
                     holidayDiv.className = 'holiday-button';
-                    holidayDiv.innerText = holiday.title; // Use holiday title from the DB
-
-                    holidayDiv.style.backgroundColor = 'green'; // Highlight the holiday
+                    holidayDiv.innerText = holiday.title;
+                    holidayDiv.style.backgroundColor = 'green';
                     holidayDiv.style.color = 'white';
                     holidayDiv.style.padding = '5px';
                     holidayDiv.style.marginTop = '5px';
@@ -789,19 +809,27 @@
             const totalWorkedFormatted =
                 `${workedHours.toString().padStart(2, '0')}:${workedMinutes.toString().padStart(2, '0')}:${workedSeconds.toString().padStart(2, '0')}`;
 
+            const overtimeHours = Math.floor(totalOvertimeSeconds / 3600);
+            const overtimeMinutes = Math.floor((totalOvertimeSeconds % 3600) / 60);
+            const overtimeSeconds = totalOvertimeSeconds % 60;
+            const totalOvertimeFormatted =
+                `${overtimeHours.toString().padStart(2, '0')}:${overtimeMinutes.toString().padStart(2, '0')}:${overtimeSeconds.toString().padStart(2, '0')}`;
+
             const lateHours = Math.floor(totalLateSeconds / 3600);
             const lateMinutes = Math.floor((totalLateSeconds % 3600) / 60);
             const lateSeconds = totalLateSeconds % 60;
             const totalLateFormatted =
                 `${lateHours.toString().padStart(2, '0')}:${lateMinutes.toString().padStart(2, '0')}:${lateSeconds.toString().padStart(2, '0')}`;
 
+            // Display total stats at the bottom
             const totalBox = document.createElement('div');
             totalBox.className = 'day total-box';
             totalBox.innerText =
-                `Total Worked Hours: ${totalWorkedFormatted}\nTotal Late: ${totalLateFormatted}\nUnpaid Leave: ${unpaidLeaveCount}\nVacation Leave: ${vacationLeaveCount}\nSick Leave: ${sickLeaveCount}\nBirthday Leave: ${bdayLeaveCount}\nStatus: ${status}`;
+                `Total Worked Hours: ${totalWorkedFormatted}\nTotal Late: ${totalLateFormatted}\nApproved Overtime: ${totalOvertimeFormatted}\nPaid Leaves: ${paidLeaveCount}\nUnpaid Leaves: ${unpaidLeaveCount}\nStatus: ${status}`;
             calendar.appendChild(totalBox);
-
         }
+
+
 
         function checkHoliday(date, holidays) {
             const formattedDate =
@@ -821,11 +849,11 @@
                     end_date: endDate.toISOString().split('T')[0]
                 },
                 success: function (data) {
-                    callback(data.attendance, data.leaves);
+                    callback(data.attendance, data.leaves, data
+                        .overtime); // Now includes overtime data
                 },
                 error: function (err) {
                     console.error('Error fetching attendance data:', err);
-                    // Handle the error on the front-end, e.g., display an alert or message to the user
                 }
             });
         }
@@ -966,11 +994,14 @@
             } = getCutoffDates(monthIndex, year);
 
             fetchHolidays(function (holidays) {
-                fetchAttendanceData(startDate, endDate, function (attendanceData, leaveData) {
-                    renderCalendar(startDate, endDate, attendanceData, leaveData, holidays);
+                fetchAttendanceData(startDate, endDate, function (attendanceData, leaveData,
+                    overtimeData) {
+                    renderCalendar(startDate, endDate, attendanceData, leaveData, holidays,
+                        overtimeData);
                 });
             });
         }
+
 
         function saveAttendance() {
             const monthSelect = document.getElementById('monthSelect');
@@ -985,23 +1016,27 @@
             } = getCutoffDates(monthSelect.selectedIndex, year);
 
             const totalBox = document.querySelector('.total-box');
+
+            // Extract total worked hours, late hours, overtime, and leave counts
             const totalWorked = totalBox.innerText.match(/Total Worked Hours: (\d{2}:\d{2}:\d{2})/)[1];
             const totalLate = totalBox.innerText.match(/Total Late: (\d{2}:\d{2}:\d{2})/)[1];
-            const unpaidLeaveCount = totalBox.innerText.match(/Unpaid Leave: (\d+)/)[1];
-            const vacationLeaveCount = totalBox.innerText.match(/Vacation Leave: (\d+)/)[1];
-            const sickLeaveCount = totalBox.innerText.match(/Sick Leave: (\d+)/)[1];
-            const bdayLeaveCount = totalBox.innerText.match(/Birthday Leave: (\d+)/)[1];
+            const unpaidLeaveCount = totalBox.innerText.match(/Unpaid Leaves: (\d+)/)[
+                1]; // Updated to match unpaid leaves
+            const paidLeaveCount = totalBox.innerText.match(/Paid Leaves: (\d+)/)[
+                1]; // Updated to match paid leaves
+            const approvedOvertime = totalBox.innerText.match(/Approved Overtime: (\d{2}:\d{2}:\d{2})/)[
+                1]; // Updated to match approved overtime
 
+            // Create the data object to be sent to the server
             const data = {
                 total_worked: totalWorked,
                 total_late: totalLate,
                 cutoff: cutoff,
                 start_date: startDate.toISOString().split('T')[0],
                 end_date: endDate.toISOString().split('T')[0],
-                unpaid_leave: unpaidLeaveCount,
-                vacation_leave: vacationLeaveCount,
-                sick_leave: sickLeaveCount,
-                birthday_leave: bdayLeaveCount,
+                unpaid_leave: unpaidLeaveCount, // New unpaid leave count
+                paid_leave: paidLeaveCount, // New paid leave count
+                approved_overtime: approvedOvertime, // New approved overtime value
                 year: year,
                 status: 'pending'
             };
@@ -1022,7 +1057,7 @@
                         if (response.status === 'pending') {
                             alert(
                                 'The attendance sheet is already recorded and is waiting for approval.'
-                            );
+                                );
                             updateStatus('pending');
                         } else if (response.status === 'approved' || response.status ===
                             'rejected') {
@@ -1052,10 +1087,9 @@
                                 error: function (err) {
                                     console.error('Error saving attendance:', err);
                                     if (err.status === 409) {
-                                        // Handle conflict error (duplicate record)
                                         alert(err.responseJSON
                                             .message
-                                        ); // Display specific conflict message
+                                            ); // Display specific conflict message
                                     } else {
                                         alert('Error saving attendance.');
                                     }
@@ -1069,8 +1103,8 @@
                     alert('Error checking attendance.');
                 }
             });
-
         }
+
 
         function updateStatus(status) {
             const totalBox = document.querySelector('.total-box');

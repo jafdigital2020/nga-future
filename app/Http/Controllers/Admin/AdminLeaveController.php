@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\User;
+use App\Models\LeaveType;
+use App\Models\LeaveCredit;
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
 use App\Models\EmployeeAttendance;
@@ -12,6 +14,7 @@ use App\Notifications\RequestApprovedNotification;
 
 class AdminLeaveController extends Controller
 {
+    
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -20,37 +23,24 @@ class AdminLeaveController extends Controller
         $status = $request->input('status');
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
+        $departments = User::distinct()->pluck('department');  
+        $leaveTypes = LeaveType::with('leaveCredits')->get();
         
         $data = LeaveRequest::query();
-        
-        // Determine the departments and roles for managers
-        $departmentManagerRoles = [
-            'IT' => User::ROLE_IT_MANAGER,
-            'Website Development' => User::ROLE_IT_MANAGER,
-            'SEO' => User::ROLE_OPERATIONS_MANAGER,
-            'Content' => User::ROLE_OPERATIONS_MANAGER,
-            'Marketing' => User::ROLE_MARKETING_MANAGER,
-        ];
     
-        // Determine manager role based on user's department
-        $departments = [];
-        $managerRole = $departmentManagerRoles[$user->department] ?? null;
-    
-        // Apply filters based on the user's role
+        // Admin and HR can see all leave requests
         if ($user->isAdmin() || $user->isHR()) {
-            // Admin and HR can see all leave requests
             $pendingCount = LeaveRequest::where('status', 'Pending')->count();
         } elseif ($user->isSupervisor()) {
             // Supervisors can only see leave requests from their department(s)
-            $departments = array_keys($departmentManagerRoles, $user->role_as);
-            $data->whereHas('user', function ($query) use ($departments) {
-                $query->whereIn('department', $departments)
+            $data->whereHas('user', function ($query) use ($user) {
+                $query->where('department', $user->department)
                       ->where('role_as', '!=', User::ROLE_HR) // Exclude HR
                       ->where('role_as', '!=', User::ROLE_ADMIN); // Exclude Admin
             });
             $pendingCount = LeaveRequest::where('status', 'Pending')
-                                    ->whereHas('user', function ($query) use ($departments) {
-                                        $query->whereIn('department', $departments)
+                                    ->whereHas('user', function ($query) use ($user) {
+                                        $query->where('department', $user->department)
                                               ->where('role_as', '!=', User::ROLE_HR)
                                               ->where('role_as', '!=', User::ROLE_ADMIN);
                                     })->count();
@@ -76,6 +66,14 @@ class AdminLeaveController extends Controller
         if (!empty($status)) {
             $data->where('status', 'like', "%$status%");
         }
+
+         // Filter by department
+        $department = $request->input('department');
+        if ($department) {
+            $data->whereHas('user', function ($query) use ($department) {
+                $query->where('department', 'like', "%$department%");
+            });
+        }
     
         // Apply date range filter on start_date
         if (!empty($startDate) && !empty($endDate)) {
@@ -88,54 +86,58 @@ class AdminLeaveController extends Controller
                       });
             });
         }
+
+ 
     
         $leaveRequests = $data->get();
     
         // Fetch login count for today
         $todayLoginCount = EmployeeAttendance::query()
-            ->when($managerRole, function ($query) use ($managerRole) {
-                $query->whereHas('user', function ($query) use ($managerRole) {
-                    $query->where('role_as', $managerRole);
-                });
-            })
             ->whereDate('date', today())
             ->distinct('users_id')
             ->count('users_id');
     
-        // Filter leave counts based on manager's department(s)
-        $leaveCountQuery = function($type) use ($departments) {
-            return LeaveRequest::where('type', $type)
-                        ->where('status', 'Approved')
-                        ->when(!empty($departments), function($query) use ($departments) {
-                            $query->whereHas('user', function($query) use ($departments) {
-                                $query->whereIn('department', $departments);
-                            });
-                        })
-                        ->where(function($query) {
-                            $query->whereDate('start_date', today())
-                                  ->orWhereDate('end_date', today())
-                                  ->orWhere(function($query) {
-                                      $query->where('start_date', '<=', today())
-                                            ->where('end_date', '>=', today());
-                                  });
-                        });
-        };
+        // Fetch today's leave requests and count for paid and unpaid where status is "Approved"
+        $leaveTypesPaidCountToday = LeaveRequest::whereHas('leaveType', function($query) {
+                $query->where('is_paid', true);
+            })
+            ->where('status', 'Approved')
+            ->where(function($query) {
+                $query->whereDate('start_date', today())
+                      ->orWhereDate('end_date', today())
+                      ->orWhere(function($query) {
+                          $query->where('start_date', '<=', today())
+                                ->where('end_date', '>=', today());
+                      });
+            })
+            ->count();
     
-        $vacationLeaveCountToday = $leaveCountQuery('Vacation Leave')->count();
-        $sickLeaveCountToday = $leaveCountQuery('Sick Leave')->count();
-        $birthdayLeaveCountToday = $leaveCountQuery('Birthday Leave')->count();
-        $unpaidLeaveCountToday = $leaveCountQuery('Unpaid Leave')->count();
+        $leaveTypesUnpaidCountToday = LeaveRequest::whereHas('leaveType', function($query) {
+                $query->where('is_paid', false);
+            })
+            ->where('status', 'Approved')
+            ->where(function($query) {
+                $query->whereDate('start_date', today())
+                      ->orWhereDate('end_date', today())
+                      ->orWhere(function($query) {
+                          $query->where('start_date', '<=', today())
+                                ->where('end_date', '>=', today());
+                      });
+            })
+            ->count();
+    
         return view('admin.leave', compact(
             'leaveRequests', 
             'pendingCount', 
-            'vacationLeaveCountToday', 
-            'sickLeaveCountToday', 
-            'birthdayLeaveCountToday', 
-            'unpaidLeaveCountToday', 
+            'leaveTypesPaidCountToday', 
+            'leaveTypesUnpaidCountToday', 
             'todayLoginCount', 
-            'user'
+            'user',
+            'leaveTypes',
+            'departments',
         ));
     }
+
 
     public function storeLeave(Request $request)
     {
@@ -211,55 +213,81 @@ class AdminLeaveController extends Controller
         $user = $leave->user;
         $currentUser = auth()->user();
         $requestedDays = $leave->days;
-
+    
         // Check if the current user is trying to approve their own leave request
+
+        
         if ($currentUser->id == $user->id) {
             Alert::error('You cannot approve your own leave request');
             return redirect()->back();
         }
-
-        if ($leave->type == 'Vacation Leave') {
-            if ($user->vacLeave < $requestedDays) {
-                Alert::error('Insufficient vacation leave balance');
-                return redirect()->back();
-            }
-            $user->vacLeave -= $requestedDays;
-        } elseif ($leave->type == 'Sick Leave') {
-            if ($user->sickLeave < $requestedDays) {
-                Alert::error('Insufficient sick leave balance');
-                return redirect()->back();
-            }
-            $user->sickLeave -= $requestedDays;
-        } elseif ($leave->type == 'Birthday Leave') {
-            if ($user->bdayLeave < $requestedDays) {
-                Alert::error('Insufficient birthday leave balance');
-                return redirect()->back();
-            }
-            $user->bdayLeave -= $requestedDays;
+    
+        // Find the leave credit associated with the leave type
+        $leaveCredit = LeaveCredit::where('user_id', $user->id)
+            ->where('leave_type_id', $leave->leave_type_id) 
+            ->first();
+    
+        if (!$leaveCredit) {
+            Alert::error('Leave type not found for the user');
+            return redirect()->back();
         }
-
-        $user->save();
-
+    
+        // Check remaining leave balance
+        if ($leaveCredit->remaining_credits < $requestedDays) {
+            Alert::error('Insufficient leave balance for this leave type');
+            return redirect()->back();
+        }
+    
+        // Deduct the requested days from the remaining credits
+        $leaveCredit->remaining_credits -= $requestedDays;
+        $leaveCredit->save();
+    
+        // Update the leave request status
         $leave->status = 'Approved';
         $leave->approved_by = $currentUser->id;
         $leave->save();
-
+    
         // Send a notification to the employee who requested the leave
         $user->notify(new RequestApprovedNotification($leave));
 
-        Alert::success('Leave request approved');
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Leave request approved');
     }
+    
 
     public function decline($id)
     {
         $leave = LeaveRequest::findOrFail($id);
+        $user = $leave->user; // Get the user who made the leave request
+        $requestedDays = $leave->days; // Get the number of requested days
+    
+        // Check if the leave request was approved and the credits were deducted
+        if ($leave->status === 'Approved') {
+            // Find the leave credit associated with the leave type
+            $leaveCredit = LeaveCredit::where('user_id', $user->id)
+                ->where('leave_type_id', $leave->leave_type_id)
+                ->first();
+    
+            if ($leaveCredit) {
+                // Restore the leave credits
+                $leaveCredit->remaining_credits += $requestedDays;
+                $leaveCredit->save();
+            }
+            
+            // Show a message for declined approved leave
+            Alert::success('Leave request declined and credits restored');
+        } elseif ($leave->status === 'Pending') {
+            // Show a message for declined pending leave
+            Alert::success('Leave declined successfully!');
+        }
+    
+        // Update the leave request status to 'Declined'
         $leave->status = 'Declined';
         $leave->save();
-
-        Alert::success('Leave request declined');
+    
         return redirect()->back();
     }
+    
+    
 
     public function update(Request $request, $id)
     {

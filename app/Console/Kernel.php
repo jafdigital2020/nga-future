@@ -15,9 +15,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->call(function () {
-            $this->checkForMissedCheckOuts();
-        })->dailyAt('23:59');  
+        // $schedule->command('overtime:reset')->monthlyOn(1, '00:00');
+        // $schedule->command('overtime:reset')->cron('0 0 15,30 * *');
+        // $schedule->command('overtime:reset')->everyMinute();
+        $schedule->command('overtime:reset')->dailyAt('11:51');
     }
 
     /**
@@ -28,7 +29,8 @@ class Kernel extends ConsoleKernel
     protected function commands()
     {
         $this->load(__DIR__.'/Commands');
-
+    
+        // $this->command(OvertimeReset::class);
         require base_path('routes/console.php');
     }
 }

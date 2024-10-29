@@ -30,7 +30,8 @@
                         <tr>
                             <th>#</th>
                             <th>Leave Type</th>
-                            <th>Leave Credit</th>
+                            <th>Leave Days</th>
+                            <th>Paid / Unpaid</th>
                             <th>Status</th>
                             <th class="text-right">Action</th>
                         </tr>
@@ -41,6 +42,7 @@
                             <td>{{ $type->id }}</td>
                             <td>{{ $type->leaveType }}</td>
                             <td>{{ $type->leaveDays }}</td>
+                            <td>{{ $type->is_paid ? 'Paid' : 'Unpaid' }}</td>
                             <td>
                                 <div class="dropdown action-label">
                                     <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#"
@@ -96,8 +98,16 @@
                         <input class="form-control" type="text" name="leaveType" id="leaveType" required>
                     </div>
                     <div class="form-group">
-                        <label>Leave Credits<span class="text-danger">*</span></label>
+                        <label>Leave Days<span class="text-danger">*</span></label>
                         <input class="form-control" type="text" name="leaveDays" id="leaveDays" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Paid / Unpaid</label>
+                        <select name="is_paid" id="is_paid" class="form-control" required>
+                            <option value="" disabled selected>Select Type</option>
+                            <option value="1">Paid</option>
+                            <option value="0">Unpaid</option>
+                        </select>
                     </div>
                     <div class="submit-section">
                         <button type="submit" class="btn btn-primary submit-btn">Submit</button>

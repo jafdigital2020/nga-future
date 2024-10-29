@@ -203,9 +203,7 @@
                             <th>Total Hours</th>
                             <th>Total Late</th>
                             <th>OT Hours</th>
-                            <th>Vacation Leave</th>
-                            <th>Sick Leave</th>
-                            <th>Birthday Leave</th>
+                            <th>Paid Leave</th>
                             <th>Unpaid Leave</th>
                             <th>Date Submitted</th>
                             <th class="text-center">Status</th>
@@ -233,10 +231,8 @@
                             <td>{{ $att->cut_off }}</td>
                             <td>{{ $att->totalHours }}</td>
                             <td>{{ $att->totalLate }}</td>
-                            <td>{{ $att->otHours }}</td>
-                            <td>{{ $att->vacLeave }}</td>
-                            <td>{{ $att->sickLeave }}</td>
-                            <td>{{ $att->bdayLeave }}</td>
+                            <td>{{ $att->approvedOvertime }}</td>
+                            <td>{{ $att->paidLeave }}</td>
                             <td>{{ $att->unpaidLeave }}</td>
                             <td>{{ $att->created_at->format('Y-m-d') }}</td>
                             <td class="text-center">

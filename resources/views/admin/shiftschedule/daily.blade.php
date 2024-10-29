@@ -124,8 +124,17 @@
                                                 @endif
                                             </span>
                                             <span class="userrole-info">{{ $user->department }} -
-                                                {{ $user->position }}</span>
+                                                {{ $user->position }} </span>
                                         </a>
+                                        <!-- Delete Button placed after the user role info -->
+                                        <!-- <form action="" method="POST" class="d-inline" style="margin-left: 10px;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-sm"
+                                                onclick="return confirm('Are you sure you want to delete this schedule?')">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </form> -->
                                     </h2>
                                 </div>
 
@@ -371,8 +380,6 @@
         </div>
     </div>
 </div>
-
-
 <!-- /Assign Shift -->
 
 <!-- Edit Schedule Modal -->

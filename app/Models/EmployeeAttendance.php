@@ -72,8 +72,8 @@ class EmployeeAttendance extends Model
                   
                     if ($breakIn && $breakOut) {
                         // From timeIn to breakIn, and from breakOut to timeOut
-                        $totalWorkedSeconds += $timeIn->diffInSeconds($breakIn);
-                        $totalWorkedSeconds += $breakOut->diffInSeconds($timeOut);
+                        $totalWorkedSeconds += $timeIn->diffInSeconds($breakOut);
+                        $totalWorkedSeconds += $breakIn->diffInSeconds($timeOut);
                     } else {
                         // No breaks, calculate directly from timeIn to timeOut
                         $totalWorkedSeconds += $timeIn->diffInSeconds($timeOut);
@@ -90,14 +90,14 @@ class EmployeeAttendance extends Model
                         // If timeOut is greater than timeEnd, calculate using timeEnd
                         if ($timeOut->greaterThan($timeEnd)) {
                             // From timeIn to breakIn
-                            $totalWorkedSeconds += $timeIn->diffInSeconds($breakIn);
+                            $totalWorkedSeconds += $timeIn->diffInSeconds($breakOut);
                             // From breakOut to timeEnd
-                            $totalWorkedSeconds += $breakOut->diffInSeconds($timeEnd);
+                            $totalWorkedSeconds += $breakIn->diffInSeconds($timeEnd);
                         } else {
                             // From timeIn to breakIn
-                            $totalWorkedSeconds += $timeIn->diffInSeconds($breakIn);
+                            $totalWorkedSeconds += $timeIn->diffInSeconds($breakOut);
                             // From breakOut to timeOut
-                            $totalWorkedSeconds += $breakOut->diffInSeconds($timeOut);
+                            $totalWorkedSeconds += $breakIn->diffInSeconds($timeOut);
                         }
                     }
                     // Case 2: No breakIn and breakOut

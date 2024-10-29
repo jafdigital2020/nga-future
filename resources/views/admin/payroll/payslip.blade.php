@@ -180,8 +180,8 @@
                             <td>{{ $pay->end_date }}</td>
                             <td>{{ $pay->month }}</td>
                             <td>{{ $pay->cut_off }}</td>
-                            <td>{{ $pay->totalHours }}</td>
-                            <td>₱{{ number_format($pay->netPayTotal, 2) }}</td>
+                            <td>{{ $pay->total_hours }}</td>
+                            <td>₱{{ number_format($pay->net_pay, 2) }}</td>
                             <td class="text-right">
                                 <div class="dropdown dropdown-action">
                                     <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown"

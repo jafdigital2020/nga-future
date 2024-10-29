@@ -23,19 +23,18 @@ class ShiftController extends Controller
         $endDate = $request->input('endDate') ? Carbon::parse($request->input('endDate')) : $startDate->copy()->endOfWeek(); // Show 1 week default
         $department = $request->input('department');
         $name = trim($request->input('name'));
-    
-        $dates = collect([]);
-    
+        
         // Generate an array of Carbon date instances based on the selected range
-        $period = CarbonPeriod::create($startDate, $endDate); 
+        $dates = collect([]);
+        $period = CarbonPeriod::create($startDate, $endDate);
         foreach ($period as $date) {
             $dates->push($date);
         }
-    
+        
         // Get distinct departments for filtering
         $departments = User::distinct()->pluck('department');
-    
-        // Fetch users and their schedules for the custom date range
+        
+        // Initialize the query to fetch users and their schedules
         $data = User::with(['shiftSchedule' => function ($query) use ($startDate, $endDate) {
             $query->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
         }]);
@@ -44,7 +43,8 @@ class ShiftController extends Controller
         if ($department) {
             $data->where('department', 'like', "%$department%");
         }
-
+    
+        // Apply name filtering if provided
         if ($name) {
             $data->where(function ($query) use ($name) {
                 // Split the input into parts
@@ -54,7 +54,7 @@ class ShiftController extends Controller
                     // Assume last part is the last name, and the rest are first name parts
                     $lName = array_pop($names);
                     $fName = implode(' ', $names);
-        
+    
                     // Handle search for both combined fName and lName
                     $query->where(function ($query) use ($fName, $lName) {
                         $query->whereRaw('LOWER(fName) like ?', ['%' . strtolower($fName) . '%'])
@@ -69,10 +69,11 @@ class ShiftController extends Controller
         }
     
         // Execute the query and get the users
-        $users = $data->get();
+        $users = $data->get(); // Ensure this is called after all where conditions
     
         return view('admin.shiftschedule.daily', compact('dates', 'users', 'startDate', 'endDate', 'departments'));
     }
+    
     
 
     public function shiftList()

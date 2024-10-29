@@ -192,6 +192,7 @@
                                     <h2 class="steps">Step 1 - 5</h2>
                                 </div>
                             </div>
+
                             <label class="fieldlabels">Email: *</label>
                             <input type="email" class="form-control" name="email" placeholder="Email Id" required />
                             @error('email')
@@ -320,35 +321,6 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-sm-12">
-                                    <div class="form-group">
-                                        <label class="fieldlabels">Flexible Time:</label>
-                                        <div class="custom-control custom-switch">
-                                            <input type="checkbox" onchange="toggleShiftFields(this)"
-                                                class="custom-control-input" id="flexibleTime" name="flexibleTime"
-                                                value="1"> <!-- Default is off -->
-                                            <label class="custom-control-label" for="flexibleTime"></label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label class="fieldlabels">Shift Start: *</label>
-                                        <input type="time" name="shiftStart" id="shiftStart" required>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label class="fieldlabels">Late Threshold: *</label>
-                                        <input type="time" name="lateThreshold" id="lateThreshold" required>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label class="fieldlabels">Shift End: *</label>
-                                        <input type="time" name="shiftEnd" id="shiftEnd">
-                                    </div>
-                                </div>
                             </div>
                         </div>
                         <input type="button" name="next" class="next action-button" value="Next" />
@@ -391,31 +363,39 @@
                         <div class="form-card">
                             <div class="row">
                                 <div class="col-7">
-                                    <h2 class="fs-title">Leave Credits:</h2>
+                                    <h2 class="fs-title">Assign Leave Credits:</h2>
                                 </div>
                                 <div class="col-5">
                                     <h2 class="steps">Step 5 - 5</h2> <!-- Updated step count -->
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-sm-4">
-                                    <label class="fieldlabels">Vacation Leave: *</label> <input type="number"
-                                        name="vacLeave" />
-                                </div>
-                                <div class="col-sm-4">
-                                    <label class="fieldlabels">Sick Leave: *</label> <input type="number"
-                                        name="sickLeave" />
-                                </div>
-                                <div class="col-sm-4">
-                                    <label class="fieldlabels">Birthday Leave: *</label> <input type="number"
-                                        name="bdayLeave" />
+                                <div class="d-flex flex-wrap">
+                                    @foreach($availableLeaveTypes as $leaveType)
+                                    <div class="form-group mx-2">
+                                        <div class="checkbox-wrapper">
+                                            <input style="display: none;" type="checkbox" class="inp-cbx"
+                                                name="leave_types[]" value="{{ $leaveType->id }}"
+                                                id="leaveType{{ $leaveType->id }}" />
+                                            <label for="leaveType{{ $leaveType->id }}" class="cbx">
+                                                <span>
+                                                    <svg viewBox="0 0 12 9" height="9px" width="12px">
+                                                        <polyline points="1 5 4 8 11 1"></polyline>
+                                                    </svg>
+                                                </span>
+                                                <span>{{ $leaveType->leaveType }} ({{ $leaveType->leaveDays }}
+                                                    days)</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    @endforeach
                                 </div>
                             </div>
-
                         </div>
                         <input type="submit" class="action-button" value="Submit" />
                         <input type="button" name="previous" class="previous action-button-previous" value="Previous" />
                     </fieldset>
+
                 </form>
             </div>
         </div>

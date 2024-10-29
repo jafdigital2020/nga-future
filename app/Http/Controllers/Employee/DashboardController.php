@@ -8,6 +8,7 @@ use App\Models\Policy;
 use App\Models\Announcement;
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
+use App\Models\OvertimeRequest;
 use App\Models\SettingsHoliday;
 use App\Models\EmploymentRecord;
 use App\Models\EmployementSalary;
@@ -152,13 +153,16 @@ class DashboardController extends Controller
         $authUserId = Auth::id();
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
-
+    
+        // Fetch attendance data
         $attendanceData = EmployeeAttendance::where('users_id', $authUserId)
             ->whereBetween('date', [$startDate, $endDate])
             ->select('date', 'timeIn', 'timeOut', 'timeTotal', 'totalLate')
             ->get();
         
-        $leaveRequests = LeaveRequest::where('users_id', $authUserId)
+        // Fetch leave requests with leave type
+        $leaveRequests = LeaveRequest::with('leaveType')
+            ->where('users_id', $authUserId)
             ->where(function($query) use ($startDate, $endDate) {
                 $query->whereBetween('start_date', [$startDate, $endDate])
                     ->orWhereBetween('end_date', [$startDate, $endDate])
@@ -167,11 +171,21 @@ class DashboardController extends Controller
             })
             ->get();  
         
+        // Fetch approved overtime requests
+        $approvedOvertime = OvertimeRequest::where('users_id', $authUserId)
+            ->whereBetween('date', [$startDate, $endDate])
+            ->where('status', 'Approved')
+            ->select('date', 'start_time', 'end_time', 'total_hours', 'reason')
+            ->get();
+    
         return response()->json([
             'attendance' => $attendanceData,
             'leaves' => $leaveRequests,
+            'overtime' => $approvedOvertime,
         ]);
     }
+    
+    
 
     public function store(Request $request)
     {
@@ -231,13 +245,10 @@ class DashboardController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date',
             'unpaid_leave' => 'required|integer',
-            'vacation_leave' => 'required|integer',
-            'sick_leave' => 'required|integer',
-            'birthday_leave' => 'required|integer',
+            'paid_leave' => 'required|integer', // New validation for paid leaves
+            'approved_overtime' => 'required|regex:/^\d{2}:\d{2}:\d{2}$/', // New validation for approved overtime
             'status' => 'required|string|in:pending,approved,rejected,sent'
         ]);
-
-        $user = Auth::user();
     
         // Check if the attendance record already exists for the same user and cutoff
         $existingAttendance = ApprovedAttendance::where('users_id', Auth::id())
@@ -264,33 +275,32 @@ class DashboardController extends Controller
             $attendance->start_date = $request->input('start_date');
             $attendance->end_date = $request->input('end_date');
             $attendance->unpaidLeave = $request->input('unpaid_leave');
-            $attendance->vacLeave = $request->input('vacation_leave');
-            $attendance->sickLeave = $request->input('sick_leave');
-            $attendance->bdayLeave = $request->input('birthday_leave');
+            $attendance->paidLeave = $request->input('paid_leave'); // New field for paid leaves
+            $attendance->approvedOvertime = $request->input('approved_overtime'); // New field for approved overtime
             $attendance->status = $request->input('status');
     
             // Save the record to the database
             $attendance->save();
-
+    
             // Get the authenticated user
             $user = Auth::user();
-
+    
             // Get the supervisor for the user's department
             $supervisor = $user->supervisor;
-
+    
             // Get all HR users
             $hrUsers = User::where('role_as', User::ROLE_HR)->get();
-
+    
             // Get all Admin users
             $adminUsers = User::where('role_as', User::ROLE_ADMIN)->get();
-
+    
             // Combine HR, Admin, and Supervisor to avoid duplicates
             $notifiableUsers = collect([$supervisor])
                 ->merge($hrUsers)
                 ->merge($adminUsers)
                 ->unique('id')  // Ensure no user is notified more than once
                 ->filter();  // Remove any null values (in case supervisor is null)
-
+    
             // Notify all unique users
             foreach ($notifiableUsers as $notifiableUser) {
                 $notifiableUser->notify(new AttendanceSubmissionNotification($attendance, $user));
@@ -306,6 +316,7 @@ class DashboardController extends Controller
             return response()->json(['message' => 'Error saving attendance.', 'error' => $e->getMessage()], 500);
         }
     }
+    
 
     public function getStatus(Request $request)
     {

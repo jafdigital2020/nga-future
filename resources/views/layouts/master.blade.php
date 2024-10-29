@@ -61,6 +61,10 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
+    <!-- Multi Select -->
+    <link rel="stylesheet" href="{{ asset('assets/css/multiselect.css') }}" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
     @stack('styles')
 </head>
 
@@ -438,6 +442,59 @@
                                 </li>
                             </ul>
                         </li>
+                        <!-- Deductions Table -->
+                        <li class="submenu">
+                            <a href="#"><i class="la la-minus"></i>
+                                <span> Deductions </span>
+                                <span class="menu-arrow"></span></a>
+                            <ul style="display: none">
+                                <li class="{{ Request::is('admin/deduction') ? 'active':'' }}">
+                                    <a href="{{ url('admin/deduction') }}">
+                                        Create/View Deductions
+                                    </a>
+                                </li>
+
+                                <li class="{{ Request::is('admin/deduction/user') ? 'active':'' }}">
+                                    <a href="{{ url('admin/deduction/user') }}">
+                                        User Deduction
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </li>
+                        <!-- Earnings Table -->
+                        <li class="submenu">
+                            <a href="#"><i class="la la-plus"></i>
+                                <span> Earnings </span>
+                                <span class="menu-arrow"></span></a>
+                            <ul style="display: none">
+                                <li class="{{ Request::is('admin/earning') ? 'active':'' }}">
+                                    <a href="{{ url('admin/earning') }}">
+                                        Create/View Earnings
+                                    </a>
+                                </li>
+
+                                <li class="{{ Request::is('admin/earning/user') ? 'active':'' }}">
+                                    <a href="{{ url('admin/earning/user') }}">
+                                        User Earnings
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </li>
+                        <!-- Loan Table -->
+                        <li class="submenu">
+                            <a href="#"><i class="la la-dollar"></i>
+                                <span> Loan </span>
+                                <span class="menu-arrow"></span></a>
+                            <ul style="display: none">
+                                <li class="{{ Request::is('admin/loan') ? 'active':'' }}">
+                                    <a href="{{ url('admin/loan') }}">
+                                        Create Loan
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
 
                         <li class="menu-title">
                             <span>Request Section</span>
@@ -446,8 +503,8 @@
                             <a href="{{ url('admin/overtime') }}"><i class="la la-clock"></i>
                                 <span>Overtime</span></a>
                         </li>
-                        <li class="{{ Request::is('admin/attendance-certificate') ? 'active':'' }}">
-                            <a href="{{ url('admin/attendance-certificate') }}"><i class="la la-file"></i>
+                        <li class="{{ Request::is('admin/request/attendance') ? 'active':'' }}">
+                            <a href="{{ url('admin/request/attendance') }}"><i class="la la-file"></i>
                                 <span>Attendance Certificate</span></a>
                         </li>
                         <!-- Shift And Schedules -->
@@ -582,8 +639,8 @@
 
     <!-- EditTable -->
     <script src="{{asset('assets/js/edittable.js')}}"></script>
-
-
+    <!-- MultiSelect JS -->
+    <script src="{{asset('assets/js/multiselect.js')}}"></script>
     <!-- Place jsPDF and any related scripts before the closing body tag -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -594,6 +651,8 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     @yield('scripts')
     <script>
         $(".datetimepicker").datetimepicker({

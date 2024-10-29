@@ -217,29 +217,28 @@
                                 @endif
                             </td>
                             <td>
-                                @if($app->status === 'Approved')
-                                <span class="badge badge-pill bg-soft-success text-success me-2"
-                                    style="font-size: 13px;">
-                                    {{ $app->status }}
-                                </span>
-                                @elseif($app->status === 'pending')
-                                <span class="badge badge-pill bg-soft-danger text-danger me-2" style="font-size: 13px;">
-                                    {{ $app->status }}
-                                </span>
-                                @else
-                                <span style="font-size: 12px;">
-                                    {{ $app->status }}
-                                </span>
-                                @endif
+                                <form action="{{ route('payroll.process', $app->id) }}" method="POST"
+                                    onsubmit="return confirmPayrollProcessing()">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-primary">
+                                        <i class="fa fa-money m-r-5"></i> Process Payroll
+                                    </button>
+                                </form>
                             </td>
 
                             <td class="text-right">
                                 <div class="dropdown dropdown-action">
                                     <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown"
-                                        aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                                        aria-expanded="false">
+                                        <i class="material-icons">more_vert</i>
+                                    </a>
                                     <div class="dropdown-menu dropdown-menu-right">
-                                        <a class="dropdown-item" href="{{ url('admin/payroll/edit/'.$app->id) }}"><i
-                                                class="fa fa-money m-r-5"></i>Payroll</a>
+
+                                        <a class="dropdown-item preview-payroll" href="#" data-id="{{ $app->id }}">
+                                            <i class="fa fa-eye m-r-5"></i> Preview/Edit Payroll
+                                        </a>
+
+                                        <!-- Edit Attendance Link -->
                                         <a class="dropdown-item edit-attendance" href="#" data-id="{{ $app->id }}"
                                             data-department="{{ $app->user->department }}"
                                             data-start_date="{{ $app->start_date }}"
@@ -247,9 +246,13 @@
                                             data-cut_off="{{ $app->cut_off }}" data-totalLate="{{ $app->totalLate }}"
                                             data-totalhours="{{ $app->totalHours }}"
                                             data-approved_by="{{ $app->approved_by }}">
-                                            <i class="fa fa-pencil m-r-5"></i> Edit</a>
+                                            <i class="fa fa-pencil m-r-5"></i> Edit Attendance
+                                        </a>
+
+                                        <!-- Delete Attendance Link -->
                                         <a class="dropdown-item delete-attendance" href="#" data-id="{{ $app->id }}">
-                                            <i class="fa fa-trash-o m-r-5"></i> Delete</a>
+                                            <i class="fa fa-trash-o m-r-5"></i> Delete
+                                        </a>
                                     </div>
                                 </div>
                             </td>
@@ -359,6 +362,182 @@
 <!-- /Delete Attendance Modal -->
 
 
+<!-- Payroll Summary Modal -->
+<div class="modal fade" id="payrollSummaryModal" tabindex="-1" role="dialog" aria-labelledby="payrollSummaryModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="payrollSummaryModalLabel">Payroll Summary</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- General Payroll Summary -->
+                <p><strong>Gross Pay:</strong> ₱<span id="grossPay"></span></p>
+                <p><strong>Net Pay:</strong> ₱<span id="netPay"></span></p>
+
+                <br>
+                <!-- Breakdown of Deductions -->
+                <h6><strong>Deductions:</strong></h6>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Deduction</th>
+                            <th>Amount (₱)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deductionsTableBody">
+                        <!-- Deductions will be dynamically added here -->
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>Total Deductions</th>
+                            <th>₱<span id="totalDeductions"></span></th>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <br>
+                <!-- Breakdown of Earnings -->
+                <h6><strong>Earnings:</strong></h6>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Earning</th>
+                            <th>Amount (₱)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="earningsTableBody">
+                        <!-- Earnings will be dynamically added here -->
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>Total Earnings</th>
+                            <th>₱<span id="totalEarnings"></span></th>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <br>
+                <!-- Breakdown of Loans -->
+                <h6><strong>Loans:</strong></h6>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Loan</th>
+                            <th>Amount (₱)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="loansTableBody">
+                        <!-- Loans will be dynamically added here -->
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>Total Loans</th>
+                            <th>₱<span id="totalLoans"></span></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payroll Preview Modal -->
+<div id="payrollPreviewModal" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Payroll Preview</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Add form here -->
+                <form id="payrollForm" method="POST">
+                    @csrf
+                    <!-- Add CSRF token if using Laravel -->
+                    <div class="row">
+                        <!-- Net Pay and Gross Pay -->
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Gross Pay</label>
+                                <input class="form-control" type="text" id="grossPaye" name="grossPay" value="">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Net Pay</label>
+                                <input class="form-control" type="text" id="netPaye" name="netPay" value="">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Total Earnings</label>
+                                <input class="form-control" type="text" id="totalEarningse" name="totalEarnings"
+                                    value="">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Total Deductions</label>
+                                <input class="form-control" type="text" id="totalDeductionse" name="totalDeductions"
+                                    value="">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <!-- Earnings Section -->
+                        <div class="col-sm-6">
+                            <h4 class="text-primary">Earnings</h4>
+                            <div class="form-group">
+                                <label>Overtime Pay</label>
+                                <input class="form-control" type="text" id="overtimePay" name="overtimePay" value="">
+                            </div>
+                            <div class="form-group">
+                                <label>Paid Leave Amount</label>
+                                <input class="form-control" type="text" id="paidLeaveAmount" name="paidLeaveAmount"
+                                    value="">
+                            </div>
+                            <div id="earningsContainer">
+                                <!-- Earnings will be dynamically populated here -->
+                            </div>
+                        </div>
+                        <!-- Deductions Section -->
+                        <div class="col-sm-6">
+                            <h4 class="text-primary">Deductions</h4>
+                            <div id="deductionsContainer">
+                                <!-- Deductions will be dynamically populated here -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <!-- Loans Section -->
+                        <div class="col-sm-12">
+                            <h4 class="text-primary">Loans</h4>
+                            <div id="loansContainer">
+                                <!-- Loans will be dynamically populated here -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="submit-section">
+                        <!-- Submit button -->
+                        <button type="submit" class="btn btn-primary submit-btn">Process Payroll</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 @endsection
 
 @section('scripts')
@@ -400,6 +579,546 @@
             $('#delete_approve').modal('show');
         });
     });
+
+</script>
+
+<script>
+    @if(session('summaryData'))
+    const summaryData = @json(session('summaryData'));
+
+    // Populate the general payroll summary
+    document.getElementById('grossPay').textContent = summaryData.grossPay;
+    document.getElementById('netPay').textContent = summaryData.netPay;
+
+    // Populate deductions table and total
+    const deductionsTableBody = document.getElementById('deductionsTableBody');
+    summaryData.deductions.forEach(deduction => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${deduction.name}</td><td>₱${deduction.amount}</td>`;
+        deductionsTableBody.appendChild(row);
+    });
+    document.getElementById('totalDeductions').textContent = summaryData.totalDeductions;
+
+    // Populate earnings table with dynamic earnings
+    const earningsTableBody = document.getElementById('earningsTableBody');
+
+    // Add Overtime Pay to earnings
+    if (summaryData.overtimePay > 0) {
+        const overtimeRow = document.createElement('tr');
+        overtimeRow.innerHTML = `<td>Overtime Pay</td><td>₱${summaryData.overtimePay}</td>`;
+        earningsTableBody.appendChild(overtimeRow);
+    }
+
+    if (summaryData.paidLeaveAmount !== undefined) {
+        const paidLeaveRow = document.createElement('tr');
+        paidLeaveRow.innerHTML = `<td>Paid Leave</td><td>₱${summaryData.paidLeaveAmount}</td>`;
+        earningsTableBody.appendChild(paidLeaveRow);
+    }
+
+
+    // Add regular earnings
+    summaryData.earnings.forEach(earning => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${earning.name}</td><td>₱${earning.amount}</td>`;
+        earningsTableBody.appendChild(row);
+    });
+
+    // Add total earnings
+    document.getElementById('totalEarnings').textContent = summaryData.totalEarnings;
+
+    // Populate loans table and total
+    const loansTableBody = document.getElementById('loansTableBody');
+    summaryData.loans.forEach(loan => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${loan.loan_name}</td><td>₱${loan.amount}</td>`;
+        loansTableBody.appendChild(row);
+    });
+    document.getElementById('totalLoans').textContent = summaryData.totalLoans;
+
+    // Trigger the modal to show
+    $('#payrollSummaryModal').modal('show');
+    @endif
+
+</script>
+
+<!-- <script>
+    $(document).on('click', '.preview-payroll', function (e) {
+        e.preventDefault();
+
+        const payrollId = $(this).data('id');
+        console.log('Payroll preview clicked, ID:', payrollId);
+
+        // Set the payrollId as data-id on the form
+        $('#payrollForm').data('id', payrollId);
+
+        $.ajax({
+            url: `/admin/payroll/preview/${payrollId}`,
+            method: 'GET',
+            success: function (data) {
+                console.log('Data received:', data);
+
+                // Populate modal fields
+                $('#grossPaye').val(data.grossPay);
+                $('#netPaye').val(data.netPay);
+                $('#totalEarningse').val(data.totalEarnings);
+                $('#totalDeductionse').val(data.totalDeductions);
+                $('#overtimePay').val(data.overtimePay);
+                $('#paidLeaveAmount').val(data.paidLeaveAmount);
+
+                // Clear and populate earnings, deductions, loans
+                $('#earningsContainer').empty();
+                $('#deductionsContainer').empty();
+                $('#loansContainer').empty();
+
+                // Populate earnings
+                data.earnings.forEach(earning => {
+                    $('#earningsContainer').append(`
+                        <div class="form-group">
+                            <label>${earning.name}</label>
+                            <input type="hidden" name="earning_ids[]" value="${earning.earning_id}">
+                            <input type="hidden" name="earning_names[]" value="${earning.name}">
+                            <input type="text" class="form-control earning-input" value="${earning.amount}" name="earnings[]" data-earning-id="${earning.earning_id}">
+                        </div>
+                    `);
+                });
+
+                // Populate deductions
+                data.deductions.forEach(deduction => {
+                    $('#deductionsContainer').append(`
+                        <div class="form-group">
+                            <label>${deduction.name}</label>
+                            <input type="hidden" name="deduction_ids[]" value="${deduction.deduction_id}">
+                            <input type="hidden" name="deduction_names[]" value="${deduction.name}">
+                            <input type="text" class="form-control deduction-input" value="${deduction.amount}" name="deductions[]" data-deduction-id="${deduction.deduction_id}">
+                        </div>
+                    `);
+                });
+
+                // Populate loans
+                data.loans.forEach(loan => {
+                    $('#loansContainer').append(`
+                        <div class="form-group">
+                            <label>${loan.loan_name}</label>
+                            <input type="hidden" name="loan_ids[]" value="${loan.loan_id}">
+                            <input type="hidden" name="loan_names[]" value="${loan.loan_name}">
+                            <input type="text" class="form-control loan-input" value="${loan.amount}" name="loans[]" data-loan-id="${loan.loan_id}">
+                        </div>
+                    `);
+                });
+
+                $('#payrollPreviewModal').modal('show');
+            },
+            error: function (err) {
+                console.log('Error fetching payroll preview:', err);
+            }
+        });
+    });
+
+    // Event listener to automatically adjust the total deductions and net pay
+    $(document).on('input', '.deduction-input', function () {
+        updateDeductionsAndNetPay();
+    });
+
+    // Event listener to automatically adjust the total earnings and net pay
+    $(document).on('input', '.earning-input', function () {
+        updateEarningsAndNetPay();
+    });
+
+    // Event listener for overtime and paid leave fields to update total earnings and net pay
+    $(document).on('input', '#overtimePay, #paidLeaveAmount', function () {
+        updateEarningsAndNetPay();
+    });
+
+    // Event listener for loans to update net pay
+    $(document).on('input', '.loan-input', function () {
+        updateLoansAndNetPay();
+    });
+
+    function updateDeductionsAndNetPay() {
+        let totalDeductions = 0;
+        // Iterate through each deduction input and sum up the values
+        $('.deduction-input').each(function () {
+            const deductionValue = parseFloat(removeCommas($(this).val())) || 0;
+            totalDeductions += deductionValue;
+        });
+
+        // Update the total deductions input field
+        $('#totalDeductionse').val(totalDeductions.toFixed(2));
+
+        // Recalculate net pay
+        calculateNetPay();
+    }
+
+    function updateEarningsAndNetPay() {
+        let totalEarnings = 0;
+        // Iterate through each earning input and sum up the values
+        $('.earning-input').each(function () {
+            const earningValue = parseFloat(removeCommas($(this).val())) || 0;
+            totalEarnings += earningValue;
+        });
+
+        // Add overtime pay and paid leave amount to total earnings
+        const overtimePay = parseFloat(removeCommas($('#overtimePay').val())) || 0;
+        const paidLeaveAmount = parseFloat(removeCommas($('#paidLeaveAmount').val())) || 0;
+
+        totalEarnings += overtimePay + paidLeaveAmount;
+
+        // Update the total earnings input field
+        $('#totalEarningse').val(totalEarnings.toFixed(2));
+
+        // Recalculate net pay
+        calculateNetPay();
+    }
+
+    function updateLoansAndNetPay() {
+        let totalLoans = 0;
+        // Iterate through each loan input and sum up the values
+        $('.loan-input').each(function () {
+            const loanValue = parseFloat(removeCommas($(this).val())) || 0;
+            totalLoans += loanValue;
+        });
+
+        // Recalculate net pay
+        calculateNetPay();
+    }
+
+    function calculateNetPay() {
+        const grossPay = parseFloat(removeCommas($('#grossPaye').val())) || 0;
+        const totalEarnings = parseFloat(removeCommas($('#totalEarningse').val())) || 0;
+        const totalDeductions = parseFloat(removeCommas($('#totalDeductionse').val())) || 0;
+
+        // Sum up loans
+        let totalLoans = 0;
+        $('.loan-input').each(function () {
+            const loanValue = parseFloat(removeCommas($(this).val())) || 0;
+            totalLoans += loanValue;
+        });
+
+        // Debugging output to check values before calculating
+        console.log('Gross Pay:', grossPay);
+        console.log('Total Earnings:', totalEarnings);
+        console.log('Total Deductions:', totalDeductions);
+        console.log('Total Loans:', totalLoans);
+
+        // Calculate the net pay
+
+        const netPay = (grossPay + totalEarnings) - (totalDeductions + totalLoans);
+
+        // Debugging output for net pay
+        console.log('Calculated Net Pay:', netPay);
+
+        // Update net pay field
+        $('#netPaye').val(netPay.toFixed(2));
+
+        // Check if net pay goes negative
+        if (netPay < 0) {
+            console.warn('Warning: Net pay is negative.');
+        }
+    }
+
+    // Helper function to remove commas from a string
+    function removeCommas(value) {
+        return value.replace(/,/g, '');
+    }
+
+</script> -->
+
+<script>
+    $(document).on('click', '.preview-payroll', function (e) {
+        e.preventDefault();
+
+        const payrollId = $(this).data('id');
+        console.log('Payroll preview clicked, ID:', payrollId);
+
+        // Set the payrollId as data-id on the form
+        $('#payrollForm').data('id', payrollId);
+
+        $.ajax({
+            url: `/admin/payroll/preview/${payrollId}`,
+            method: 'GET',
+            success: function (data) {
+                console.log('Data received:', data);
+
+                // Populate modal fields with cleaned values (without commas)
+                $('#grossPaye').val(removeCommas(data.grossPay));
+                $('#netPaye').val(removeCommas(data.netPay));
+                $('#totalEarningse').val(removeCommas(data.totalEarnings));
+                $('#totalDeductionse').val(removeCommas(data.totalDeductions));
+                $('#overtimePay').val(removeCommas(data.overtimePay));
+                $('#paidLeaveAmount').val(removeCommas(data.paidLeaveAmount));
+
+                // Clear and populate earnings, deductions, loans
+                $('#earningsContainer').empty();
+                $('#deductionsContainer').empty();
+                $('#loansContainer').empty();
+
+                // Populate earnings
+                data.earnings.forEach(earning => {
+                    $('#earningsContainer').append(`
+                        <div class="form-group">
+                            <label>${earning.name}</label>
+                            <input type="hidden" name="earning_ids[]" value="${earning.earning_id}">
+                            <input type="hidden" name="earning_names[]" value="${earning.name}">
+                            <input type="text" class="form-control earning-input" value="${removeCommas(earning.amount)}" name="earnings[]" data-earning-id="${earning.earning_id}">
+                        </div>
+                    `);
+                });
+
+                // Populate deductions
+                data.deductions.forEach(deduction => {
+                    $('#deductionsContainer').append(`
+                        <div class="form-group">
+                            <label>${deduction.name}</label>
+                            <input type="hidden" name="deduction_ids[]" value="${deduction.deduction_id}">
+                            <input type="hidden" name="deduction_names[]" value="${deduction.name}">
+                            <input type="text" class="form-control deduction-input" value="${removeCommas(deduction.amount)}" name="deductions[]" data-deduction-id="${deduction.deduction_id}">
+                        </div>
+                    `);
+                });
+
+                // Populate loans
+                data.loans.forEach(loan => {
+                    $('#loansContainer').append(`
+                        <div class="form-group">
+                            <label>${loan.loan_name}</label>
+                            <input type="hidden" name="loan_ids[]" value="${loan.loan_id}">
+                            <input type="hidden" name="loan_names[]" value="${loan.loan_name}">
+                            <input type="text" class="form-control loan-input" value="${removeCommas(loan.amount)}" name="loans[]" data-loan-id="${loan.loan_id}">
+                        </div>
+                    `);
+                });
+
+                $('#payrollPreviewModal').modal('show');
+            },
+            error: function (err) {
+                console.log('Error fetching payroll preview:', err);
+            }
+        });
+    });
+
+    // Event listener to automatically adjust the total deductions and net pay
+    $(document).on('input', '.deduction-input', function () {
+        updateDeductionsAndNetPay();
+    });
+
+    // Event listener to automatically adjust the total earnings and net pay
+    $(document).on('input', '.earning-input', function () {
+        updateEarningsAndNetPay();
+    });
+
+    // Event listener for overtime and paid leave fields to update total earnings and net pay
+    $(document).on('input', '#overtimePay, #paidLeaveAmount', function () {
+        updateEarningsAndNetPay();
+    });
+
+    // Event listener for loans to update net pay
+    $(document).on('input', '.loan-input', function () {
+        updateLoansAndNetPay();
+    });
+
+    function updateDeductionsAndNetPay() {
+        let totalDeductions = 0;
+        // Iterate through each deduction input and sum up the values
+        $('.deduction-input').each(function () {
+            const deductionValue = parseFloat(removeCommas($(this).val())) || 0;
+            totalDeductions += deductionValue;
+        });
+
+        // Update the total deductions input field
+        $('#totalDeductionse').val(totalDeductions.toFixed(2));
+
+        // Recalculate net pay
+        calculateNetPay();
+    }
+
+    function updateEarningsAndNetPay() {
+        let totalEarnings = 0;
+        // Iterate through each earning input and sum up the values
+        $('.earning-input').each(function () {
+            const earningValue = parseFloat(removeCommas($(this).val())) || 0;
+            totalEarnings += earningValue;
+        });
+
+        // Add overtime pay and paid leave amount to total earnings
+        const overtimePay = parseFloat(removeCommas($('#overtimePay').val())) || 0;
+        const paidLeaveAmount = parseFloat(removeCommas($('#paidLeaveAmount').val())) || 0;
+
+        totalEarnings += overtimePay + paidLeaveAmount;
+
+        // Update the total earnings input field
+        $('#totalEarningse').val(totalEarnings.toFixed(2));
+
+        // Recalculate net pay
+        calculateNetPay();
+    }
+
+    function updateLoansAndNetPay() {
+        let totalLoans = 0;
+        // Iterate through each loan input and sum up the values
+        $('.loan-input').each(function () {
+            const loanValue = parseFloat(removeCommas($(this).val())) || 0;
+            totalLoans += loanValue;
+        });
+
+        // Recalculate net pay
+        calculateNetPay();
+    }
+
+    function calculateNetPay() {
+        const grossPay = parseFloat(removeCommas($('#grossPaye').val())) || 0;
+        const totalEarnings = parseFloat(removeCommas($('#totalEarningse').val())) || 0;
+        const totalDeductions = parseFloat(removeCommas($('#totalDeductionse').val())) || 0;
+
+        // Sum up loans
+        let totalLoans = 0;
+        $('.loan-input').each(function () {
+            const loanValue = parseFloat(removeCommas($(this).val())) || 0;
+            totalLoans += loanValue;
+        });
+
+        // Debugging output to check values before calculating
+        console.log('Gross Pay:', grossPay);
+        console.log('Total Earnings:', totalEarnings);
+        console.log('Total Deductions:', totalDeductions);
+        console.log('Total Loans:', totalLoans);
+
+        // Calculate the net pay
+        const netPay = (grossPay + totalEarnings) - (totalDeductions + totalLoans);
+
+        // Debugging output for net pay
+        console.log('Calculated Net Pay:', netPay);
+
+        // Update net pay field
+        $('#netPaye').val(netPay.toFixed(2));
+
+        // Check if net pay goes negative
+        if (netPay < 0) {
+            console.warn('Warning: Net pay is negative.');
+        }
+    }
+
+    // Helper function to remove commas from a string
+    function removeCommas(value) {
+        return value.toString().replace(/,/g, '');
+    }
+
+</script>
+
+
+
+<script>
+    $('#payrollForm').on('submit', function (e) {
+        e.preventDefault();
+
+        const payrollId = $(this).data('id');
+
+        // Sanitize the numeric fields by removing commas
+        $('#payrollForm input[name="grossPay"]').val(function (i, val) {
+            return val.replace(/,/g, ''); // Remove commas
+        });
+        $('#payrollForm input[name="netPay"]').val(function (i, val) {
+            return val.replace(/,/g, ''); // Remove commas
+        });
+        $('#payrollForm input[name="totalEarnings"]').val(function (i, val) {
+            return val.replace(/,/g, ''); // Remove commas
+        });
+        $('#payrollForm input[name="totalDeductions"]').val(function (i, val) {
+            return val.replace(/,/g, ''); // Remove commas
+        });
+        $('#payrollForm input[name="overtimePay"]').val(function (i, val) {
+            return val.replace(/,/g, ''); // Remove commas
+        });
+        $('#payrollForm input[name="paidLeaveAmount"]').val(function (i, val) {
+            return val.replace(/,/g, ''); // Remove commas
+        });
+
+        // **Deductions** //
+        const deductions = [];
+        $('input[name^="deductions"]').each(function () {
+            const amount = $(this).val();
+            const name = $(this).closest('.form-group').find('input[name^="deduction_names"]').val();
+            const id = $(this).closest('.form-group').find('input[name^="deduction_ids"]').val();
+            if (amount && name && id) {
+                deductions.push({
+                    amount,
+                    name,
+                    id
+                });
+            }
+        });
+
+        // **Earnings** //
+        const earnings = [];
+        $('input[name^="earnings"]').each(function () {
+            const amount = $(this).val();
+            const name = $(this).closest('.form-group').find('input[name^="earning_names"]').val();
+            const id = $(this).closest('.form-group').find('input[name^="earning_ids"]').val();
+            if (amount && name && id) {
+                earnings.push({
+                    amount,
+                    name,
+                    id
+                });
+            }
+        });
+
+        // **Loans** //
+        const loans = [];
+        $('input[name^="loans"]').each(function () {
+            const amount = $(this).val();
+            const name = $(this).closest('.form-group').find('input[name^="loan_names"]').val();
+            const id = $(this).closest('.form-group').find('input[name^="loan_ids"]').val();
+            if (amount && name && id) {
+                earnings.push({
+                    amount,
+                    name,
+                    id
+                });
+            }
+        });
+
+        // Sanitize loan inputs
+        // $('#payrollForm input[name^="loans"]').each(function () {
+        //     $(this).val($(this).val().replace(/,/g, '')); // Remove commas
+        // });
+
+        const formData = $(this).serialize();
+        console.log('Form Data:', formData); // Log the sanitized data for debugging
+        console.log('Deductions:', deductions); // Log deductions
+        console.log('Earnings:', earnings); // Log earnings
+        console.log('Loan:', loans);
+
+        if (!payrollId) {
+            alert('Error: Payroll ID is missing!');
+            return;
+        }
+
+        $.ajax({
+            url: `/admin/payroll/preview/process/${payrollId}`,
+            method: 'POST',
+            data: formData,
+            success: function (response) {
+                if (response.success) {
+                    alert('Payroll processed successfully!');
+                    $('#payrollPreviewModal').modal('hide');
+                    location.reload();
+                } else {
+                    alert('Failed to process payroll: ' + (response.error || 'Unknown error'));
+                }
+            },
+            error: function (err) {
+                console.log('Error processing payroll:', err);
+                alert('Error processing payroll: ' + err.responseText);
+            }
+        });
+    });
+
+</script>
+
+<script>
+    function confirmPayrollProcessing() {
+        return confirm("Are you sure you want to process payroll for this employee?");
+    }
 
 </script>
 

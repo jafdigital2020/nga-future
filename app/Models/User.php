@@ -5,16 +5,22 @@ namespace App\Models;
 use Log;
 use Exception;
 use Carbon\Carbon;
+use App\Models\Loan;
 use App\Models\Policy;
 use App\Models\Salary;
 use App\Models\Payroll;
 use Carbon\CarbonInterval;
+use App\Models\LeaveCredit;
+use App\Models\SalaryTable;
+use App\Models\UserEarning;
 use App\Models\Announcement;
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
 use App\Models\ShiftSchedule;
+use App\Models\UserDeduction;
 use App\Models\EmployeeSalary;
 use App\Models\BankInformation;
+use App\Models\OvertimeCredits;
 use App\Models\OvertimeRequest;
 use App\Models\EmploymentRecord;
 use App\Models\EmployementSalary;
@@ -279,6 +285,36 @@ class User extends Authenticatable
     public function otrequest()
     {
         return $this->hasMany(OvertimeRequest::class, 'users_id' , 'id');
+    }
+
+    public function otcredits ()
+    {
+        return $this->hasMany(OvertimeCredits::class, 'users_id' , 'id');
+    }
+
+    public function userDeductions()
+    {
+        return $this->hasMany(UserDeduction::class, 'users_id' , 'id');
+    }
+
+    public function userEarnings()
+    {
+        return $this->hasMany(UserEarning::class, 'users_id' , 'id');
+    }
+
+    public function loans()
+    {
+        return $this->hasMany(Loan::class, 'users_id' , 'id');
+    }
+
+    public function leaveCredits()
+    {
+        return $this->hasMany(LeaveCredit::class, 'user_id' , 'id');
+    }
+
+    public function salaryRecords()
+    {
+        return $this->hasMany(SalaryTable::class, 'users_id', 'id');
     }
 
 
@@ -702,6 +738,16 @@ class User extends Authenticatable
         foreach ($adminUsers as $admin) {
             $admin->notify(new MissedLogoutNotification($user, $date));
         }
+    }
+
+    protected static function booted()
+    {
+        static::created(function ($user) {
+            OvertimeCredits::create([
+                'users_id' => $user->id,
+                'otCredits' => '16:00:00',
+            ]);
+        });
     }
 
 }
