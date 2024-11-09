@@ -102,7 +102,8 @@
                                         @endif</h4>
                                 </div>
                                 <div class="clock-in-btn">
-                                    <form id="clockInForm" action="{{ url('emp/dashboard') }}" method="POST">
+                                    <form id="clockInForm" action="{{ url('emp/dashboard') }}" method="POST"
+                                        enctype="multipart/form-data">
                                         @csrf
                                         <input type="hidden" name="latitude" id="latitude">
                                         <input type="hidden" name="longitude" id="longitude">
@@ -110,6 +111,45 @@
                                         <button type="button" class="btn btn-warning"
                                             id="checkInButton">Clock-In</button>
                                     </form>
+                                </div>
+
+                                <div id="imageUploadModal" class="modal fade" tabindex="-1" role="dialog"
+                                    aria-labelledby="imageUploadModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="imageUploadModalLabel">Capture a Photo</h5>
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                    aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form id="imageUploadForm">
+                                                    <div class="form-group">
+                                                        <label>Your location accuracy is low. Please capture a photo to
+                                                            complete clock-in.</label>
+                                                        <!-- Video element to show camera feed -->
+                                                        <video id="video" autoplay style="width: 100%;"></video>
+                                                        <!-- Canvas element for capturing photo -->
+                                                        <canvas id="canvas" style="display: none;"></canvas>
+                                                        <!-- Button to capture photo -->
+                                                        <button type="button" class="btn btn-primary mt-2"
+                                                            id="captureButton">Capture Photo</button>
+                                                        <!-- Preview captured image -->
+                                                        <img id="capturedImage"
+                                                            style="display: none; width: 100%; margin-top: 10px;" />
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-primary"
+                                                    id="submitImage">Submit</button>
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-dismiss="modal">Cancel</button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="clock-in-btn">
@@ -152,8 +192,9 @@
                                 </div>
                                 <!-- Clock Out Modal -->
                             </div>
-                            <div class="clock-in-list">
+                            <div class="clock-in-list mt-4">
                                 <ul class="nav">
+                                    <!-- Start Break Button -->
                                     <form action="{{ url('emp/dashboard/breakin/') }}" method="POST">
                                         @csrf @method('PUT')
                                         <div class="clock-in-btn">
@@ -161,20 +202,40 @@
                                                 Break</button>
                                         </div>
                                     </form>
+
+                                    <!-- End Break Button -->
                                     <form action="{{ url('emp/dashboard/breakout/') }}" method="POST">
                                         @csrf @method('PUT')
                                         <div class="clock-in-btn">
                                             <button type="submit" class="btn btn-outline-danger btn-sm"
-                                                id="resetButton">End
-                                                Break</button>
+                                                id="resetButton">End Break</button>
                                         </div>
                                     </form>
-                                    <li>
-                                        <p>Break Timer</p>
-                                        <h6 id="countdown">01:00:00</h6>
-                                    </li>
+
+                                    <!-- Break Options Dropdown for 1st and 2nd 15 Minutes Break -->
+
+                                    <div class="dropdown mx-2">
+                                        <button class="btn btn-danger btn-sm dropdown-toggle" type="button"
+                                            id="breakDropdown" data-toggle="dropdown" aria-haspopup="true"
+                                            aria-expanded="false">
+                                            15mins
+                                        </button>
+                                        <div class="dropdown-menu" aria-labelledby="breakDropdown">
+                                            <form action="{{ route('emp.startBreak') }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="dropdown-item">Start 15mins
+                                                    Break</button>
+                                            </form>
+                                            <form action="{{ route('emp.endBreak') }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="dropdown-item">End 15mins
+                                                    Break</button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </ul>
                             </div>
+
                             <div class="view-attendance">
                                 <a href="#">
                                     View Attendance <i class="fa-solid fa-arrow-right"></i>
@@ -211,39 +272,21 @@
                                     <div class="col-md-4">
                                         <div class="attendance-details">
                                             <h4 class="text-primary">
-                                                {{ Auth::user()->vacLeave + Auth::user()->sickLeave + Auth::user()->bdayLeave }}
+                                                {{ $totalLeaveCredits ?? 0 }}
                                             </h4>
                                             <p>Total Leaves</p>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="attendance-details">
-                                            <h4 class="text-pink">{{ $leaveApproved }}</h4>
+                                            <h4 class="text-pink">{{ $leaveApproved + $attendanceApproved ?? 0 }}</h4>
                                             <p>Leaves Taken</p>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="attendance-details">
-                                            <h4 class="text-success">{{ $leavePending }}</h4>
+                                            <h4 class="text-success">{{ $leavePending ?? 0 }}</h4>
                                             <p>Pending Approval</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="attendance-details">
-                                            <h4 class="text-purple">{{ Auth::user()->vacLeave }}</h4>
-                                            <p>Vacation Leave</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="attendance-details">
-                                            <h4 class="text-info">{{ Auth::user()->sickLeave }}</h4>
-                                            <p>Sick <br>Leave</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="attendance-details">
-                                            <h4 class="text-danger">{{ Auth::user()->bdayLeave }}</h4>
-                                            <p>Birthday Leave</p>
                                         </div>
                                     </div>
                                 </div>
@@ -298,6 +341,32 @@
                                 {{ $latest->timeIn }}
                             </p>
                         </li>
+                        <!-- Start -->
+                        @if(is_array($breaks) && count($breaks) > 0)
+                        @foreach($breaks as $index => $break)
+                        <li>
+                            <p class="mb-0">15-Min Break {{ $index + 1 }} Start</p>
+                            <p class="res-activity-time">
+                                <i class="fa fa-clock-o"></i>
+                                {{ $break['start'] ?? 'N/A' }}
+                            </p>
+                        </li>
+                        @if(isset($break['end']))
+                        <li>
+                            <p class="mb-0">15-Min Break {{ $index + 1 }} End</p>
+                            <p class="res-activity-time">
+                                <i class="fa fa-clock-o"></i>
+                                {{ $break['end'] }}
+                            </p>
+                        </li>
+                        @endif
+                        @endforeach
+                        @else
+                        <li>
+                            <p class="text-muted">No breaks recorded for today.</p>
+                        </li>
+                        @endif
+                        <!-- END -->
                         @endif @if($latest->breakIn)
                         <li>
                             <p class="mb-0">Break Out at</p>
@@ -506,14 +575,18 @@
 
 <!-- GOOGLE MAP API -->
 <script>
+    let videoStream;
+
     document.getElementById("checkInButton").addEventListener("click", getLocation);
+    let lowAccuracyCheckIn = false;
+    let geofences = [];
 
     function getLocation() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(showPosition, showError, {
-                enableHighAccuracy: true, // Request high accuracy
-                timeout: 5000, // Timeout in milliseconds
-                maximumAge: 0 // Do not use a cached position
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0,
             });
         } else {
             alert("Geolocation is not supported by this browser.");
@@ -523,22 +596,81 @@
     function showPosition(position) {
         const latitude = position.coords.latitude;
         const longitude = position.coords.longitude;
+        document.getElementById("latitude").value = latitude;
+        document.getElementById("longitude").value = longitude;
 
-        // accuray meters
-        // if (position.coords.accuracy > 20) {
-        //     alert("Location accuracy is too low. Please try again.");
-        //     return;
-        // }
-
-        // Call the function to reverse geocode and get the address
-        getAddressFromLatLng(latitude, longitude);
+        fetch("{{ url('emp/dashboard') }}", {
+                method: "POST",
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    latitude,
+                    longitude
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    window.location.reload();
+                } else if (data.status === 'low_accuracy') {
+                    alert(data.message);
+                    lowAccuracyCheckIn = true;
+                    $('#imageUploadModal').modal('show');
+                    startCamera();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Check-in error:', error);
+                alert("Error submitting check-in. Please try again.");
+            });
     }
 
+    // Start the camera feed
+    function startCamera() {
+        const video = document.getElementById('video');
+        navigator.mediaDevices.getUserMedia({
+                video: true
+            })
+            .then(stream => {
+                videoStream = stream;
+                video.srcObject = stream;
+            })
+            .catch(error => console.error("Camera access error:", error));
+    }
+
+    // Capture the image from the video feed
+    document.getElementById("captureButton").addEventListener("click", function () {
+        const canvas = document.getElementById("canvas");
+        const video = document.getElementById("video");
+        const capturedImage = document.getElementById("capturedImage");
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        capturedImage.src = canvas.toDataURL('image/png');
+        capturedImage.style.display = "block";
+        canvas.style.display = "none";
+    });
+
+    // Stop the camera feed
+    function stopCamera() {
+        if (videoStream) {
+            videoStream.getTracks().forEach(track => track.stop());
+        }
+    }
+
+
     function showError(error) {
+        console.error("Geolocation error:", error);
         switch (error.code) {
             case error.PERMISSION_DENIED:
                 if (confirm("Location access was denied. Would you like to try again?")) {
-                    getLocation(); // Retry geolocation request
+                    getLocation();
                 } else {
                     alert("Please enable location access in your browser settings.");
                 }
@@ -555,34 +687,115 @@
         }
     }
 
-
     function getAddressFromLatLng(latitude, longitude) {
-        const apiKey = 'AIzaSyCoZSVkyGR645u4B_OOFmepLzrRBB8Hgmc'; // Your Google Maps API Key
+        const apiKey = 'AIzaSyCoZSVkyGR645u4B_OOFmepLzrRBB8Hgmc'; // Replace with your actual Google Maps API key
         const geocodeUrl =
             `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`;
 
         fetch(geocodeUrl)
             .then(response => response.json())
             .then(data => {
+                console.log("Geocode response:", data); // Debugging line
                 if (data.status === "OK") {
-                    const address = data.results[0].formatted_address; // Get the formatted address
-                    console.log("Latitude: " + latitude);
-                    console.log("Longitude: " + longitude);
-                    console.log("Location: " + address);
-
-                    // Store the location data in hidden fields
-                    document.getElementById("latitude").value = latitude;
-                    document.getElementById("longitude").value = longitude;
+                    const address = data.results[0].formatted_address;
                     document.getElementById("location").value = address;
 
                     // Submit the form
-                    document.getElementById("clockInForm").submit();
+                    submitForm();
                 } else {
-                    console.error("Geocoding failed: " + data.status);
+                    alert("Could not fetch address. Please try again.");
                 }
             })
-            .catch(error => console.error("Error fetching address:", error));
+            .catch(error => {
+                alert("Error fetching address. Please check your connection.");
+                console.error("Geocoding error:", error);
+            });
     }
+
+    function submitForm() {
+        const formData = new FormData(document.getElementById("clockInForm"));
+
+        fetch("{{ url('emp/dashboard') }}", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Full check-in response:", data); // Log full response for debugging
+
+                // Show modal only if the status is explicitly 'low_accuracy'
+                if (data.status === 'low_accuracy') {
+                    alert(data.message); // Notify user of low accuracy
+                    $('#imageUploadModal').modal('show'); // Show image upload modal
+                } else if (data.status === 'success') {
+                    alert(data.message); // Success message
+                    window.location.reload(); // Reload page on successful check-in
+                } else {
+                    alert(data.message); // Any other error messages
+                }
+            })
+            .catch(error => {
+                console.error('Check-in error:', error);
+                alert("Error submitting check-in. Please try again.");
+            });
+    }
+
+
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const earthRadius = 6371000;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return earthRadius * c;
+    }
+
+    // Submit captured image
+    document.getElementById("submitImage").addEventListener("click", function () {
+        const capturedImage = document.getElementById("capturedImage").src;
+
+        // Convert base64 image to file for submission
+        fetch(capturedImage)
+            .then(res => res.blob())
+            .then(blob => {
+                const formData = new FormData(document.getElementById("clockInForm"));
+                formData.append('image', blob, 'checkin_photo.png');
+                formData.append('low_accuracy', lowAccuracyCheckIn);
+
+                fetch("{{ url('emp/dashboard') }}", {
+                        method: "POST",
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Image upload response:", data);
+                        if (data.status === 'success') {
+                            stopCamera();
+                            $('#imageUploadModal').modal('hide');
+                            alert('Check-in completed with photo!');
+                            window.location.reload();
+                        } else {
+                            alert(data.message || "Error submitting clock-in. Please try again.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error uploading image:", error);
+                        alert("Error submitting clock-in. Please try again.");
+                    });
+            });
+    });
+
+    // Stop the camera feed when modal is closed
+    $('#imageUploadModal').on('hidden.bs.modal', stopCamera);
 
 </script>
 
@@ -1057,7 +1270,7 @@
                         if (response.status === 'pending') {
                             alert(
                                 'The attendance sheet is already recorded and is waiting for approval.'
-                                );
+                            );
                             updateStatus('pending');
                         } else if (response.status === 'approved' || response.status ===
                             'rejected') {
@@ -1089,7 +1302,7 @@
                                     if (err.status === 409) {
                                         alert(err.responseJSON
                                             .message
-                                            ); // Display specific conflict message
+                                        ); // Display specific conflict message
                                     } else {
                                         alert('Error saving attendance.');
                                     }

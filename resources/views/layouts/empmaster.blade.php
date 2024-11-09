@@ -426,10 +426,25 @@
                         <li class="menu-title">
                             <span>Employee</span>
                         </li>
-                        <li class="{{ Request::is('emp/attendance') ? 'active':'' }}">
-                            <a href="{{ url('emp/attendance') }}"><i class="la la-calendar"></i>
-                                <span>Attendance</span></a>
+                        <li class="submenu">
+                            <a href="#"><i class="la la-calendar"></i>
+                                <span> Attendance </span>
+                                <span class="menu-arrow"></span></a>
+                            <ul style="display: none">
+                                <li class="{{ Request::is('emp/attendance') ? 'active':'' }}">
+                                    <a href="{{ url('emp/attendance') }}">
+                                        View
+                                    </a>
+                                </li>
+
+                                <li class="{{ Request::is('emp/attendance/request') ? 'active':'' }}">
+                                    <a href="{{ url('emp/attendance/request') }}">
+                                        Request Attendance
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
+
                         <li class="{{ Request::is('emp/overtime') ? 'active':'' }}">
                             <a href="{{ url('emp/overtime') }}"><i class="la la-clock"></i>
                                 <span>Overtime</span></a>

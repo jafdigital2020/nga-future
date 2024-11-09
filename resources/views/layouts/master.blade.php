@@ -412,6 +412,28 @@
                             <a href="{{ url('admin/timesheet') }}"><i class="las la-calendar-check"></i>
                                 <span>Timesheet Approval</span></a>
                         </li>
+                        <li class="submenu">
+                            <a href="#"><i class="la la-box"></i>
+                                <span> Assets </span>
+                                <span class="menu-arrow"></span></a>
+                            <ul style="display: none">
+                                <li class="{{ Request::is('admin/asset') ? 'active':'' }}">
+                                    <a href="{{ url('admin/asset') }}">
+                                        Create/View
+                                    </a>
+                                </li>
+                                <li class="{{ Request::is('admin/asset/assign') ? 'active':'' }}">
+                                    <a href="{{ url('/admin/asset/assign') }}">
+                                        Assign
+                                    </a>
+                                </li>
+                                <li class="{{ Request::is('admin/asset/return') ? 'active':'' }}">
+                                    <a href="{{ url('/admin/asset/return') }}">
+                                        Return
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
 
                         <li class="menu-title">
                             <span>Payroll Section</span>
@@ -529,6 +551,21 @@
                                     </a>
                                 </li>
                             </ul>
+                        </li>
+                        <li class="menu-title">
+                            <span>Reports</span>
+                        </li>
+                        <li class="{{ Request::is('admin/report/payroll-summary') ? 'active':'' }}">
+                            <a href="{{ url('admin/report/payroll-summary') }}"><i class="las la-clipboard-list"></i>
+                                <span>Payroll Summary</span></a>
+                        </li>
+                        <!-- <li class="{{ Request::is('admin/policy') ? 'active':'' }}">
+                            <a href="{{ url('admin/policy') }}"><i class="las la-list-ol"></i>
+                                <span>Overtime Summary</span></a>
+                        </li> -->
+                        <li class="{{ Request::is('admin/report/employee-list') ? 'active':'' }}">
+                            <a href="{{ url('admin/report/employee-list') }}"><i class="las la-list"></i>
+                                <span>Employee List</span></a>
                         </li>
                         <li class="{{ Request::is('admin/policy') ? 'active':'' }}">
                             <a href="{{ url('admin/policy') }}"><i class="la la-file-pdf-o"></i>
@@ -653,6 +690,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
     @yield('scripts')
     <script>
         $(".datetimepicker").datetimepicker({
@@ -661,6 +699,7 @@
         });
 
     </script>
+
 
 
     @stack('scripts')
@@ -673,12 +712,12 @@
             "debug": false,
             "newestOnTop": false,
             "progressBar": true,
-            "positionClass": "toast-top-right", // Or any position you prefer
+            "positionClass": "toast-top-right",
             "preventDuplicates": false,
             "onclick": null,
             "showDuration": "300",
             "hideDuration": "1000",
-            "timeOut": "5000", // 5 seconds
+            "timeOut": "5000",
             "extendedTimeOut": "1000",
             "showEasing": "swing",
             "hideEasing": "linear",
@@ -697,12 +736,12 @@
             "debug": false,
             "newestOnTop": false,
             "progressBar": true,
-            "positionClass": "toast-top-right", // Or any position you prefer
+            "positionClass": "toast-top-right",
             "preventDuplicates": false,
             "onclick": null,
             "showDuration": "300",
             "hideDuration": "1000",
-            "timeOut": "5000", // 5 seconds
+            "timeOut": "5000",
             "extendedTimeOut": "1000",
             "showEasing": "swing",
             "hideEasing": "linear",
@@ -710,6 +749,30 @@
             "hideMethod": "fadeOut"
         }
         toastr.error("{{ session('error') }}");
+
+    </script>
+    @endif
+
+    @if (session('warning'))
+    <script>
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        }
+        toastr.warning("{{ session('warning') }}");
 
     </script>
     @endif

@@ -160,133 +160,288 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
-        <div class="col-xxl-4 col-lg-12 col-md-12 d-flex">
+        <div class="col-md-12 col-lg-6 col-xl-4 d-flex">
             <div class="card flex-fill">
                 <div class="card-body">
-                    <div class="statistic-header">
-                        <h4>Important</h4>
-                        <div class="important-notification">
-                            <a href="#">
-                                View All <i class="fa fa-arrow-right"></i>
+                    <h4 class="card-title">
+                        Leave Requests
+                        <span class="badge bg-inverse-danger ml-2">{{ $leavePending->count() }}</span>
+                    </h4>
+
+                    <!-- Loop through each leave request -->
+                    @foreach($leavePending->take(2) as $leave)
+                    <div class="leave-info-box">
+                        <div class="media align-items-center">
+                            <a href="{{ url('profile/' . $leave->user->id) }}" class="avatar">
+                                <img alt="{{ $leave->user->name }}"
+                                    src="{{ $leave->user->image ? asset('images/' . $leave->user->image) : asset('images/default.png') }}" />
                             </a>
-                        </div>
-                    </div>
-                    <div class="notification-tab">
-                        <ul class="nav nav-tabs" role="tablist">
-                            <li>
-                                <a href="#" class="active" data-bs-toggle="tab" data-bs-target="#notification_tab"
-                                    aria-selected="true" role="tab">
-                                    <i class="la la-bell"></i> Notifications
-                                </a>
-                            </li>
-                            <!-- <li>
-                                <a href="#" data-bs-toggle="tab" data-bs-target="#schedule_tab" aria-selected="false"
-                                    tabindex="-1" role="tab">
-                                    <i class="la la-list-alt"></i> Schedules
-                                </a>
-                            </li> -->
-                        </ul>
-                        <div class="tab-content">
-                            <div class="tab-pane active" id="notification_tab" role="tabpanel">
-                                <div class="employee-noti-content">
-                                    <ul class="employee-notification-list">
-                                        @foreach(auth()->user()->unreadNotifications->take(3) as $notification)
-                                        <li class="employee-notification-grid">
-                                            <div class="employee-notification-icon">
-                                                <a
-                                                    href="{{ isset($notification->data['leave_type']) ? route('leave.searchadmin') : (isset($notification->data['total_worked']) ? route('approvedTime') : (isset($notification->data['missed_logout']) ? route('missedLogouts') : '#')) }}">
-                                                    <span class="badge-soft-warning rounded-circle">
-                                                        <!-- Display initials based on the employee's name or notification type -->
-                                                        @if(isset($notification->data['employee_name']))
-                                                        {{ strtoupper(substr($notification->data['employee_name'], 0, 2)) }}
-                                                        @else
-                                                        NT
-                                                        @endif
-                                                    </span>
-                                                </a>
-                                            </div>
-                                            <div class="employee-notification-content">
-                                                <h6>
-                                                    <a
-                                                        href="{{ isset($notification->data['leave_type']) ? route('leave.searchadmin') : (isset($notification->data['total_worked']) ? route('approvedTime') : (isset($notification->data['missed_logout']) ? route('missedLogouts') : '#')) }}">
-                                                        <!-- Leave Notification -->
-                                                        @if(isset($notification->data['leave_type']) &&
-                                                        isset($notification->data['employee_name']))
-                                                        <p class="noti-details">
-                                                            <span
-                                                                class="noti-title">{{ $notification->data['employee_name'] }}</span>
-                                                            requested a leave:
-                                                            <span
-                                                                class="noti-title">{{ $notification->data['leave_type'] }}</span>
-                                                            from
-                                                            <span>{{ $notification->data['start_date'] }}</span> to
-                                                            <span>{{ $notification->data['end_date'] }}</span>.
-                                                        </p>
-                                                        <!-- Attendance Notification -->
-                                                        @elseif(isset($notification->data['total_worked']) &&
-                                                        isset($notification->data['employee_name']))
-                                                        <p class="noti-details">
-                                                            <span
-                                                                class="noti-title">{{ $notification->data['employee_name'] }}</span>
-                                                            submitted attendance for
-                                                            <span
-                                                                class="noti-title">{{ $notification->data['cutoff'] }}</span>.
-                                                            Worked Hours:
-                                                            <span>{{ $notification->data['total_worked'] }}</span>,
-                                                            Late Hours:
-                                                            <span>{{ $notification->data['total_late'] }}</span>.
-                                                        </p>
-                                                        <!-- Overtime Notification -->
-                                                        @elseif(isset($notification->data['total_hours']) &&
-                                                        isset($notification->data['employee_name']))
-                                                        <p class="noti-details">
-                                                            <span
-                                                                class="noti-title">{{ $notification->data['employee_name'] }}</span>
-                                                            submitted an overtime request for
-                                                            <span>{{ $notification->data['total_hours'] }}</span> hours
-                                                            on
-                                                            <span>{{ $notification->data['date'] }}</span>.
-                                                        </p>
-                                                        <!-- Approved Leave (No Employee Name) -->
-                                                        @elseif(isset($notification->data['leave_type']) &&
-                                                        !isset($notification->data['employee_name']))
-                                                        <p class="noti-details">
-                                                            Your leave request for
-                                                            <span
-                                                                class="noti-title">{{ $notification->data['leave_type'] }}</span>
-                                                            from
-                                                            <span>{{ $notification->data['start_date'] }}</span> to
-                                                            <span>{{ $notification->data['end_date'] }}</span> has been
-                                                            approved.
-                                                        </p>
-                                                        <!-- Missed Logout Notification -->
-                                                        @elseif(isset($notification->data['missed_logout']))
-                                                        <p class="noti-details">
-                                                            <span
-                                                                class="noti-title">{{ $notification->data['employee_name'] }}</span>
-                                                            missed logging out on
-                                                            <span>{{ $notification->data['date'] }}</span>.
-                                                        </p>
-                                                        @endif
-                                                    </a>
-                                                </h6>
-                                                <ul class="nav">
-                                                    <li>{{ $notification->created_at->format('h:i A') }}</li>
-                                                    <li>{{ $notification->created_at->format('d M Y') }}</li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-
+                            <div class="media-body">
+                                <div class="text-sm my-0">{{ $leave->user->name }}</div>
                             </div>
+                        </div>
+                        <div class="row align-items-center mt-3">
+                            <div class="col-6">
+                                <h6 class="mb-0">{{ \Carbon\Carbon::parse($leave->start_date)->format('d M Y') }} -
+                                    {{ \Carbon\Carbon::parse($leave->end_date)->format('d M Y') }}</h6>
+                                <span class="text-sm text-muted">{{ $leave->leaveType->leaveType ?? 'N/A' }}</span>
+                            </div>
+                            <div class="col-6 text-right">
+                                <div class="dropdown action-label">
+                                    <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#"
+                                        data-toggle="dropdown" aria-expanded="false">
+                                        @if($leave->status == 'New')
+                                        <i class="fa fa-dot-circle-o text-purple"></i> New
+                                        @elseif($leave->status == 'Pending')
+                                        <i class="fa fa-dot-circle-o text-info"></i> Pending
+                                        @elseif($leave->status == 'Approved')
+                                        <i class="fa fa-dot-circle-o text-success"></i> Approved
+                                        @elseif($leave->status == 'Declined')
+                                        <i class="fa fa-dot-circle-o text-danger"></i> Declined
+                                        @else
+                                        <i class="fa fa-dot-circle-o"></i> Unknown
+                                        @endif
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-right">
+                                        <a class="dropdown-item" href="#"><i class="fa fa-dot-circle-o text-info"></i>
+                                            Pending</a>
 
+                                        <form id="approve-form-{{ $leave->id }}"
+                                            action="{{ route('leave.approveadmin', $leave->id) }}" method="POST"
+                                            style="display:inline;">
+                                            @csrf
+                                            <button type="button" class="dropdown-item approve-button"
+                                                data-leave-id="{{ $leave->id }}">
+                                                <i class="fa fa-dot-circle-o text-success"></i> Approved
+                                            </button>
+                                        </form>
+                                        <form id="decline-form-{{ $leave->id }}"
+                                            action="{{ route('leave.declineadmin', $leave->id) }}" method="POST"
+                                            style="display:inline;">
+                                            @csrf
+                                            <button type="button" class="dropdown-item decline-button"
+                                                data-leave-id="{{ $leave->id }}">
+                                                <i class="fa fa-dot-circle-o text-danger"></i> Declined
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    @endforeach
+
+                    <!-- Load More Button (Optional) -->
+                    @if($leavePending->count() > 2)
+                    <div class="load-more text-center">
+                        <a class="text-dark" href="{{ url('admin/leave') }}">Load More</a>
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loader for all leave requests -->
+    <div id="global-loader" class="loader" style="display: none;">
+        <div class="loading-bar-background">
+            <div class="loading-bar">
+                <div class="white-bars-container">
+                    <div class="white-bar"></div>
+                    <div class="white-bar"></div>
+                    <div class="white-bar"></div>
+                </div>
+            </div>
+        </div>
+        <span class="loading-text">Processing...</span>
+    </div>
+
+
+    <!-- Statistics -->
+
+    <div class="row">
+        <div class="col-md-6 d-flex">
+            <div class="card card-table flex-fill">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Overtime Requests <span
+                            class="badge bg-inverse-danger ml-2">{{ $overtimeRequest->count() }}</span></h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table custom-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Date</th>
+                                    <th>Total Hours</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($overtimeRequest->take(5) as $ot)
+                                <tr>
+                                    <td>
+                                        <h2 class="table-avatar">
+                                            <a href="#" class="avatar">
+                                                @if ($ot->user->image)
+                                                <img src="{{ asset('images/' . $ot->user->image) }}"
+                                                    alt="Profile Image" />
+                                                @else
+                                                <img src="{{
+                                                        asset('images/default.png')
+                                                    }}" alt="Profile Image" />
+                                                @endif</a>
+                                            <a href="{{ url('admin/employee/edit/'.$ot->user->id) }}">{{ $ot->user->fName }}
+                                                {{ $ot->user->lName }}
+                                                <span>{{ $ot->user->position }}</span></a>
+                                        </h2>
+                                    </td>
+                                    <td>{{ $ot->date }}</td>
+                                    <td>{{ $ot->total_hours }}</td>
+                                    <td class="text-center">
+                                        <div class="dropdown action-label">
+                                            <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#"
+                                                data-toggle="dropdown" aria-expanded="false">
+                                                @if($ot->status == 'New')
+                                                <i class="fa fa-dot-circle-o text-purple"></i> New
+                                                @elseif($ot->status == 'Pending')
+                                                <i class="fa fa-dot-circle-o text-info"></i> Pending
+                                                @elseif($ot->status == 'Approved')
+                                                <i class="fa fa-dot-circle-o text-success"></i> Approved
+                                                @elseif($ot->status == 'Rejected')
+                                                <i class="fa fa-dot-circle-o text-danger"></i> Rejected
+                                                @else
+                                                <i class="fa fa-dot-circle-o"></i> Unknown
+                                                @endif
+                                            </a>
+                                            <div class="dropdown-menu dropdown-menu-right">
+                                                <a class="dropdown-item" href="#"><i
+                                                        class="fa fa-dot-circle-o text-info"></i>
+                                                    Pending</a>
+
+                                                <form id="otapprove-form-{{ $ot->id }}"
+                                                    action="{{ route('ot.approveadmin', $ot->id) }}" method="POST"
+                                                    style="display:inline;">
+                                                    @csrf
+                                                    <button type="button" class="dropdown-item otapprove-button"
+                                                        data-ot-id="{{ $ot->id }}">
+                                                        <i class="fa fa-dot-circle-o text-success"></i> Approved
+                                                    </button>
+                                                </form>
+                                                <form id="otdecline-form-{{ $ot->id }}"
+                                                    action="{{ route('ot.rejectadmin', $ot->id) }}" method="POST"
+                                                    style="display:inline;">
+                                                    @csrf
+                                                    <button type="button" class="dropdown-item otdecline-button"
+                                                        data-ot-id="{{ $ot->id }}">
+                                                        <i class="fa fa-dot-circle-o text-danger"></i> Rejected
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url('admin/overtime') }}">View all overtime requests.</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 d-flex">
+            <div class="card card-table flex-fill">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Attendance Requests <span
+                            class="badge bg-inverse-danger ml-2">{{ $attendanceRequest->count() }}</span></h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table custom-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Date</th>
+                                    <th>Total Hours</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($attendanceRequest->take(5) as $req)
+                                <tr>
+                                    <td>
+                                        <h2 class="table-avatar">
+                                            <a href="#" class="avatar">
+                                                @if ($req->user->image)
+                                                <img src="{{ asset('images/' . $req->user->image) }}"
+                                                    alt="Profile Image" />
+                                                @else
+                                                <img src="{{
+                                                        asset('images/default.png')
+                                                    }}" alt="Profile Image" />
+                                                @endif</a>
+                                            <a href="{{ url('emp/profile/') }}">{{ $req->user->fName }}
+                                                {{ $req->user->lName }}
+                                                <span>{{ $req->user->position }}</span></a>
+                                        </h2>
+                                    </td>
+                                    <td>{{ $req->date }}</td>
+                                    <td>{{ $req->timeTotal }}</td>
+                                    <td class="text-center">
+                                        <div class="dropdown action-label">
+                                            <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#"
+                                                data-toggle="dropdown" aria-expanded="false">
+                                                @if($req->status_code == 'New')
+                                                <i class="fa fa-dot-circle-o text-purple"></i> New
+                                                @elseif($req->status_code == 'Pending')
+                                                <i class="fa fa-dot-circle-o text-info"></i> Pending
+                                                @elseif($req->status_code == 'Approved')
+                                                <i class="fa fa-dot-circle-o text-success"></i> Approved
+                                                @elseif($req->status_code == 'Declined')
+                                                <i class="fa fa-dot-circle-o text-danger"></i> Declined
+                                                @else
+                                                <i class="fa fa-dot-circle-o"></i> Unknown
+                                                @endif
+                                            </a>
+                                            <div class="dropdown-menu dropdown-menu-right">
+                                                <a class="dropdown-item" href="#"><i
+                                                        class="fa fa-dot-circle-o text-info"></i>
+                                                    Pending</a>
+
+                                                <form id="attapprove-form-{{ $req->id }}"
+                                                    action="{{ route('admin.approveAttendance', $req->id) }}"
+                                                    method="POST" style="display:inline;">
+                                                    @csrf
+                                                    <button type="button" class="dropdown-item attapprove-button"
+                                                        data-attendance-id="{{ $req->id }}">
+                                                        <i class="fa fa-dot-circle-o text-success"></i> Approved
+                                                    </button>
+                                                </form>
+                                                <form id="attdecline-form-{{ $req->id }}"
+                                                    action="{{ route('admin.declineAttendance', $req->id ) }}"
+                                                    method="POST" style="display:inline;">
+                                                    @csrf
+                                                    <button type="button" class="dropdown-item attdecline-button"
+                                                        data-attendance-id="{{ $req->id }}">
+                                                        <i class="fa fa-dot-circle-o text-danger"></i> Declined
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="clients.html">View all clients</a>
                 </div>
             </div>
         </div>
@@ -436,6 +591,126 @@
 @endsection
 
 @section('scripts')
+<!-- Attendance Request -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var approveButtons = document.querySelectorAll('.attapprove-button');
+        var declineButtons = document.querySelectorAll('.attdecline-button');
+
+        approveButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                var attId = button.getAttribute('data-attendance-id');
+                confirmAttApproval(attId);
+            });
+        });
+
+        declineButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                var attId = button.getAttribute('data-attendance-id');
+                confirmAttDecline(attId);
+            });
+        });
+    });
+
+    function confirmAttApproval(attId) {
+        var form = document.getElementById('attapprove-form-' + attId);
+        var confirmAction = confirm("Are you sure you want to approve this request?");
+        if (confirmAction) {
+            form.submit();
+        }
+    }
+
+    function confirmAttDecline(attId) {
+        var form = document.getElementById('attdecline-form-' + attId);
+        var confirmAction = confirm("Are you sure you want to decline this request?");
+        if (confirmAction) {
+            form.submit();
+        }
+    }
+
+</script>
+
+
+<!-- OT -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var otApproveButtons = document.querySelectorAll('.otapprove-button');
+        var otDeclineButtons = document.querySelectorAll('.otdecline-button');
+
+        otApproveButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                var otId = button.getAttribute('data-ot-id');
+                confirmOtApproval(otId);
+            });
+        });
+
+        otDeclineButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                var otId = button.getAttribute('data-ot-id');
+                confirmOtDecline(otId);
+            });
+        });
+    });
+
+    function confirmOtApproval(otId) {
+        var form = document.getElementById('otapprove-form-' + otId);
+        var confirmAction = confirm("Are you sure you want to approve this OT request?");
+        if (confirmAction) {
+            form.submit();
+        }
+    }
+
+    function confirmOtDecline(otId) {
+        var form = document.getElementById('otdecline-form-' + otId);
+        var confirmAction = confirm("Are you sure you want to decline this OT request?");
+        if (confirmAction) {
+            form.submit();
+        }
+    }
+
+</script>
+
+
+<!-- Leave -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var approveButtons = document.querySelectorAll('.approve-button');
+        var declineButtons = document.querySelectorAll('.decline-button');
+
+        approveButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                var leaveId = button.getAttribute('data-leave-id');
+                confirmApproval(leaveId);
+            });
+        });
+
+        declineButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                var leaveId = button.getAttribute('data-leave-id');
+                confirmDecline(leaveId);
+            });
+        });
+    });
+
+    function confirmApproval(leaveId) {
+        var form = document.getElementById('approve-form-' + leaveId);
+        var confirmAction = confirm("Are you sure you want to approve this leave request?");
+        if (confirmAction) {
+            form.submit();
+        }
+    }
+
+    function confirmDecline(leaveId) {
+        var form = document.getElementById('decline-form-' + leaveId);
+        var confirmAction = confirm("Are you sure you want to decline this leave request?");
+        if (confirmAction) {
+            form.submit();
+        }
+    }
+
+</script>
+
 <script>
     $(document).ready(function () {
         // Initialize the Owl Carousel
@@ -552,52 +827,37 @@
 
 </script>
 
-@if (session('success'))
 <script>
-    toastr.options = {
-        "closeButton": true,
-        "debug": false,
-        "newestOnTop": false,
-        "progressBar": true,
-        "positionClass": "toast-top-right", // Or any position you prefer
-        "preventDuplicates": false,
-        "onclick": null,
-        "showDuration": "300",
-        "hideDuration": "1000",
-        "timeOut": "5000", // 5 seconds
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut"
+    function initializeApproveButtons() {
+        const approveButtons = document.querySelectorAll('.approve-button');
+
+        approveButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const leaveId = this.getAttribute('data-leave-id');
+                const form = document.getElementById('approve-form-' + leaveId);
+                const loader = document.getElementById('global-loader'); // Use global loader
+
+                // Show the loader
+                loader.style.display = 'flex';
+
+                // Submit the form after showing the loader
+                form.submit();
+            });
+        });
     }
-    toastr.success("{{ session('success') }}");
+
+    document.addEventListener('DOMContentLoaded', function () {
+        initializeApproveButtons(); // Initialize on page load
+
+        // If using AJAX for searching
+        document.getElementById('search-button').addEventListener('click', function () {
+            // Perform the search...
+
+            // After updating the DOM with new leave requests, reinitialize the approve buttons
+            initializeApproveButtons();
+        });
+    });
 
 </script>
-@endif
-
-@if (session('error'))
-<script>
-    toastr.options = {
-        "closeButton": true,
-        "debug": false,
-        "newestOnTop": false,
-        "progressBar": true,
-        "positionClass": "toast-top-right", // Or any position you prefer
-        "preventDuplicates": false,
-        "onclick": null,
-        "showDuration": "300",
-        "hideDuration": "1000",
-        "timeOut": "5000", // 5 seconds
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut"
-    }
-    toastr.error("{{ session('error') }}");
-
-</script>
-@endif
 
 @endsection

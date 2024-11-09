@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Models\Salary;
 use Carbon\CarbonInterval;
 use App\Models\EmployeeSalary;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -31,6 +32,10 @@ class EmployeeAttendance extends Model
         'latitude',
         'longitude',
         'location',
+        'image_path',
+        'status_code',
+        'reason',
+        'approved_by',
     ];
 
     public function employeeSalary()
@@ -48,8 +53,26 @@ class EmployeeAttendance extends Model
         return $this->belongsTo(User::class, 'edited_by');
     }
 
+    public function attendance_approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public $manualTimeTotal = null;
+
     public function getTotalHoursAttribute()
     {
+        // If manualTimeTotal has been set, use it
+        if ($this->manualTimeTotal !== null) {
+        return $this->manualTimeTotal;
+        }
+
+        // Check if total_hours input field is set and is a valid time format
+        if (!empty($this->total_hours) && preg_match('/^\d{2}:\d{2}:\d{2}$/', $this->total_hours)) {
+            // Return the value from total_hours field
+            return $this->total_hours;
+        }
+    
         // Check if timeOut or timeEnd exists
         if (!empty($this->timeOut) || !empty($this->timeEnd)) {
             $timeIn = Carbon::parse($this->timeIn);
@@ -57,28 +80,27 @@ class EmployeeAttendance extends Model
             $breakOut = !empty($this->breakOut) ? Carbon::parse($this->breakOut) : null;
             $timeOut = Carbon::parse($this->timeOut ?? Carbon::now('Asia/Manila'));
             $timeEnd = Carbon::parse($this->timeEnd ?? Carbon::now('Asia/Manila'));
-    
-            // Intialize
+        
+            // Initialize
             $totalWorkedSeconds = 0;
-    
-            // Get the users shift schedule
+        
+            // Get the user's shift schedule
             $shiftSchedule = ShiftSchedule::where('users_id', auth()->user()->id)->first();
-    
+        
             if ($shiftSchedule) {
                 $allowedHours = Carbon::parse($shiftSchedule->allowedHours)->secondsSinceMidnight();
-    
+        
                 // Flexible 
                 if ($shiftSchedule->isFlexibleTime) {
-                  
                     if ($breakIn && $breakOut) {
                         // From timeIn to breakIn, and from breakOut to timeOut
-                        $totalWorkedSeconds += $timeIn->diffInSeconds($breakOut);
-                        $totalWorkedSeconds += $breakIn->diffInSeconds($timeOut);
+                        $totalWorkedSeconds += $timeIn->diffInSeconds($breakIn);
+                        $totalWorkedSeconds += $breakOut->diffInSeconds($timeOut);
                     } else {
                         // No breaks, calculate directly from timeIn to timeOut
                         $totalWorkedSeconds += $timeIn->diffInSeconds($timeOut);
                     }
-    
+        
                     // Cap total worked time to allowed hours for flexible shifts
                     if ($totalWorkedSeconds > $allowedHours) {
                         $totalWorkedSeconds = $allowedHours;
@@ -90,14 +112,14 @@ class EmployeeAttendance extends Model
                         // If timeOut is greater than timeEnd, calculate using timeEnd
                         if ($timeOut->greaterThan($timeEnd)) {
                             // From timeIn to breakIn
-                            $totalWorkedSeconds += $timeIn->diffInSeconds($breakOut);
+                            $totalWorkedSeconds += $timeIn->diffInSeconds($breakIn);
                             // From breakOut to timeEnd
-                            $totalWorkedSeconds += $breakIn->diffInSeconds($timeEnd);
+                            $totalWorkedSeconds += $breakOut->diffInSeconds($timeEnd);
                         } else {
                             // From timeIn to breakIn
-                            $totalWorkedSeconds += $timeIn->diffInSeconds($breakOut);
+                            $totalWorkedSeconds += $timeIn->diffInSeconds($breakIn);
                             // From breakOut to timeOut
-                            $totalWorkedSeconds += $breakIn->diffInSeconds($timeOut);
+                            $totalWorkedSeconds += $breakOut->diffInSeconds($timeOut);
                         }
                     }
                     // Case 2: No breakIn and breakOut
@@ -109,7 +131,7 @@ class EmployeeAttendance extends Model
                             $totalWorkedSeconds += $timeIn->diffInSeconds($timeOut);
                         }
                     }
-    
+        
                     // Cap total worked time to allowed hours for non-flexible shifts
                     if ($totalWorkedSeconds > $allowedHours) {
                         $totalWorkedSeconds = $allowedHours;
@@ -119,118 +141,89 @@ class EmployeeAttendance extends Model
                 // Handle case where shift schedule is not found
                 $allowedHours = 0; // or another default value
             }
-    
+        
             // Ensure the total worked seconds are not negative
             if ($totalWorkedSeconds < 0) {
                 $totalWorkedSeconds = 0;
             }
-    
+        
             // Calculate hours, minutes, and seconds
             $hours = floor($totalWorkedSeconds / 3600);
             $minutes = floor(($totalWorkedSeconds % 3600) / 60);
             $seconds = $totalWorkedSeconds % 60;
-    
+        
             // Format the total time as HH:MM:SS
             return sprintf("%02d:%02d:%02d", $hours, $minutes, $seconds);
         }
-    
+        
         return '00:00:00';
     }
+    
+
 
     // public function getTotalHoursAttribute()
     // {
+        
     //     // Check if timeOut or timeEnd exists
     //     if (!empty($this->timeOut) || !empty($this->timeEnd)) {
     //         $timeIn = Carbon::parse($this->timeIn);
     //         $breakIn = !empty($this->breakIn) ? Carbon::parse($this->breakIn) : null;
     //         $breakOut = !empty($this->breakOut) ? Carbon::parse($this->breakOut) : null;
-    //         $breakEnd = !empty($this->breakEnd) ? Carbon::parse($this->breakEnd) : null; // Add breakEnd
     //         $timeOut = Carbon::parse($this->timeOut ?? Carbon::now('Asia/Manila'));
     //         $timeEnd = Carbon::parse($this->timeEnd ?? Carbon::now('Asia/Manila'));
-
-    //         // Initialize
+    
+    //         // Intialize
     //         $totalWorkedSeconds = 0;
-
-    //         // Get the user's shift schedule
+    
+    //         // Get the users shift schedule
     //         $shiftSchedule = ShiftSchedule::where('users_id', auth()->user()->id)->first();
-
+    
     //         if ($shiftSchedule) {
-    //             $shiftStart = Carbon::parse($shiftSchedule->shiftStart);
-    //             $shiftEnd = Carbon::parse($shiftSchedule->shiftEnd);
     //             $allowedHours = Carbon::parse($shiftSchedule->allowedHours)->secondsSinceMidnight();
-
-    //             // Flexible shift logic
+    
+    //             // Flexible 
     //             if ($shiftSchedule->isFlexibleTime) {
+                  
     //                 if ($breakIn && $breakOut) {
-    //                     // Compute timeIn to breakIn
-    //                     $totalWorkedSeconds += $timeIn->diffInSeconds($breakIn);
-
-    //                     // Handle breakEnd and breakOut
-    //                     if ($breakOut->lt($breakEnd)) {
-    //                         // If breakOut is earlier than breakEnd, compute from breakEnd
-    //                         $totalWorkedSeconds += $breakEnd->diffInSeconds($timeOut);
-    //                     } else {
-    //                         // If breakOut is later than breakEnd, compute from breakOut
-    //                         $totalWorkedSeconds += $breakOut->diffInSeconds($timeOut);
-    //                     }
+    //                     // From timeIn to breakIn, and from breakOut to timeOut
+    //                     $totalWorkedSeconds += $timeIn->diffInSeconds($breakOut);
+    //                     $totalWorkedSeconds += $breakIn->diffInSeconds($timeOut);
     //                 } else {
-    //                     // No break, compute directly from timeIn to timeOut
+    //                     // No breaks, calculate directly from timeIn to timeOut
     //                     $totalWorkedSeconds += $timeIn->diffInSeconds($timeOut);
     //                 }
-
+    
     //                 // Cap total worked time to allowed hours for flexible shifts
     //                 if ($totalWorkedSeconds > $allowedHours) {
     //                     $totalWorkedSeconds = $allowedHours;
     //                 }
-    //             } 
-    //             // Non-flexible shift logic
-    //             else {
+    //             } else {
+    //                 // Non-flexible shift logic
     //                 // Case 1: User has breakIn and breakOut
     //                 if ($breakIn && $breakOut) {
-    //                     if ($timeIn->lt($shiftStart)) {
-    //                         // ShiftStart + BreakIn logic
-    //                         $totalWorkedSeconds += $shiftStart->diffInSeconds($breakIn);
+    //                     // If timeOut is greater than timeEnd, calculate using timeEnd
+    //                     if ($timeOut->greaterThan($timeEnd)) {
+    //                         // From timeIn to breakIn
+    //                         $totalWorkedSeconds += $timeIn->diffInSeconds($breakOut);
+    //                         // From breakOut to timeEnd
+    //                         $totalWorkedSeconds += $breakIn->diffInSeconds($timeEnd);
     //                     } else {
-    //                         // TimeIn + BreakIn logic
-    //                         $totalWorkedSeconds += $timeIn->diffInSeconds($breakIn);
-    //                     }
-
-    //                     // Handle breakOut vs. breakEnd
-    //                     if ($breakOut->lt($breakEnd)) {
-    //                         // If breakOut is earlier than breakEnd
-    //                         if ($timeOut->lt($shiftEnd)) {
-    //                             $totalWorkedSeconds += $breakEnd->diffInSeconds($timeOut);
-    //                         } else {
-    //                             $totalWorkedSeconds += $breakEnd->diffInSeconds($shiftEnd);
-    //                         }
-    //                     } else {
-    //                         // If breakOut is later than breakEnd
-    //                         if ($timeOut->lt($shiftEnd)) {
-    //                             $totalWorkedSeconds += $breakOut->diffInSeconds($timeOut);
-    //                         } else {
-    //                             $totalWorkedSeconds += $breakOut->diffInSeconds($shiftEnd);
-    //                         }
-    //                     }
-    //                 } 
-    //                 // Case 2: No breakIn and breakOut
-    //                 else {
-    //                     if ($timeIn->lt($shiftStart)) {
-    //                         // TimeIn earlier than shiftStart
-    //                         if ($timeOut->gt($shiftEnd)) {
-    //                             $totalWorkedSeconds += $shiftStart->diffInSeconds($shiftEnd);
-    //                         } else {
-    //                             $totalWorkedSeconds += $shiftStart->diffInSeconds($timeOut);
-    //                         }
-    //                     } else {
-    //                         // TimeIn after shiftStart
-    //                         if ($timeOut->gt($shiftEnd)) {
-    //                             $totalWorkedSeconds += $timeIn->diffInSeconds($shiftEnd);
-    //                         } else {
-    //                             $totalWorkedSeconds += $timeIn->diffInSeconds($timeOut);
-    //                         }
+    //                         // From timeIn to breakIn
+    //                         $totalWorkedSeconds += $timeIn->diffInSeconds($breakOut);
+    //                         // From breakOut to timeOut
+    //                         $totalWorkedSeconds += $breakIn->diffInSeconds($timeOut);
     //                     }
     //                 }
-
+    //                 // Case 2: No breakIn and breakOut
+    //                 else {
+    //                     // If timeOut is greater than timeEnd, calculate using timeEnd
+    //                     if ($timeOut->greaterThan($timeEnd)) {
+    //                         $totalWorkedSeconds += $timeIn->diffInSeconds($timeEnd);
+    //                     } else {
+    //                         $totalWorkedSeconds += $timeIn->diffInSeconds($timeOut);
+    //                     }
+    //                 }
+    
     //                 // Cap total worked time to allowed hours for non-flexible shifts
     //                 if ($totalWorkedSeconds > $allowedHours) {
     //                     $totalWorkedSeconds = $allowedHours;
@@ -240,96 +233,24 @@ class EmployeeAttendance extends Model
     //             // Handle case where shift schedule is not found
     //             $allowedHours = 0; // or another default value
     //         }
-
-    //         // Ensure the total worked seconds are not negative
-    //         if ($totalWorkedSeconds < 0) {
-    //             $totalWorkedSeconds = 0;
-    //         }
-
-    //         // Calculate hours, minutes, and seconds
-    //         $hours = floor($totalWorkedSeconds / 3600);
-    //         $minutes = floor(($totalWorkedSeconds % 3600) / 60);
-    //         $seconds = $totalWorkedSeconds % 60;
-
-    //         // Format the total time as HH:MM:SS AM/PM
-    //         return sprintf("%02d:%02d:%02d", $hours, $minutes, $seconds);
-    //     }
-
-    //     return '00:00:00';
-    // }
-
     
-    // public function getTotalHoursAttribute()
-    // {
-    //     if (!empty($this->timeOut) || !empty($this->timeEnd)) {
-    //         $timeIn = Carbon::parse($this->timeIn);
-    //         $breakIn = !empty($this->breakIn) ? Carbon::parse($this->breakIn) : null;
-    //         $breakOut = !empty($this->breakOut) ? Carbon::parse($this->breakOut) : null;
-    //         $timeOut = Carbon::parse($this->timeOut ?? Carbon::now('Asia/Manila'));
-    //         $timeEnd = Carbon::parse($this->timeEnd ?? Carbon::now('Asia/Manila'));
-
-    //         // Initialize total worked seconds
-    //         $totalWorkedSeconds = 0;
-
-    //         // Case 1: User has breakIn and breakOut
-    //         if ($breakIn && $breakOut) {
-    //             // If timeOut is greater than timeEnd, calculate using timeEnd
-    //             if ($timeOut->greaterThan($timeEnd)) {
-    //                 // From timeIn to breakIn
-    //                 $totalWorkedSeconds += $timeIn->diffInSeconds($breakIn);
-    //                 // From breakOut to timeEnd
-    //                 $totalWorkedSeconds += $breakOut->diffInSeconds($timeEnd);
-    //             } else {
-    //                 // From timeIn to breakIn
-    //                 $totalWorkedSeconds += $timeIn->diffInSeconds($breakIn);
-    //                 // From breakOut to timeOut
-    //                 $totalWorkedSeconds += $breakOut->diffInSeconds($timeOut);
-    //             }
-    //         }
-    //         // Case 2: No breakIn and breakOut
-    //         else {
-    //             // If timeOut is greater than timeEnd, calculate using timeEnd
-    //             if ($timeOut->greaterThan($timeEnd)) {
-    //                 $totalWorkedSeconds += $timeIn->diffInSeconds($timeEnd);
-    //             } else {
-    //                 $totalWorkedSeconds += $timeIn->diffInSeconds($timeOut);
-    //             }
-    //         }
-
     //         // Ensure the total worked seconds are not negative
     //         if ($totalWorkedSeconds < 0) {
     //             $totalWorkedSeconds = 0;
     //         }
-
-    //         // Cap total worked time to allowed hours
-    //         $shiftSchedule = ShiftSchedule::where('users_id', auth()->user()->id)->first();
-
-    //         // Check if $shiftSchedule is not null
-    //         if ($shiftSchedule) {
-    //             $allowedHours = Carbon::parse($shiftSchedule->allowedHours)->secondsSinceMidnight();
-    //             if ($totalWorkedSeconds > $allowedHours) {
-    //                 $totalWorkedSeconds = $allowedHours;
-    //             }
-    //         } else {
-    //             // Handle case where shift schedule is not found
-    //             // You can set a default allowed hours or log an error
-    //             $allowedHours = 0; // or another default value
-    //         }
-
+    
     //         // Calculate hours, minutes, and seconds
     //         $hours = floor($totalWorkedSeconds / 3600);
     //         $minutes = floor(($totalWorkedSeconds % 3600) / 60);
     //         $seconds = $totalWorkedSeconds % 60;
-
+    
     //         // Format the total time as HH:MM:SS
     //         return sprintf("%02d:%02d:%02d", $hours, $minutes, $seconds);
     //     }
-
+    
     //     return '00:00:00';
     // }
 
-
-    
     protected static function booted()
     {
         static::saving(function ($employeeattendance) {

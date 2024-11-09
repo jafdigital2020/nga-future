@@ -1,4 +1,4 @@
-@extends('layouts.settings') @section('title', 'One JAF')
+@extends('layouts.settings') @section('title', 'Leave Type')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 @section('content')
 <!-- Page Content -->
@@ -62,10 +62,13 @@
                                     <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown"
                                         aria-expanded="false"><i class="material-icons">more_vert</i></a>
                                     <div class="dropdown-menu dropdown-menu-right">
-                                        <a class="dropdown-item" href="#" data-toggle="modal"
-                                            data-target="#edit_leavetype"><i class="fa fa-pencil m-r-5"></i> Edit</a>
-                                        <a class="dropdown-item" href="#" data-toggle="modal"
-                                            data-target="#delete_leavetype"><i class="fa fa-trash-o m-r-5"></i>
+                                        <a class="dropdown-item edit-leaveType" href="#" data-id="{{ $type->id }}"
+                                            data-leave_type="{{ $type->leaveType }}"
+                                            data-leave_days="{{ $type->leaveDays }}"
+                                            data-is_paid="{{ $type->is_paid }}"><i class="fa fa-pencil m-r-5"></i>
+                                            Edit</a>
+                                        <a class="dropdown-item delete-leaveType" href="#" data-id="{{ $type->id }}"><i
+                                                class="fa fa-trash-o m-r-5"></i>
                                             Delete</a>
                                     </div>
                                 </div>
@@ -95,15 +98,15 @@
                     @csrf
                     <div class="form-group">
                         <label>Leave Type <span class="text-danger">*</span></label>
-                        <input class="form-control" type="text" name="leaveType" id="leaveType" required>
+                        <input class="form-control" type="text" name="leaveType" required>
                     </div>
                     <div class="form-group">
                         <label>Leave Days<span class="text-danger">*</span></label>
-                        <input class="form-control" type="text" name="leaveDays" id="leaveDays" required>
+                        <input class="form-control" type="text" name="leaveDays" required>
                     </div>
                     <div class="form-group">
                         <label>Paid / Unpaid</label>
-                        <select name="is_paid" id="is_paid" class="form-control" required>
+                        <select name="is_paid" class="form-control" required>
                             <option value="" disabled selected>Select Type</option>
                             <option value="1">Paid</option>
                             <option value="0">Unpaid</option>
@@ -130,17 +133,27 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form>
+                <form id="editLeaveTypeForm" method="POST">
+                    @csrf
+                    <input type="hidden" name="leave_type_id" id="leave_type_id">
                     <div class="form-group">
                         <label>Leave Type <span class="text-danger">*</span></label>
-                        <input class="form-control" type="text" value="Casual Leave">
+                        <input class="form-control" type="text" name="leaveType" id="leaveType" required>
                     </div>
                     <div class="form-group">
-                        <label>Number of days <span class="text-danger">*</span></label>
-                        <input class="form-control" type="text" value="12">
+                        <label>Leave Days<span class="text-danger">*</span></label>
+                        <input class="form-control" type="text" name="leaveDays" id="leaveDays" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Paid / Unpaid</label>
+                        <select name="is_paid" id="is_paid" class="form-control" required>
+                            <option value="" disabled selected>Select Type</option>
+                            <option value="1">Paid</option>
+                            <option value="0">Unpaid</option>
+                        </select>
                     </div>
                     <div class="submit-section">
-                        <button class="btn btn-primary submit-btn">Save</button>
+                        <button type="submit" class="btn btn-primary submit-btn">Submit</button>
                     </div>
                 </form>
             </div>
@@ -156,16 +169,20 @@
             <div class="modal-body">
                 <div class="form-header">
                     <h3>Delete Leave Type</h3>
-                    <p>Are you sure want to delete?</p>
+                    <p>Are you sure you want to cancel this leave type?</p>
                 </div>
                 <div class="modal-btn delete-action">
                     <div class="row">
-                        <div class="col-6">
-                            <a href="javascript:void(0);" class="btn btn-primary continue-btn">Delete</a>
+                        <div class="col-5">
+                            <form id="deleteLeaveTypeForm" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <input type="hidden" name="leave_type_id" id="leave_type_id">
+                                <button class="btn add-btn" type="submit">Delete</button>
+                            </form>
                         </div>
                         <div class="col-6">
-                            <a href="javascript:void(0);" data-dismiss="modal"
-                                class="btn btn-primary cancel-btn">Cancel</a>
+                            <a href="javascript:void(0);" data-dismiss="modal" class="btn add-btn">Cancel</a>
                         </div>
                     </div>
                 </div>
@@ -180,53 +197,34 @@
 
 @section('scripts')
 
-<!-- TOASTR ALERT NOTIFICATIONS -->
-@if (session('success'))
 <script>
-    toastr.options = {
-        "closeButton": true,
-        "debug": false,
-        "newestOnTop": false,
-        "progressBar": true,
-        "positionClass": "toast-top-right", // Or any position you prefer
-        "preventDuplicates": false,
-        "onclick": null,
-        "showDuration": "300",
-        "hideDuration": "1000",
-        "timeOut": "5000", // 5 seconds
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut"
-    }
-    toastr.success("{{ session('success') }}");
+    // Edit leave request
+    $('.edit-leaveType').on('click', function () {
+        var leaveTypeId = $(this).data('id');
+        var leaveType = $(this).data('leave_type');
+        var leaveDays = $(this).data('leave_days');
+        var isPaid = $(this).data('is_paid');
+
+        $('#leave_type_id').val(leaveTypeId);
+        $('#leaveType').val(leaveType);
+        $('#leaveDays').val(leaveDays);
+        $('#is_paid').val(isPaid);
+
+        $('#editLeaveTypeForm').attr('action', '/admin/settings/leavetype/edit/' +
+            leaveTypeId);
+        $('#edit_leavetype').modal('show');
+    });
+
+    // Delete Earning request
+    $('.delete-leaveType').on('click', function () {
+        var leaveTypeId = $(this).data('id');
+
+        $('#leave_type_id').val(leaveTypeId);
+        $('#deleteLeaveTypeForm').attr('action', '/admin/settings/leavetype/delete/' + leaveTypeId);
+        $('#delete_leavetype').modal('show');
+    });
 
 </script>
-@endif
 
-@if (session('error'))
-<script>
-    toastr.options = {
-        "closeButton": true,
-        "debug": false,
-        "newestOnTop": false,
-        "progressBar": true,
-        "positionClass": "toast-top-right", // Or any position you prefer
-        "preventDuplicates": false,
-        "onclick": null,
-        "showDuration": "300",
-        "hideDuration": "1000",
-        "timeOut": "5000", // 5 seconds
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut"
-    }
-    toastr.error("{{ session('error') }}");
-
-</script>
-@endif
 
 @endsection

@@ -66,8 +66,9 @@
                             <th>End Time</th>
                             <th>Total Hours</th>
                             <th>Reason</th>
+                            <th class="text-center">Attachment</th>
                             <th>Date Requested</th>
-                            <th>Status</th>
+                            <th class="text-center">Status</th>
                             <th>Approved By</th>
                             <th class="text-right">Action</th>
                         </tr>
@@ -81,13 +82,12 @@
                                         @if ($ot->user->image)
                                         <img src="{{ asset('images/' . $ot->user->image) }}" alt="Profile Image" />
                                         @else
-                                        <img src="{{
-                                                asset('images/default.png')
-                                            }}" alt="Profile Image" />
-                                        @endif</a>
-                                    <a href="{{ url('emp/profile/') }}">{{ $ot->user->fName }}
-                                        {{ $ot->user->lName }}
-                                        <span>{{ $ot->user->position }}</span></a>
+                                        <img src="{{ asset('images/default.png') }}" alt="Profile Image" />
+                                        @endif
+                                    </a>
+                                    <a href="{{ url('emp/profile/') }}">{{ $ot->user->fName }} {{ $ot->user->lName }}
+                                        <span>{{ $ot->user->position }}</span>
+                                    </a>
                                 </h2>
                             </td>
                             <td>{{ $ot->date }}</td>
@@ -107,6 +107,15 @@
                             </td>
                             <td>{{ $ot->total_hours }}</td>
                             <td>{{ $ot->reason }}</td>
+                            <td>
+                                @if ($ot->attached_file)
+                                <a href="{{ asset('storage/' . $ot->attached_file) }}" target="_blank">
+                                    View Attachment
+                                </a>
+                                @else
+                                No Attachment
+                                @endif
+                            </td>
                             <td>{{ $ot->created_at->format('Y-m-d') }}</td>
                             <td class="text-center">
                                 <div class="action-label">
@@ -145,19 +154,21 @@
                                     @else
                                     N/A
                                     @endif
-
                                 </h2>
                             </td>
                             <td class="text-right">
                                 <div class="dropdown dropdown-action">
                                     <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown"
-                                        aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                                        aria-expanded="false">
+                                        <i class="material-icons">more_vert</i>
+                                    </a>
                                     <div class="dropdown-menu dropdown-menu-right">
                                         <a class="dropdown-item edit-ot" href="#" data-id="{{ $ot->id }}"
                                             data-date="{{ $ot->date }}" data-start_time="{{ $ot->start_time }}"
                                             data-end_time="{{ $ot->end_time }}" data-status="{{ $ot->status }}"
                                             data-total_hours="{{ $ot->total_hours }}" data-reason="{{ $ot->reason }}">
-                                            <i class="fa fa-pencil m-r-5"></i> Edit</a>
+                                            <i class="fa fa-pencil m-r-5"></i> Edit
+                                        </a>
                                         <a class="dropdown-item delete-ot" href="#" data-id="{{ $ot->id }}"
                                             data-status="{{ $ot->status }}">
                                             <i class="fa fa-trash-o m-r-5"></i> Delete
@@ -166,9 +177,10 @@
                                 </div>
                             </td>
                         </tr>
+                        @endforeach
                     </tbody>
-                    @endforeach
                 </table>
+
             </div>
         </div>
     </div>
@@ -186,7 +198,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form method="POST" action="{{ route('overtime.request') }}">
+                    <form method="POST" action="{{ route('overtime.request') }}" enctype="multipart/form-data">
                         @csrf
                         <div class="form-group">
                             <label>Date</label>
@@ -214,7 +226,15 @@
                                 <div class="form-group">
                                     <label>Total Hours</label>
                                     <input type="text" class="form-control" id="total_hours" name="total_hours"
-                                        placeholder="HH:MM:SS" pattern="[0-9]{2}:[0-9]{2}:[0-9]{2}">
+                                        placeholder="HH:MM:SS" pattern="[0-9]{2}:[0-9]{2}:[0-9]{2}" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <label>Attach File</label>
+                                    <input type="file" class="form-control" id="attached_file" name="attached_file">
                                 </div>
                             </div>
                         </div>
@@ -243,7 +263,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="editOtForm" method="POST">
+                    <form id="editOtForm" method="POST" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="ot_id" id="ot_id">
                         <div class="form-group">
@@ -273,6 +293,14 @@
                                     <label>Total Hours</label>
                                     <input type="text" class="form-control" id="total_hourse" name="total_hourse"
                                         placeholder="HH:MM:SS" pattern="[0-9]{2}:[0-9]{2}:[0-9]{2}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <label>Attach File</label>
+                                    <input type="file" class="form-control" id="attached_file" name="attached_file">
                                 </div>
                             </div>
                         </div>
@@ -324,6 +352,65 @@
 
 
     @section('scripts')
+
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>Start Time <span class="text-danger">*</span></label>
+                <input class="form-control" type="time" name="start_time" id="start_time">
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label>End Time <span class="text-danger">*</span></label>
+                <input class="form-control" type="time" name="end_time" id="end_time">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <label>Total Hours</label>
+                <input type="text" class="form-control" id="total_hours" name="total_hours" placeholder="HH:MM:SS"
+                    readonly>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for auto-calculating total hours -->
+    <script>
+        document.getElementById('start_time').addEventListener('change', calculateTotalHours);
+        document.getElementById('end_time').addEventListener('change', calculateTotalHours);
+
+        function calculateTotalHours() {
+            const startTime = document.getElementById('start_time').value;
+            const endTime = document.getElementById('end_time').value;
+
+            if (startTime && endTime) {
+                // Convert start and end times to Date objects
+                const start = new Date(`1970-01-01T${startTime}:00`);
+                const end = new Date(`1970-01-01T${endTime}:00`);
+
+                // Calculate the difference in milliseconds
+                let diff = end - start;
+
+                // If end time is earlier than start time (overnight work), adjust by adding 24 hours
+                if (diff < 0) {
+                    diff += 24 * 60 * 60 * 1000; // Add 24 hours in milliseconds
+                }
+
+                // Convert difference from milliseconds to hours, minutes, and seconds
+                const hours = Math.floor(diff / (1000 * 60 * 60)).toString().padStart(2, '0');
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');
+
+                // Update the total_hours field in HH:MM:SS format
+                document.getElementById('total_hours').value = `${hours}:${minutes}:${seconds}`;
+            }
+        }
+
+    </script>
+
 
     <script>
         function formatInput(e) {

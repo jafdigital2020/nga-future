@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Salary;
 use App\Models\Payroll;
+use App\Models\SalaryTable;
 use Illuminate\Http\Request;
 use App\Models\EmployeeSalary;
 use App\Models\ApprovedAttendance;
@@ -23,7 +24,7 @@ class PayslipController extends Controller
         $cutoffPeriod = $request->input('cutoff_period');
         $selectedYear = $request->input('year', now()->year);
     
-        $data = Payroll::query();
+        $data = SalaryTable::query();
     
         // Filter by authenticated user
         $data->where('users_id', auth()->id());
@@ -146,7 +147,7 @@ class PayslipController extends Controller
  
     public function viewPayslip($id)
     {
-        $view = Payroll::findOrFail($id);
+        $view = SalaryTable::findOrFail($id);
  
         return view('emp.payslip.view', compact('view'));
     }

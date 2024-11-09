@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use Exception;
 use Carbon\Carbon;
+use App\Models\Memo;
 use App\Models\User;
 use App\Models\LeaveType;
 use App\Models\LeaveCredit;
@@ -225,7 +226,7 @@ class EmployeeController extends Controller
 
     public function edit($user_id)
     {
-        $user = User::with('contactEmergency', 'bankInfo', 'employmentRecord','employmentSalary','shiftSchedule' ,'leaveCredits')->findOrFail($user_id);
+        $user = User::with('contactEmergency', 'bankInfo', 'employmentRecord', 'employmentSalary', 'shiftSchedule', 'leaveCredits', 'userAssets.asset', 'memos',)->findOrFail($user_id);
         $department = $user->department;
         $supervisor = $user->supervisor;
         $users = User::all();
@@ -346,12 +347,29 @@ class EmployeeController extends Controller
             ]);
     
             if ($validator->fails()) {
-                return redirect()->back()->with('error', $validator);
+                return redirect()->back()->withErrors($validator)->withInput();
             }
     
-            // Update leave credits for the user
+            // Fetch leave types to check maximum allowed days for each leave type
+            $leaveTypes = LeaveType::whereIn('id', array_keys($request->input('leave_credits', [])))->get()->keyBy('id');
+    
             $leaveCreditsData = $request->input('leave_credits', []);
+    
+            // Iterate through each leave type and validate against maximum allowed days
             foreach ($leaveCreditsData as $leaveTypeId => $remainingCredits) {
+                if (!isset($leaveTypes[$leaveTypeId])) {
+                    return redirect()->back()->with('error', "Leave type ID $leaveTypeId is invalid.");
+                }
+    
+                $maxAllowedDays = $leaveTypes[$leaveTypeId]->leaveDays;
+    
+                // Check if the submitted credits exceed the allowed leave days
+                if ($remainingCredits > $maxAllowedDays) {
+                    return redirect()->back()->with([
+                        "error" => "The leave credit for leave type {$leaveTypes[$leaveTypeId]->leaveType} cannot exceed $maxAllowedDays days."
+                    ])->withInput();
+                }
+    
                 // Create or update leave credits
                 LeaveCredit::updateOrCreate(
                     [
@@ -367,9 +385,7 @@ class EmployeeController extends Controller
             return redirect()->back()->with('success', 'Leave Updated!');
     
         } catch (\Exception $e) {
-            // Log the exception for debugging purposes
-            \Log::error('Error updating leave credits for user ID ' . $id . ': ' . $e->getMessage());
-    
+            Log::error('Error updating leave credits for user ID ' . $id . ': ' . $e->getMessage());
             return redirect()->back()->with('error', 'Something went wrong while updating leave credits. Please try again.');
         }
     }
@@ -494,6 +510,68 @@ class EmployeeController extends Controller
 
         return redirect()->back();
     }
+
+    public function createMemo(Request $request, $id)
+    {
+        try {
+            // Validate the incoming request data
+            $request->validate([
+                'date_issue' => 'required|date',
+                'attached_file' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048', // Allows image and PDF files up to 2MB
+            ]);
+    
+            // Find the user by ID and load any existing memos
+            $user = User::with('memos')->findOrFail($id);
+    
+            // Prepare to create a new memo
+            $memo = new Memo();
+            $memo->users_id = $user->id;
+            $memo->date_issue = $request->input('date_issue');
+    
+            // Handle file upload if provided
+            if ($request->hasFile('attached_file')) {
+                $filePath = $request->file('attached_file')->store('memos', 'public');
+                $memo->attached_file = $filePath;
+            }
+    
+            // Save the memo
+            $memo->save();
+    
+            // Return success response
+            return redirect()->back()->with('success', 'Memo created successfully.');
+    
+        } catch (\Exception $e) {
+            // Log and handle errors
+            Log::error('Memo creation failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while creating the memo. Please try again.');
+        }
+    }
+
+    public function updateMemo(Request $request, $id)
+    {
+        $request->validate([
+            'date_issue' => 'required|date',
+            'attached_file' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
+        ]);
+
+        $memo = Memo::findOrFail($id);
+        $memo->date_issue = $request->date_issue;
+
+        if ($request->hasFile('attached_file')) {
+            // Delete old file if exists
+            if ($memo->attached_file && \Storage::disk('public')->exists($memo->attached_file)) {
+                \Storage::disk('public')->delete($memo->attached_file);
+            }
+            // Store new file
+            $memo->attached_file = $request->file('attached_file')->store('memos', 'public');
+        }
+
+        $memo->save();
+
+        return redirect()->back()->with('success', 'Memo updated successfully.');
+    }
+
+    
 
     public function changePassword(Request $request, $user_id)
     {

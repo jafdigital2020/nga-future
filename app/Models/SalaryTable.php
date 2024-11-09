@@ -35,6 +35,7 @@ class SalaryTable extends Model
         'total_hours',
         'approved_attendance_id',
         'notes',
+        'basic_pay',
     ];
 
     protected $casts = [

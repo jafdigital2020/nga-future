@@ -155,6 +155,18 @@
             </div>
         </div>
     </form>
+    <!-- Bulk Action Dropdown -->
+    <div class="d-flex align-items-center mb-3">
+        <div class="me-2">
+            <select id="bulk-action-dropdown" class="select floating">
+                <option value="" disabled selected>Select Bulk Action</option>
+                <option value="Process">Process Payroll</option>
+            </select>
+        </div>
+        <div>
+            <button type="button" id="apply-bulk-action" class="btn btn-primary btn-sm">Apply</button>
+        </div>
+    </div>
 
     <!-- /Search Filter -->
 
@@ -164,6 +176,7 @@
                 <table class="table table-hover table-nowrap mb-0 datatable">
                     <thead class="thead-light">
                         <tr>
+                            <th><input type="checkbox" name="" id="select_all_ids"></th>
                             <th>Employee</th>
                             <th>Department</th>
                             <th>From</th>
@@ -180,6 +193,7 @@
                     <tbody>
                         @foreach ($approved as $app)
                         <tr>
+                            <td><input type="checkbox" name="ids" class="checkbox_ids" value="{{ $app->id }}"></td>
                             <td>
                                 <h2 class="table-avatar">
                                     <a href="{{ url('admin/employee/edit/'.$app->user->id) }}" class="avatar">
@@ -467,6 +481,12 @@
                         <!-- Net Pay and Gross Pay -->
                         <div class="col-sm-6">
                             <div class="form-group">
+                                <label>Basic Pay</label>
+                                <input class="form-control" type="text" id="basicPaye" name="basicPay" value="">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
                                 <label>Gross Pay</label>
                                 <input class="form-control" type="text" id="grossPaye" name="grossPay" value="">
                             </div>
@@ -657,189 +677,8 @@
             success: function (data) {
                 console.log('Data received:', data);
 
-                // Populate modal fields
-                $('#grossPaye').val(data.grossPay);
-                $('#netPaye').val(data.netPay);
-                $('#totalEarningse').val(data.totalEarnings);
-                $('#totalDeductionse').val(data.totalDeductions);
-                $('#overtimePay').val(data.overtimePay);
-                $('#paidLeaveAmount').val(data.paidLeaveAmount);
-
-                // Clear and populate earnings, deductions, loans
-                $('#earningsContainer').empty();
-                $('#deductionsContainer').empty();
-                $('#loansContainer').empty();
-
-                // Populate earnings
-                data.earnings.forEach(earning => {
-                    $('#earningsContainer').append(`
-                        <div class="form-group">
-                            <label>${earning.name}</label>
-                            <input type="hidden" name="earning_ids[]" value="${earning.earning_id}">
-                            <input type="hidden" name="earning_names[]" value="${earning.name}">
-                            <input type="text" class="form-control earning-input" value="${earning.amount}" name="earnings[]" data-earning-id="${earning.earning_id}">
-                        </div>
-                    `);
-                });
-
-                // Populate deductions
-                data.deductions.forEach(deduction => {
-                    $('#deductionsContainer').append(`
-                        <div class="form-group">
-                            <label>${deduction.name}</label>
-                            <input type="hidden" name="deduction_ids[]" value="${deduction.deduction_id}">
-                            <input type="hidden" name="deduction_names[]" value="${deduction.name}">
-                            <input type="text" class="form-control deduction-input" value="${deduction.amount}" name="deductions[]" data-deduction-id="${deduction.deduction_id}">
-                        </div>
-                    `);
-                });
-
-                // Populate loans
-                data.loans.forEach(loan => {
-                    $('#loansContainer').append(`
-                        <div class="form-group">
-                            <label>${loan.loan_name}</label>
-                            <input type="hidden" name="loan_ids[]" value="${loan.loan_id}">
-                            <input type="hidden" name="loan_names[]" value="${loan.loan_name}">
-                            <input type="text" class="form-control loan-input" value="${loan.amount}" name="loans[]" data-loan-id="${loan.loan_id}">
-                        </div>
-                    `);
-                });
-
-                $('#payrollPreviewModal').modal('show');
-            },
-            error: function (err) {
-                console.log('Error fetching payroll preview:', err);
-            }
-        });
-    });
-
-    // Event listener to automatically adjust the total deductions and net pay
-    $(document).on('input', '.deduction-input', function () {
-        updateDeductionsAndNetPay();
-    });
-
-    // Event listener to automatically adjust the total earnings and net pay
-    $(document).on('input', '.earning-input', function () {
-        updateEarningsAndNetPay();
-    });
-
-    // Event listener for overtime and paid leave fields to update total earnings and net pay
-    $(document).on('input', '#overtimePay, #paidLeaveAmount', function () {
-        updateEarningsAndNetPay();
-    });
-
-    // Event listener for loans to update net pay
-    $(document).on('input', '.loan-input', function () {
-        updateLoansAndNetPay();
-    });
-
-    function updateDeductionsAndNetPay() {
-        let totalDeductions = 0;
-        // Iterate through each deduction input and sum up the values
-        $('.deduction-input').each(function () {
-            const deductionValue = parseFloat(removeCommas($(this).val())) || 0;
-            totalDeductions += deductionValue;
-        });
-
-        // Update the total deductions input field
-        $('#totalDeductionse').val(totalDeductions.toFixed(2));
-
-        // Recalculate net pay
-        calculateNetPay();
-    }
-
-    function updateEarningsAndNetPay() {
-        let totalEarnings = 0;
-        // Iterate through each earning input and sum up the values
-        $('.earning-input').each(function () {
-            const earningValue = parseFloat(removeCommas($(this).val())) || 0;
-            totalEarnings += earningValue;
-        });
-
-        // Add overtime pay and paid leave amount to total earnings
-        const overtimePay = parseFloat(removeCommas($('#overtimePay').val())) || 0;
-        const paidLeaveAmount = parseFloat(removeCommas($('#paidLeaveAmount').val())) || 0;
-
-        totalEarnings += overtimePay + paidLeaveAmount;
-
-        // Update the total earnings input field
-        $('#totalEarningse').val(totalEarnings.toFixed(2));
-
-        // Recalculate net pay
-        calculateNetPay();
-    }
-
-    function updateLoansAndNetPay() {
-        let totalLoans = 0;
-        // Iterate through each loan input and sum up the values
-        $('.loan-input').each(function () {
-            const loanValue = parseFloat(removeCommas($(this).val())) || 0;
-            totalLoans += loanValue;
-        });
-
-        // Recalculate net pay
-        calculateNetPay();
-    }
-
-    function calculateNetPay() {
-        const grossPay = parseFloat(removeCommas($('#grossPaye').val())) || 0;
-        const totalEarnings = parseFloat(removeCommas($('#totalEarningse').val())) || 0;
-        const totalDeductions = parseFloat(removeCommas($('#totalDeductionse').val())) || 0;
-
-        // Sum up loans
-        let totalLoans = 0;
-        $('.loan-input').each(function () {
-            const loanValue = parseFloat(removeCommas($(this).val())) || 0;
-            totalLoans += loanValue;
-        });
-
-        // Debugging output to check values before calculating
-        console.log('Gross Pay:', grossPay);
-        console.log('Total Earnings:', totalEarnings);
-        console.log('Total Deductions:', totalDeductions);
-        console.log('Total Loans:', totalLoans);
-
-        // Calculate the net pay
-
-        const netPay = (grossPay + totalEarnings) - (totalDeductions + totalLoans);
-
-        // Debugging output for net pay
-        console.log('Calculated Net Pay:', netPay);
-
-        // Update net pay field
-        $('#netPaye').val(netPay.toFixed(2));
-
-        // Check if net pay goes negative
-        if (netPay < 0) {
-            console.warn('Warning: Net pay is negative.');
-        }
-    }
-
-    // Helper function to remove commas from a string
-    function removeCommas(value) {
-        return value.replace(/,/g, '');
-    }
-
-</script> -->
-
-<script>
-    $(document).on('click', '.preview-payroll', function (e) {
-        e.preventDefault();
-
-        const payrollId = $(this).data('id');
-        console.log('Payroll preview clicked, ID:', payrollId);
-
-        // Set the payrollId as data-id on the form
-        $('#payrollForm').data('id', payrollId);
-
-        $.ajax({
-            url: `/admin/payroll/preview/${payrollId}`,
-            method: 'GET',
-            success: function (data) {
-                console.log('Data received:', data);
-
                 // Populate modal fields with cleaned values (without commas)
+                $('#basicPaye').val(removeCommas(data.basicPay));
                 $('#grossPaye').val(removeCommas(data.grossPay));
                 $('#netPaye').val(removeCommas(data.netPay));
                 $('#totalEarningse').val(removeCommas(data.totalEarnings));
@@ -965,7 +804,7 @@
     }
 
     function calculateNetPay() {
-        const grossPay = parseFloat(removeCommas($('#grossPaye').val())) || 0;
+        const grossPay = parseFloat(removeCommas($('#basicPaye').val())) || 0;
         const totalEarnings = parseFloat(removeCommas($('#totalEarningse').val())) || 0;
         const totalDeductions = parseFloat(removeCommas($('#totalDeductionse').val())) || 0;
 
@@ -1002,8 +841,161 @@
         return value.toString().replace(/,/g, '');
     }
 
-</script>
+</script> -->
 
+<script>
+    $(document).on('click', '.preview-payroll', function (e) {
+        e.preventDefault();
+
+        const payrollId = $(this).data('id');
+        console.log('Payroll preview clicked, ID:', payrollId);
+
+        // Set the payrollId as data-id on the form
+        $('#payrollForm').data('id', payrollId);
+
+        $.ajax({
+            url: `/admin/payroll/preview/${payrollId}`,
+            method: 'GET',
+            success: function (data) {
+                console.log('Data received:', data);
+
+                // Populate modal fields with cleaned values (without commas)
+                $('#basicPaye').val(removeCommas(data.basicPay));
+                $('#grossPaye').val(removeCommas(data.grossPay));
+                $('#netPaye').val(removeCommas(data.netPay));
+                $('#totalEarningse').val(removeCommas(data.totalEarnings));
+                $('#totalDeductionse').val(removeCommas(data.totalDeductions));
+                $('#overtimePay').val(removeCommas(data.overtimePay));
+                $('#paidLeaveAmount').val(removeCommas(data.paidLeaveAmount));
+
+                // Clear and populate earnings, deductions, loans
+                $('#earningsContainer').empty();
+                $('#deductionsContainer').empty();
+                $('#loansContainer').empty();
+
+                // Populate earnings
+                data.earnings.forEach(earning => {
+                    $('#earningsContainer').append(`
+                        <div class="form-group">
+                            <label>${earning.name}</label>
+                            <input type="hidden" name="earning_ids[]" value="${earning.earning_id}">
+                            <input type="hidden" name="earning_names[]" value="${earning.name}">
+                            <input type="text" class="form-control earning-input" value="${removeCommas(earning.amount)}" name="earnings[]" data-earning-id="${earning.earning_id}">
+                        </div>
+                    `);
+                });
+
+                // Populate deductions
+                data.deductions.forEach(deduction => {
+                    $('#deductionsContainer').append(`
+                        <div class="form-group">
+                            <label>${deduction.name}</label>
+                            <input type="hidden" name="deduction_ids[]" value="${deduction.deduction_id}">
+                            <input type="hidden" name="deduction_names[]" value="${deduction.name}">
+                            <input type="text" class="form-control deduction-input" value="${removeCommas(deduction.amount)}" name="deductions[]" data-deduction-id="${deduction.deduction_id}">
+                        </div>
+                    `);
+                });
+
+                // Populate loans
+                data.loans.forEach(loan => {
+                    $('#loansContainer').append(`
+                        <div class="form-group">
+                            <label>${loan.loan_name}</label>
+                            <input type="hidden" name="loan_ids[]" value="${loan.loan_id}">
+                            <input type="hidden" name="loan_names[]" value="${loan.loan_name}">
+                            <input type="text" class="form-control loan-input" value="${removeCommas(loan.amount)}" name="loans[]" data-loan-id="${loan.loan_id}">
+                        </div>
+                    `);
+                });
+
+                $('#payrollPreviewModal').modal('show');
+            },
+            error: function (err) {
+                console.log('Error fetching payroll preview:', err);
+            }
+        });
+    });
+
+    $(document).on('input', '.deduction-input', function () {
+        updateDeductionsAndNetPay();
+    });
+
+    $(document).on('input', '.earning-input', function () {
+        updateEarningsAndNetPay();
+    });
+
+    $(document).on('input', '#overtimePay, #paidLeaveAmount', function () {
+        updateEarningsAndNetPay();
+    });
+
+    $(document).on('input', '.loan-input', function () {
+        updateLoansAndNetPay();
+    });
+
+    function updateDeductionsAndNetPay() {
+        let totalDeductions = 0;
+        $('.deduction-input').each(function () {
+            const deductionValue = parseFloat(removeCommas($(this).val())) || 0;
+            totalDeductions += deductionValue;
+        });
+
+        $('#totalDeductionse').val(totalDeductions.toFixed(2));
+        calculateNetPay();
+    }
+
+    function updateEarningsAndNetPay() {
+        let totalEarnings = 0;
+        $('.earning-input').each(function () {
+            const earningValue = parseFloat(removeCommas($(this).val())) || 0;
+            totalEarnings += earningValue;
+        });
+
+        const overtimePay = parseFloat(removeCommas($('#overtimePay').val())) || 0;
+        const paidLeaveAmount = parseFloat(removeCommas($('#paidLeaveAmount').val())) || 0;
+        totalEarnings += overtimePay + paidLeaveAmount;
+
+        $('#totalEarningse').val(totalEarnings.toFixed(2));
+
+        calculateGrossPay(); // Update gross pay with new total earnings
+        calculateNetPay();
+    }
+
+    function updateLoansAndNetPay() {
+        calculateNetPay();
+    }
+
+    function calculateGrossPay() {
+        const basicPay = parseFloat(removeCommas($('#basicPaye').val())) || 0;
+        const totalEarnings = parseFloat(removeCommas($('#totalEarningse').val())) || 0;
+        const grossPay = basicPay + totalEarnings;
+
+        $('#grossPaye').val(grossPay.toFixed(2));
+    }
+
+    function calculateNetPay() {
+        const grossPay = parseFloat(removeCommas($('#grossPaye').val())) || 0;
+        const totalDeductions = parseFloat(removeCommas($('#totalDeductionse').val())) || 0;
+
+        let totalLoans = 0;
+        $('.loan-input').each(function () {
+            const loanValue = parseFloat(removeCommas($(this).val())) || 0;
+            totalLoans += loanValue;
+        });
+
+        const netPay = grossPay - totalDeductions - totalLoans;
+        $('#netPaye').val(netPay.toFixed(2));
+
+        if (netPay < 0) {
+            console.warn('Warning: Net pay is negative.');
+        }
+    }
+
+    function removeCommas(value) {
+        return value.toString().replace(/,/g, '');
+    }
+
+</script>
 
 
 <script>
@@ -1013,6 +1005,10 @@
         const payrollId = $(this).data('id');
 
         // Sanitize the numeric fields by removing commas
+        $('#payrollForm input[name="basicPay"]').val(function (i, val) {
+            return val.replace(/,/g, ''); // Remove commas
+        });
+
         $('#payrollForm input[name="grossPay"]').val(function (i, val) {
             return val.replace(/,/g, ''); // Remove commas
         });
@@ -1119,6 +1115,67 @@
     function confirmPayrollProcessing() {
         return confirm("Are you sure you want to process payroll for this employee?");
     }
+
+</script>
+
+<!-- Bulk Action -->
+
+<script>
+    // Handle "Select All" checkbox
+    document.getElementById('select_all_ids').addEventListener('change', function () {
+        const checkboxes = document.querySelectorAll('.checkbox_ids');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+    });
+
+    // Handle Bulk Action "Apply" button
+    document.getElementById('apply-bulk-action').addEventListener('click', function () {
+        const selectedAction = document.getElementById('bulk-action-dropdown').value;
+        const selectedIds = Array.from(document.querySelectorAll('.checkbox_ids:checked')).map(checkbox =>
+            checkbox.value);
+
+        // Validation: Ensure an action is selected and at least one item is checked
+        if (selectedIds.length === 0) {
+            alert('Please select at least one item to apply the action.');
+            return;
+        }
+
+        if (!selectedAction) {
+            alert('Please select a bulk action to apply.');
+            return;
+        }
+
+        // Confirm the bulk action with the user
+        const confirmAction = confirm(`Are you sure you want to ${selectedAction} for the selected records?`);
+        if (!confirmAction) {
+            return;
+        }
+
+        // Send AJAX request to the server for bulk processing
+        fetch('/admin/approve/processed/bulk-action', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    action: selectedAction,
+                    ids: selectedIds
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Handle the response
+                if (data.success) {
+                    alert(data.message); // Display success message
+                    location.reload(); // Reload the page to see updated status
+                } else {
+                    alert(data.message); // Display error message
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    });
 
 </script>
 

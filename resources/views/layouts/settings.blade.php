@@ -54,6 +54,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"
         integrity="sha512-vKMx8UnXk60zUwyUnUPM3HbQo8QfmNx7+ltw8Pm5zLusl1XIfwcxo8DbWCqMGKaWeNxWA8yrx5v3SaVpMvR3CA=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 </head>
 
 <body onload="startTime()">
@@ -249,6 +250,22 @@
                             <a href="{{ url('admin/settings/changepass') }}"><i class="la la-lock"></i> <span>Change
                                     Password</span></a>
                         </li>
+                        <li class="submenu">
+                            <a href="#" onclick="toggleDropdown(event)">
+                                <i class="las la-map-marked"></i>
+                                <span> Geofencing </span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <ul style="display: none;">
+                                <li class="{{ Request::is('admin/settings/geofencing') ? 'active':'' }}">
+                                    <a href="{{ url('admin/settings/geofencing') }}">Create Geofence</a>
+                                </li>
+                                <li class="{{ Request::is('admin/settings/geofencing/assign') ? 'active':'' }}">
+                                    <a href="{{ url('admin/settings/geofencing/assign') }}">Assign Geofence</a>
+                                </li>
+                            </ul>
+                        </li>
+
                     </ul>
                 </div>
             </div>
@@ -317,6 +334,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <!-- Carousel Policy -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+    <script>
+        function toggleDropdown(event) {
+            event.preventDefault(); // Prevent the default link action
+            const submenu = event.currentTarget.nextElementSibling;
+            if (submenu.style.display === "none" || submenu.style.display === "") {
+                submenu.style.display = "block";
+            } else {
+                submenu.style.display = "none";
+            }
+        }
+
+    </script>
 
     @yield('scripts')
     <script>
@@ -326,6 +355,68 @@
         });
 
     </script>
+
+    <script>
+        $(".datetimepicker").datetimepicker({
+            format: "YYYY-MM-DD",
+            // Additional options if needed
+        });
+
+    </script>
+
+
+
+    @stack('scripts')
+
+
+    @if (session('success'))
+    <script>
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": true,
+            "positionClass": "toast-top-right", // Or any position you prefer
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000", // 5 seconds
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        }
+        toastr.success("{{ session('success') }}");
+
+    </script>
+    @endif
+
+    @if (session('error'))
+    <script>
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": true,
+            "positionClass": "toast-top-right", // Or any position you prefer
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000", // 5 seconds
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        }
+        toastr.error("{{ session('error') }}");
+
+    </script>
+    @endif
+
 </body>
 
 </html>

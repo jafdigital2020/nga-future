@@ -16,10 +16,7 @@
                     <li class="breadcrumb-item active">Overtime</li>
                 </ul>
             </div>
-            <div class="col-auto float-right ml-auto">
-                <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_policy"><i class="fa fa-plus"></i>
-                    Add Overtime</a>
-            </div>
+
         </div>
     </div>
     <!-- /Page Header -->
@@ -65,6 +62,7 @@
                             <th>End Time</th>
                             <th>Total Hours</th>
                             <th>Reason</th>
+                            <th>Attachment</th>
                             <th>Date Requested</th>
                             <th>Status</th>
                             <th>Approved By</th>
@@ -109,6 +107,15 @@
                             </td>
                             <td>{{ $ot->total_hours }}</td>
                             <td>{{ $ot->reason }}</td>
+                            <td>
+                                @if ($ot->attached_file)
+                                <a href="{{ asset('storage/' . $ot->attached_file) }}" target="_blank">
+                                    View Attachment
+                                </a>
+                                @else
+                                No Attachment
+                                @endif
+                            </td>
                             <td>{{ $ot->created_at->format('Y-m-d') }}</td>
                             <td class="text-center">
                                 <div class="dropdown action-label">

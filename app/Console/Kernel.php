@@ -17,8 +17,10 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('overtime:reset')->monthlyOn(1, '00:00');
         // $schedule->command('overtime:reset')->cron('0 0 15,30 * *');
-        // $schedule->command('overtime:reset')->everyMinute();
-        $schedule->command('overtime:reset')->dailyAt('11:51');
+        $schedule->command('overtime:reset')->everyMinute();
+        $schedule->command('credits:add')->everyMinute();
+        // $schedule->command('credits:add')->cron('0 0 15,30 * *');
+        // $schedule->command('overtime:reset')->dailyAt('11:51');
     }
 
     /**

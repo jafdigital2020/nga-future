@@ -8,6 +8,7 @@ use App\Models\Policy;
 use App\Models\Announcement;
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
+use App\Models\OvertimeRequest;
 use App\Models\SettingsHoliday;
 use App\Models\EmploymentRecord;
 use App\Models\EmployementSalary;
@@ -178,8 +179,21 @@ class DashboardController extends Controller
         $hasBreakOut = $user->employeeAttendance()->whereDate('date', $today)->whereNotNull('breakOut')->exists();
         $hasBreakIn = $user->employeeAttendance()->whereDate('date', $today)->whereNotNull('breakIn')->exists();
         $policies = Policy::all();
+
+        $leavePending = LeaveRequest::where('status', 'Pending')
+            ->with(['user', 'leaveType', 'approver'])
+            ->get();
+
+        $overtimeRequest = OvertimeRequest::where('status', 'Pending')->get();
+
+        $attendanceRequest = EmployeeAttendance::where('status_code', 'Pending')
+        ->with('user')
+        ->get();
         
         return view('admin.dashboard', compact(
+        'attendanceRequest',
+        'leavePending',
+        'overtimeRequest',
         'nearestHoliday',
         'user', 
         'empatt', 

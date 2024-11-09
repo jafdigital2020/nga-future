@@ -162,6 +162,10 @@
         </div>
     </div>
 
+    @php
+    $hasNotes = $payslip->some(fn($pay) => !empty($pay->notes));
+    @endphp
+
     <div class="row">
         <div class="col-md-12">
             <div class="table-responsive">
@@ -180,10 +184,14 @@
                             <th>Paid Leave</th>
                             <th>Net Pay</th>
                             <th class="text-center">Status</th>
+                            @if ($hasNotes)
+                            <th>Notes</th>
+                            @endif
                             <th class="text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
+
                         @php
                         $netPayTotalSum = 0; // Initialize the total
                         @endphp
@@ -282,6 +290,9 @@
                                     </div>
                                 </div>
                             </td>
+                            @if ($hasNotes)
+                            <td>{{ $pay->notes ?? '' }}</td>
+                            @endif
                             <td class="text-right">
                                 <div class="dropdown dropdown-action">
                                     <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown"
@@ -301,6 +312,7 @@
                                             data-hourly_rate="{{ $pay->hourly_rate }}"
                                             data-overtime_hour="{{ $pay->overtimeHours }}"
                                             data-paid_leave="{{ $pay->paidLeave }}"
+                                            data-basic_pay="{{ $pay->basic_pay }}"
                                             data-gross_pay="{{ $pay->gross_pay }}"
                                             data-total_deductions="{{ $pay->total_deductions }}"
                                             data-total_earnings="{{ $pay->total_earnings }}"
@@ -321,6 +333,9 @@
                             <td colspan="9"></td>
                             <td class="text-right"><strong>Total Net Pay:</strong></td>
                             <td><strong style="color:red;">₱{{ number_format($netPayTotalSum, 2) }}</strong></td>
+                            @if ($hasNotes)
+                            <td></td>
+                            @endif
                             <td></td>
                             <td></td>
                         </tr>
@@ -454,7 +469,7 @@
 
                     <!-- Totals and Net Pay -->
                     <div class="form-row">
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label class="text-primary">Total Deductions</label>
                             <div class="input-group">
                                 <div class="input-group-prepend">
@@ -463,13 +478,22 @@
                                 <input type="text" class="form-control" id="total_deductions" name="total_deductions">
                             </div>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label class="text-primary">Total Earnings</label>
                             <div class="input-group">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">₱</span>
                                 </div>
                                 <input type="text" class="form-control" id="total_earnings" name="total_earnings">
+                            </div>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label class="text-primary">Basic Pay</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">₱</span>
+                                </div>
+                                <input type="text" class="form-control" id="basic_pay" readonly>
                             </div>
                         </div>
                         <div class="col-md-2 mb-3">
@@ -504,13 +528,59 @@
     </div>
 </div>
 
+<!-- Revision Modal -->
+<div class="modal fade" id="revisionModal" tabindex="-1" role="dialog" aria-labelledby="revisionModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="revisionModalLabel">Add Revision Notes</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="revision-modal-form" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="notes">Notes</label>
+                        <textarea class="form-control" name="notes" id="notes" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
 
 @endsection
 
 @section('scripts')
+<!-- Notes Modal -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Get all revision buttons
+        var revisionButtons = document.querySelectorAll('.revision-button');
 
+        revisionButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                var payId = button.getAttribute('data-pay-id');
+                // Set the action URL dynamically based on payId
+                var form = document.getElementById('revision-modal-form');
+                form.action = '/admin/processed/revision/' + payId;
 
+                // Show the modal
+                $('#revisionModal').modal('show');
+            });
+        });
+    });
 
+</script>
 
 <!-- <script>
     $('.viewEditLink').on('click', function () {
@@ -519,142 +589,6 @@
         const earnings = JSON.parse($(this).attr('data-earnings') || '[]');
         const loans = JSON.parse($(this).attr('data-loans') || '[]');
 
-        // Log arrays for debugging
-        console.log("Deductions:", deductions);
-        console.log("Earnings:", earnings);
-        console.log("Loans:", loans);
-
-        const fName = $(this).data('fname');
-        const lName = $(this).data('lname');
-        const department = $(this).data('department');
-        const cutOff = $(this).data('cut_off');
-        const month = $(this).data('month');
-        const year = $(this).data('year');
-        const startDate = $(this).data('start_date');
-        const endDate = $(this).data('end_date');
-        const totalHours = $(this).data('total_hours');
-        const grossPay = parseFloat($(this).data('gross_pay')) || 0;
-        const dailyRate = $(this).data('daily_rate');
-        const hourlyRate = $(this).data('hourly_rate');
-        const totalDeductions = parseFloat($(this).data('total_deductions')) || 0;
-        const totalEarnings = parseFloat($(this).data('total_earnings')) || 0;
-        const netPay = parseFloat($(this).data('net_pay')) || 0;
-        const overtimeHours = $(this).data('overtime_hour');
-        const paidLeave = $(this).data('paid_leave');
-        const salaryId = $(this).data('pay-id');
-
-        $('#salary_id').val(salaryId);
-        $('#employee_name').val(`${fName} ${lName}`);
-        $('#department').val(department);
-        $('#cut_off').val(cutOff);
-        $('#month').val(month);
-        $('#year').val(year);
-        $('#start_date').val(startDate);
-        $('#end_date').val(endDate);
-        $('#total_hours').val(totalHours);
-        $('#gross_pay').val(grossPay);
-        $('#daily_rate').val(dailyRate);
-        $('#hourly_rate').val(hourlyRate);
-        $('#total_deductions').val(totalDeductions.toFixed(2));
-        $('#total_earnings').val(totalEarnings.toFixed(2));
-        $('#net_pay').val(netPay.toFixed(2));
-        $('#overtimeHours').val(overtimeHours);
-        $('#paidLeave').val(paidLeave);
-
-        $('#deductionsContainer').empty();
-        $('#earningsContainer').empty();
-        $('#loansContainer').empty();
-
-        // Populate deductions, earnings, and loans
-        deductions.forEach((deduction) => {
-            $('#deductionsContainer').append(`
-            <label>${deduction.name}</label>
-            <input type="hidden" name="deduction_ids[]" value="${deduction.deduction_id}">
-            <input type="hidden" name="deduction_names[]" value="${deduction.name}">
-            <input type="text" class="form-control deduction-input" value="${parseFloat(deduction.amount).toFixed(2)}" name="deductions[]" data-deduction-id="${deduction.deduction_id}">
-        `);
-        });
-
-        earnings.forEach((earning) => {
-            $('#earningsContainer').append(`
-            <label>${earning.name}</label>
-            <input type="hidden" name="earning_ids[]" value="${earning.earning_id}">
-            <input type="hidden" name="earning_names[]" value="${earning.name}">
-            <input type="text" class="form-control earning-input" value="${parseFloat(earning.amount).toFixed(2)}" name="earnings[]" data-earning-id="${earning.earning_id}">
-        `);
-        });
-
-        loans.forEach((loan) => {
-            $('#loansContainer').append(`
-            <label>${loan.loan_name || "N/A"}</label>
-            <input type="hidden" name="loan_ids[]" value="${loan.loan_id}">
-            <input type="hidden" name="loan_names[]" value="${loan.loan_name || "N/A"}">
-            <input type="text" class="form-control loan-input" value="${parseFloat(loan.amount).toFixed(2)}" name="loans[]" data-loan-id="${loan.loan_id}">
-        `);
-        });
-
-        $('#viewEditModal').modal('show');
-    });
-
-    $(document).on('input', '.deduction-input', updateDeductionsAndNetPay);
-    $(document).on('input', '.earning-input', updateEarningsAndNetPay);
-    $(document).on('input', '.loan-input', updateLoansAndNetPay);
-    $(document).on('input', '#overtimeHours, #paidLeave', updateEarningsAndNetPay);
-
-    function updateDeductionsAndNetPay() {
-        let totalDeductions = 0;
-        $('.deduction-input').each(function () {
-            totalDeductions += parseFloat($(this).val()) || 0;
-        });
-        $('#total_deductions').val(totalDeductions.toFixed(2));
-        calculateNetPay();
-    }
-
-    function updateEarningsAndNetPay() {
-        let totalEarnings = 0;
-        $('.earning-input').each(function () {
-            totalEarnings += parseFloat($(this).val()) || 0;
-        });
-
-        const overtimePay = parseFloat($('#overtimeHours').val()) || 0;
-        const paidLeaveAmount = parseFloat($('#paidLeave').val()) || 0;
-
-        totalEarnings += overtimePay + paidLeaveAmount;
-        $('#total_earnings').val(totalEarnings.toFixed(2));
-        calculateNetPay();
-    }
-
-    function updateLoansAndNetPay() {
-        calculateNetPay();
-    }
-
-    function calculateNetPay() {
-        const grossPay = parseFloat($('#gross_pay').val()) || 0;
-        const totalEarnings = parseFloat($('#total_earnings').val()) || 0;
-        const totalDeductions = parseFloat($('#total_deductions').val()) || 0;
-
-        let totalLoans = 0;
-        $('.loan-input').each(function () {
-            totalLoans += parseFloat($(this).val()) || 0;
-        });
-
-        const netPay = (grossPay + totalEarnings) - (totalDeductions + totalLoans);
-        $('#net_pay').val(netPay.toFixed(2));
-
-        if (netPay < 0) {
-            console.warn('Warning: Net pay is negative.');
-        }
-    }
-
-</script> -->
-
-<script>
-    $('.viewEditLink').on('click', function () {
-        // Retrieve data attributes and parse as JSON if needed
-        const deductions = JSON.parse($(this).attr('data-deductions') || '[]');
-        const earnings = JSON.parse($(this).attr('data-earnings') || '[]');
-        const loans = JSON.parse($(this).attr('data-loans') || '[]');
-
 
         // Log arrays for debugging
         console.log("Deductions:", deductions);
@@ -671,6 +605,7 @@
         const endDate = $(this).data('end_date');
         const totalHours = $(this).data('total_hours');
         const grossPay = parseFloat($(this).data('gross_pay')) || 0;
+        const basicPay = parseFloat($(this).data('basic_pay')) || 0;
         const dailyRate = $(this).data('daily_rate');
         const hourlyRate = $(this).data('hourly_rate');
         const totalDeductions = parseFloat($(this).data('total_deductions')) || 0;
@@ -693,6 +628,7 @@
         $('#end_date').val(endDate);
         $('#total_hours').val(totalHours);
         $('#gross_pay').val(grossPay);
+        $('#basic_pay').val(basicPay);
         $('#daily_rate').val(dailyRate);
         $('#hourly_rate').val(hourlyRate);
         $('#total_deductions').val(totalDeductions.toFixed(2));
@@ -769,6 +705,7 @@
         updateNetPay();
     }
 
+
     function updateLoansAndNetPay() {
         let totalLoans = 0;
         $('.loan-input').each(function () {
@@ -779,182 +716,167 @@
     }
 
     function updateNetPay() {
-        const grossPay = parseFloat($('#gross_pay').val()) || 0;
+        const basicPay = parseFloat($('#basic_pay').val()) || 0;
         const totalDeductions = parseFloat($('#total_deductions').val()) || 0;
         const totalEarnings = parseFloat($('#total_earnings').val()) || 0;
-        const netPay = grossPay + totalEarnings - totalDeductions;
+        const netPay = basicPay + totalEarnings - totalDeductions;
+        $('#net_pay').val(netPay.toFixed(2));
+    }
+
+</script> -->
+
+<script>
+    $('.viewEditLink').on('click', function () {
+        // Retrieve data attributes and parse as JSON if needed
+        const deductions = JSON.parse($(this).attr('data-deductions') || '[]');
+        const earnings = JSON.parse($(this).attr('data-earnings') || '[]');
+        const loans = JSON.parse($(this).attr('data-loans') || '[]');
+
+        // Log arrays for debugging
+        console.log("Deductions:", deductions);
+        console.log("Earnings:", earnings);
+        console.log("Loans:", loans);
+
+        const fName = $(this).data('fname');
+        const lName = $(this).data('lname');
+        const department = $(this).data('department');
+        const cutOff = $(this).data('cut_off');
+        const month = $(this).data('month');
+        const year = $(this).data('year');
+        const startDate = $(this).data('start_date');
+        const endDate = $(this).data('end_date');
+        const totalHours = $(this).data('total_hours');
+        const grossPay = parseFloat($(this).data('gross_pay')) || 0;
+        const basicPay = parseFloat($(this).data('basic_pay')) || 0;
+        const dailyRate = $(this).data('daily_rate');
+        const hourlyRate = $(this).data('hourly_rate');
+        const totalDeductions = parseFloat($(this).data('total_deductions')) || 0;
+        const totalEarnings = parseFloat($(this).data('total_earnings')) || 0;
+        const netPay = parseFloat($(this).data('net_pay')) || 0;
+        const overtimeHours = $(this).data('overtime_hour');
+        const paidLeave = $(this).data('paid_leave');
+        const salaryId = $(this).data('pay-id');
+
+        $('#deductionsForm').data('pay-id', salaryId);
+
+        $('#salary_id').val(salaryId);
+        $('#employee_name').val(`${fName} ${lName}`);
+        $('#department').val(department);
+        $('#cut_off').val(cutOff);
+        $('#month').val(month);
+        $('#year').val(year);
+        $('#start_date').val(startDate);
+        $('#end_date').val(endDate);
+        $('#total_hours').val(totalHours);
+        $('#gross_pay').val(grossPay);
+        $('#basic_pay').val(basicPay);
+        $('#daily_rate').val(dailyRate);
+        $('#hourly_rate').val(hourlyRate);
+        $('#total_deductions').val(totalDeductions.toFixed(2));
+        $('#total_earnings').val(totalEarnings.toFixed(2));
+        $('#net_pay').val(netPay.toFixed(2));
+        $('#overtimeHours').val(overtimeHours);
+        $('#paidLeave').val(paidLeave);
+
+        $('#deductionsContainer').empty();
+        $('#earningsContainer').empty();
+        $('#loansContainer').empty();
+
+        // Populate deductions, earnings, and loans
+        deductions.forEach((deduction) => {
+            $('#deductionsContainer').append(`
+                <label>${deduction.name}</label>
+                <input type="hidden" name="deduction_ids[]" value="${deduction.deduction_id}">
+                <input type="hidden" name="deduction_names[]" value="${deduction.name}">
+                <input type="text" class="form-control deduction-input" value="${parseFloat(deduction.amount).toFixed(2)}" name="deductions[]" data-deduction-id="${deduction.deduction_id}">
+            `);
+        });
+
+        earnings.forEach((earning) => {
+            $('#earningsContainer').append(`
+                <label>${earning.name}</label>
+                <input type="hidden" name="earning_ids[]" value="${earning.earning_id}">
+                <input type="hidden" name="earning_names[]" value="${earning.name}">
+                <input type="text" class="form-control earning-input" value="${parseFloat(earning.amount).toFixed(2)}" name="earnings[]" data-earning-id="${earning.earning_id}">
+            `);
+        });
+
+        loans.forEach((loan) => {
+            $('#loansContainer').append(`
+                <label>${loan.loan_name || "N/A"}</label>
+                <input type="hidden" name="loan_ids[]" value="${loan.loan_id}">
+                <input type="hidden" name="loan_names[]" value="${loan.loan_name || "N/A"}">
+                <input type="text" class="form-control loan-input" value="${parseFloat(loan.amount).toFixed(2)}" name="loans[]" data-loan-id="${loan.loan_id}">
+            `);
+        });
+
+        $('#viewEditModal').modal('show');
+    });
+
+    // Update deduction, earnings, and loan totals
+    $(document).on('input', '.deduction-input', updateDeductionsAndNetPay);
+    $(document).on('input', '.earning-input', updateEarningsAndNetPay);
+    $(document).on('input', '.loan-input', updateLoansAndNetPay);
+    $(document).on('input', '#overtimeHours, #paidLeave', updateEarningsAndNetPay);
+
+    function updateDeductionsAndNetPay() {
+        let totalDeductions = 0;
+        $('.deduction-input').each(function () {
+            totalDeductions += parseFloat($(this).val()) || 0;
+        });
+        $('#total_deductions').val(totalDeductions.toFixed(2));
+        updateNetPay();
+    }
+
+    function updateEarningsAndNetPay() {
+        let totalEarnings = 0;
+        // Add earnings from input fields
+        $('.earning-input').each(function () {
+            totalEarnings += parseFloat($(this).val()) || 0;
+        });
+
+        // Get the overtime hours and paid leave values
+        const overtimeHours = parseFloat($('#overtimeHours').val()) || 0;
+        const paidLeave = parseFloat($('#paidLeave').val()) || 0;
+
+        // Add overtime and paid leave to total earnings
+        totalEarnings += overtimeHours + paidLeave;
+
+        $('#total_earnings').val(totalEarnings.toFixed(2));
+
+        // Update gross pay when earnings change
+        const basicPay = parseFloat($('#basic_pay').val()) || 0;
+        const grossPay = basicPay + totalEarnings;
+        $('#gross_pay').val(grossPay.toFixed(2));
+
+        updateNetPay();
+    }
+
+    function updateLoansAndNetPay() {
+        let totalLoans = 0;
+        $('.loan-input').each(function () {
+            totalLoans += parseFloat($(this).val()) || 0;
+        });
+        // You can add further handling of total loans if needed
+        updateNetPay();
+    }
+
+    function updateNetPay() {
+        const basicPay = parseFloat($('#basic_pay').val()) || 0;
+        const totalDeductions = parseFloat($('#total_deductions').val()) || 0;
+        const totalEarnings = parseFloat($('#total_earnings').val()) || 0;
+        const netPay = basicPay + totalEarnings - totalDeductions;
         $('#net_pay').val(netPay.toFixed(2));
     }
 
 </script>
 
 
-<!-- <script>
-    // Listen for the click on the viewEditLink to populate data
-    $('.viewEditLink').on('click', function () {
-        // Get the pay-id from the clicked link
-        const payId = $(this).data('pay-id');
-
-        // Assign pay-id to the deductions form for later use
-        $('#deductionsForm').data('pay-id', payId);
-
-        // You may add more code here to populate the form with other data if needed
-    });
-
-    $('#deductionsForm').on('submit', function (e) {
-        e.preventDefault();
-
-        // Get the pay-id from the form's data attribute
-        const salaryId = $(this).data('pay-id');
-
-        if (!salaryId) {
-            alert('Error: Salary ID is missing!');
-            return;
-        }
-
-        // Sanitize numeric fields by removing commas
-        $('#deductionsForm input[name="gross_pay"]').val(function (i, val) {
-            return val.replace(/,/g, '');
-        });
-        $('#deductionsForm input[name="net_pay"]').val(function (i, val) {
-            return val.replace(/,/g, '');
-        });
-        $('#deductionsForm input[name="total_earnings"]').val(function (i, val) {
-            return val.replace(/,/g, '');
-        });
-        $('#deductionsForm input[name="total_deductions"]').val(function (i, val) {
-            return val.replace(/,/g, '');
-        });
-        $('#deductionsForm input[name="overtimeHours"]').val(function (i, val) {
-            return val.replace(/,/g, '');
-        });
-        $('#deductionsForm input[name="paidLeave"]').val(function (i, val) {
-            return val.replace(/,/g, '');
-        });
-
-        // Gather Deductions
-        const deductions = [];
-        $('#deductionsContainer input.deduction-input').each(function () {
-            const amount = $(this).val();
-            const name = $(this).siblings('input[name="deduction_names[]"]').val();
-            const id = $(this).siblings('input[name="deduction_ids[]"]').val();
-
-            console.log('Deduction:', {
-                id,
-                name,
-                amount
-            }); // Log the deduction data
-
-            // Only push if amount and id are present
-            if (amount && name && id) {
-                deductions.push({
-                    deduction_id: id,
-                    name,
-                    amount: parseFloat(amount).toFixed(
-                        4) // Use toFixed to ensure consistent decimal formatting
-                });
-            }
-        });
-
-        console.log('Final Deductions Array:', deductions); // Log the final array
-
-
-
-        // Gather Earnings
-        const earnings = [];
-        $('#earningsContainer input.earning-input').each(function () {
-            const amount = $(this).val();
-            const name = $(this).siblings('input[name="earning_names[]"]').val();
-            const id = $(this).siblings('input[name="earning_ids[]"]').val();
-
-            // Check if the earning already exists
-            if (amount && name && id) {
-                const existingEarning = earnings.find(earning => earning.earning_id === id);
-                if (!existingEarning) {
-                    earnings.push({
-                        earning_id: id,
-                        name,
-                        amount: parseFloat(amount).toFixed(4)
-                    });
-                }
-            }
-        });
-
-        // Gather Loans
-        const loans = [];
-        $('#loansContainer input.loan-input').each(function () {
-            const amount = $(this).val();
-            const name = $(this).siblings('input[name="loan_names[]"]').val();
-            const id = $(this).siblings('input[name="loan_ids[]"]').val();
-
-            // Check if the loan already exists
-            if (amount && name && id) {
-                const existingLoan = loans.find(loan => loan.loan_id === id);
-                if (!existingLoan) {
-                    loans.push({
-                        loan_id: id,
-                        loan_name: name,
-                        amount: parseFloat(amount).toFixed(4)
-                    });
-                }
-            }
-        });
-
-        // Convert arrays to JSON format and escape double quotes
-        const formattedDeductions = JSON.stringify(deductions).replace(/"/g, '\\"');
-        const formattedEarnings = JSON.stringify(earnings).replace(/"/g, '\\"');
-        const formattedLoans = JSON.stringify(loans).replace(/"/g, '\\"');
-
-        console.log("Formatted Deductions:", formattedDeductions);
-        console.log("Formatted Earnings:", formattedEarnings);
-        console.log("Formatted Loans:", formattedLoans);
-
-        // Prepare data for AJAX request with escaped JSON strings
-        const data = {
-            _token: $('input[name="_token"]').val(),
-            gross_pay: $('#gross_pay').val(),
-            net_pay: $('#net_pay').val(),
-            total_earnings: $('#total_earnings').val(),
-            total_deductions: $('#total_deductions').val(),
-            overtimeHours: $('#overtimeHours').val(),
-            paidLeave: $('#paidLeave').val(),
-            deductions: formattedDeductions,
-            earnings: formattedEarnings,
-            loans: formattedLoans
-        };
-
-        console.log('Data to be sent in AJAX:', data);
-
-        // AJAX call to update salary data
-        $.ajax({
-            url: `/admin/processed/update/${salaryId}`,
-            method: 'POST',
-            data: data,
-            success: function (response) {
-                if (response.success) {
-                    alert('Salary details updated successfully!');
-                    $('#viewEditModal').modal('hide');
-                    location.reload();
-                } else {
-                    alert('Failed to update salary: ' + (response.error || 'Unknown error'));
-                }
-            },
-            error: function (xhr) {
-                console.error('Error updating salary:', xhr);
-                alert('Error updating salary: ' + xhr.responseText);
-            }
-        });
-    });
-
-</script> -->
-
-
-
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         var approveButtons = document.querySelectorAll('.approve-button');
         var declineButtons = document.querySelectorAll('.decline-button');
-        var revisionButtons = document.querySelectorAll('.revision-button');
+
 
         approveButtons.forEach(function (button) {
             button.addEventListener('click', function () {
@@ -963,12 +885,7 @@
             });
         });
 
-        revisionButtons.forEach(function (button) {
-            button.addEventListener('click', function () {
-                var payId = button.getAttribute('data-pay-id');
-                confirmRevision(payId);
-            });
-        });
+
 
         declineButtons.forEach(function (button) {
             button.addEventListener('click', function () {
@@ -986,13 +903,6 @@
         }
     }
 
-    function confirmRevision(payId) {
-        var form = document.getElementById('revision-form-' + payId);
-        var confirmAction = confirm("Are you sure you want to revise this?");
-        if (confirmAction) {
-            form.submit();
-        }
-    }
 
     function confirmDecline(payId) {
         var form = document.getElementById('decline-form-' + payId);
@@ -1063,7 +973,7 @@
         csv +=
             "{{ $pay->user->fName ?? '' }} {{ $pay->user->mName ?? '' }} {{ $pay->user->lName ?? $pay->user->name }}";
         csv += ',';
-        csv += "{{ $pay->user->department }}"; // Add department back
+        csv += "{{ $pay->user->department }}";
         csv += ',';
         csv += "{{ $pay->start_date }}";
         csv += ',';
@@ -1073,9 +983,9 @@
         csv += ',';
         csv += "{{ $pay->cut_off }}";
         csv += ',';
-        csv += "{{ $pay->totalHours }}";
+        csv += "{{ $pay->total_hours }}";
         csv += ',';
-        csv += "{{ $pay->netPayTotal }}"; // Keep Net Pay without encoding issues
+        csv += "{{ $pay->net_pay }}";
         csv += '\n';
         @endforeach
 

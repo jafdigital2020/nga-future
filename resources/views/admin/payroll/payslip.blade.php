@@ -31,15 +31,12 @@
             <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
                 <div class="form-group form-focus select-focus">
                     <select class="select floating" name="department">
-                        <option value="">--Select Department--</option>
-                        @foreach($departments as $dept)
-                        <option value="{{ $dept->department }}"
-                            {{ $dept->department == $departments ? 'selected' : '' }}>
-                            {{ $dept->department }}
-                        </option>
+                        <option value="" disabled selected>Select Department</option>
+                        @foreach ($departments as $dept)
+                        <option value="{{ $dept }}">{{ $dept }}</option>
                         @endforeach
                     </select>
-                    <label class="focus-label">Select Department</label>
+                    <label class="focus-label">Department</label>
                 </div>
             </div>
             <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
@@ -181,7 +178,7 @@
                             <td>{{ $pay->month }}</td>
                             <td>{{ $pay->cut_off }}</td>
                             <td>{{ $pay->total_hours }}</td>
-                            <td>₱{{ number_format($pay->net_pay, 2) }}</td>
+                            <td style="color:red;">₱{{ number_format($pay->net_pay, 2) }}</td>
                             <td class="text-right">
                                 <div class="dropdown dropdown-action">
                                     <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown"

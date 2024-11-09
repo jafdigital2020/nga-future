@@ -86,8 +86,6 @@ class AdminLeaveController extends Controller
                       });
             });
         }
-
- 
     
         $leaveRequests = $data->get();
     

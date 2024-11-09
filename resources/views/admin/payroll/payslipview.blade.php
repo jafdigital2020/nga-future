@@ -82,7 +82,9 @@
                             <div class="col-lg-12 m-b-20">
                                 <ul class="list-unstyled">
                                     <li>
-                                        <h5 class="mb-0"><strong>{{ $view->ename }}</strong></h5>
+                                        <h5 class="mb-0"><strong>{{ $view->user->lName }}, {{ $view->user->fName }}
+                                                {{ $view->user->mName }} ({{ $view->user->name }})
+                                            </strong></h5>
                                     </li>
                                     <li><span>{{ $view->user->position }}</span></li>
                                     <li>Employee ID: {{ $view->user->empNumber }}</li>
@@ -91,119 +93,113 @@
                             </div>
                         </div>
                         <div class="row">
+                            <!-- Earnings -->
                             <div class="col-sm-6">
                                 <div>
                                     <h4 class="m-b-10"><strong>Earnings</strong></h4>
                                     <table class="table table-bordered">
                                         <tbody>
+                                            <!-- Display Earnings -->
+                                            @if(!empty($earnings))
+                                            @foreach ($earnings as $earning)
                                             <tr>
-                                                <td><strong>Birthday Leave</strong> <span
-                                                        class="float-right">₱{{ $view->bdayLeave  ?? '0.00' }}</span>
-                                                </td>
+                                                <td><strong>{{ $earning['name'] }}</strong> <span
+                                                        class="float-right">₱{{ $earning['amount'] }}</span></td>
                                             </tr>
+                                            @endforeach
+                                            @endif
                                             <tr>
-                                                <td><strong>Vacation Leave</strong> <span
-                                                        class="float-right">₱{{ $view->vacLeave ?? '0.00' }}</span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Sick Leave</strong> <span
-                                                        class="float-right">₱{{ $view->sickLeave ?? '0.00' }}</span>
+                                                <td><strong>Paid Leave</strong> <span
+                                                        class="float-right">₱{{ $view->paidLeave ?? 0 }}</span>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td><strong>Overtime</strong> <span
-                                                        class="float-right">₱{{ $view->otTotal ?? '0.00' }}</span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Regular Holiday</strong> <span
-                                                        class="float-right">₱{{ $view->regHoliday ?? '0.00' }}</span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Reimbursement</strong> <span
-                                                        class="float-right">₱{{ $view->reimbursement ?? '0.00' }}</span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Bonus</strong> <span
-                                                        class="float-right">₱{{ $view->bonus ?? '0.00' }}</span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Total Hours</strong> <span
-                                                        class="float-right"><strong>{{ $view->totalHours }}</strong></span>
+                                                        class="float-right">₱{{ $view->overtimeHours ?? 0 }}</span>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td><strong>Total Earnings</strong> <span
-                                                        class="float-right"><strong>₱{{ $view->totalEarning }}</strong></span>
+                                                        class="float-right">₱{{ $view->total_earnings }}</span>
                                                 </td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
+                            <!-- Deductions -->
+                            @if(!empty($deductions))
                             <div class="col-sm-6">
                                 <div>
                                     <h4 class="m-b-10"><strong>Deductions</strong></h4>
                                     <table class="table table-bordered">
                                         <tbody>
+                                            <!-- Display Earnings -->
+
+                                            @foreach ($deductions as $deduction)
                                             <tr>
-                                                <td><strong>SSS</strong> <span
-                                                        class="float-right">₱{{ $view->sss ?? '0.00' }}</span></td>
+                                                <td><strong>{{ $deduction['name'] }}</strong> <span
+                                                        class="float-right">₱{{ $deduction['amount'] }}</span></td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            @endif
+                            <!-- Loans -->
+                            @if(!empty($loans))
+                            <div class="col-sm-6">
+                                <div>
+                                    <br>
+                                    <h4 class="m-b-10"><strong>Loans</strong></h4>
+                                    <table class="table table-bordered">
+                                        <tbody>
+                                            @foreach ($loans as $loan)
+                                            <tr>
+                                                <td><strong>{{ $loan['loan_name'] }}</strong> <span
+                                                        class="float-right">₱{{ $loan['amount'] }}</span></td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            @endif
+                            <div class="col-sm-6">
+                                <div>
+                                    <br>
+                                    <h4 class="m-b-10"><strong>Total</strong></h4>
+                                    <table class="table table-bordered">
+                                        <tbody>
+                                            <tr>
+                                                <td><strong>Total Hours</strong> <span
+                                                        class="float-right">{{ $view->total_hours }}</span></td>
                                             </tr>
                                             <tr>
-                                                <td><strong>PhilHealth</strong> <span
-                                                        class="float-right">₱{{ $view->philHealth ?? '0.00' }}</span>
+                                                <td><strong>Daily Rate</strong> <span
+                                                        class="float-right">₱{{ $view->daily_rate }}</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Hourly Rate</strong> <span
+                                                        class="float-right">₱{{ $view->hourly_rate }}</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <strong>Monthly Salary</strong>
+                                                    <span
+                                                        class="float-right">₱{{ number_format($view->monthly_salary, 2) }}</span>
+                                                </td>
+
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Gross Pay</strong> <span
+                                                        class="float-right">₱{{ number_format($view->gross_pay, 2) }}</span>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td><strong>Pag-Ibig</strong> <span
-                                                        class="float-right">₱{{ $view->pagIbig ?? '0.00' }}</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Withholding Tax</strong> <span
-                                                        class="float-right">₱{{ $view->withHolding ?? '0.00' }}</span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Late</strong> <span
-                                                        class="float-right">₱{{ $view->late ?? '0.00'  }}</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>SSS Loan</strong> <span
-                                                        class="float-right">₱{{ $view->sssLoan ?? '0.00' }}</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Other Loan</strong> <span
-                                                        class="float-right">₱{{ $view->loan ?? '0.00' }}</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Advance</strong> <span
-                                                        class="float-right">₱{{ $view->advance ?? '0.00' }}</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Savings</strong> <span
-                                                        class="float-right">₱{{ $view->savings ?? '0.00' }}</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>HMO</strong> <span
-                                                        class="float-right">₱{{ $view->hmo ?? '0.00' }}</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Others</strong> <span
-                                                        class="float-right">₱{{ $view->others ?? '0.00' }}</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Total Deductions</strong> <span
-                                                        class="float-right"><strong>₱{{ $view->totalDeduction }}</strong></span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td style="color:red;"><strong>Net Salary</strong> <span
-                                                        class="float-right"><strong>₱{{ $view->netPayTotal }}</strong></span>
+                                                <td><strong>Net Pay</strong> <span class="float-right"
+                                                        style="color:red;"><strong>₱{{ number_format($view->net_pay, 2) }}</strong></span>
                                                 </td>
                                             </tr>
                                         </tbody>

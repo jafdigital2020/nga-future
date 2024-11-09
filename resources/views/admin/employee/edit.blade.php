@@ -1,4 +1,28 @@
-@extends('layouts.master') @section('title', 'Employee Record') @section('content')
+@extends('layouts.master') @section('title', 'Employee Record')
+<style>
+    .memo-card {
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        transition: box-shadow 0.3s;
+    }
+
+    .memo-card:hover {
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .memo-card .card-title {
+        font-size: 1.1em;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .position-absolute {
+        position: absolute;
+    }
+
+</style>
+
+@section('content')
 @include('sweetalert::alert')
 
 <!-- Page Content -->
@@ -600,69 +624,134 @@
         </div>
         <!-- /Projects Tab -->
 
-        <!-- Emp Tab Tab -->
+        <!-- Employee Record Tab -->
         <div class="tab-pane fade" id="emp_record">
             <div class="card">
                 <div class="card-body">
-                    <div class="col-auto float-right ml-auto">
-                        <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_employee_record"><i
-                                class="fa fa-plus"></i> Add/Edit Employement Record</a>
-                        <!-- <div class="view-icons">
-                            <a href="employees.html" class="grid-view btn btn-link"><i class="fa fa-th"></i></a>
-                            <a href="employees-list.html" class="list-view btn btn-link active"><i
-                                    class="fa fa-bars"></i></a>
-                        </div> -->
+                    <!-- Add/Edit Employment Record Button -->
+                    <div class="col-auto float-right ml-auto mb-3">
+                        <a href="#" class="btn add-btn" data-toggle="modal" data-target="#add_employee_record">
+                            <i class="fa fa-plus"></i> Add Memo
+                        </a>
                     </div>
-                    <h3 class="card-title">Employee Record</h3>
-                    @if($user->employmentRecord->isNotEmpty())
-                    @foreach ($user->employmentRecord as $record)
+
+                    <!-- Assigned Assets Section -->
+                    <h3 class="card-title">Assigned Assets</h3>
+                    @if($user->userAssets->isNotEmpty())
                     <div class="row">
-                        <div class="col-sm-4">
-                            <div class="form-group">
-                                <label class="col-form-label">Hired Date</label>
-                                <input type="text" name="eHired" id="eHired" class="form-control"
-                                    value="{{ $record->hiredDate }}" readonly>
+                        @foreach ($user->userAssets as $userAsset)
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card asset-card mb-3 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ $userAsset->asset->name ?? 'N/A' }}</h5>
+                                    <p class="mb-1"><strong>Serial Number:</strong>
+                                        {{ $userAsset->asset->serial_number ?? 'N/A' }}</p>
+                                    <p class="mb-1"><strong>Assignment Date:</strong>
+                                        {{ \Carbon\Carbon::parse($userAsset->assign_date)->format('F j, Y') }}</p>
+                                    <p class="mb-1"><strong>Return Date:</strong>
+                                        {{ $userAsset->return_date ? \Carbon\Carbon::parse($userAsset->return_date)->format('F j, Y') : 'Not Returned' }}
+                                    </p>
+                                    @if($userAsset->note)
+                                    <p class="mb-1"><strong>Notes:</strong> {{ $userAsset->note }}</p>
+                                    @endif
+                                </div>
                             </div>
                         </div>
-                        <div class="col-sm-4">
-                            <div class="form-group">
-                                <label class="col-form-label">Job Title</label>
-                                <input type="text" name="ePosition" id="ePosition" class="form-control"
-                                    value="{{ $record->jobTitle }}" readonly>
-                            </div>
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="form-group">
-                                <label class="col-form-label">Department</label>
-                                <input type="text" name="eDepartment" id="eDepartment" class="form-control"
-                                    value="{{ $record->department }}" readonly>
-                            </div>
-                        </div>
+                        @endforeach
                     </div>
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label class="col-form-label">Immediate Supervisor</label>
-                                <input type="text" name="iSupervisor" id="iSupervisor" class="form-control"
-                                    value="{{ $record->supervisor }}" readonly>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label class="col-form-label">Location</label>
-                                <input type="text" name="location" id="location" class="form-control"
-                                    value="{{ $record->location }}" readonly>
-                            </div>
-                        </div>
-                    </div>
-                    @endforeach
                     @else
-                    <p>No Employment Record.</p>
+                    <p class="text-muted">No Assigned Assets.</p>
+                    @endif
+
+                    <!-- Memo Records Section -->
+                    <h3 class="card-title mt-4">Memo Records</h3>
+                    @if($user->memos->isNotEmpty())
+                    <div class="row">
+                        @foreach ($user->memos as $memo)
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card memo-card mb-3 shadow-sm position-relative">
+                                <div class="card-body">
+                                    <h5 class="card-title">Memo Issued</h5>
+                                    <p class="mb-1"><strong>Date Issued:</strong>
+                                        {{ \Carbon\Carbon::parse($memo->date_issue)->format('F j, Y') }}</p>
+                                    <p>
+                                        @if($memo->attached_file)
+                                        <a href="{{ asset('storage/' . $memo->attached_file) }}" target="_blank"
+                                            class="btn btn-sm btn-danger mt-2">
+                                            <i class="fa fa-file"></i> View Attachment
+                                        </a>
+                                        @else
+                                        <span class="text-muted">No Attachment</span>
+                                        @endif
+                                    </p>
+                                </div>
+
+                                <!-- Edit Button Icon in the Red Circle -->
+                                <div class="position-absolute top-0 end-0 p-2">
+                                    <a href="#" data-toggle="modal" data-target="#editMemoModal-{{ $memo->id }}"
+                                        class="text-danger">
+                                        <i class="fa fa-edit fa-lg"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Edit Memo Modal -->
+                        <div class="modal fade" id="editMemoModal-{{ $memo->id }}" tabindex="-1" role="dialog"
+                            aria-labelledby="editMemoModalLabel-{{ $memo->id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="editMemoModalLabel-{{ $memo->id }}">Edit Memo</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <form action="{{ route('admin.updateMemo', $memo->id) }}" method="POST"
+                                        enctype="multipart/form-data">
+                                        @csrf
+
+
+                                        <div class="modal-body">
+                                            <div class="form-group">
+                                                <label for="date_issue">Date Issued</label>
+                                                <input type="text" class="datetimepicker form-control" name="date_issue"
+                                                    value="{{ $memo->date_issue }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="attached_file">Attached File</label>
+                                                <input type="file" name="attached_file" class="form-control">
+                                                @if($memo->attached_file)
+                                                <small class="form-text text-muted">Current File: <a
+                                                        href="{{ asset('storage/' . $memo->attached_file) }}"
+                                                        target="_blank">View</a></small>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                                        </div>
+                                    </form>
+
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /Edit Memo Modal -->
+
+                        @endforeach
+                    </div>
+                    @else
+                    <p class="text-muted">No Memo Records.</p>
                     @endif
                 </div>
             </div>
         </div>
-        <!-- /Emp Tab -->
+        <!-- /Employee Record Tab -->
+
+
 
         <!-- Employment Record Modal -->
         <div id="add_employee_record" class="modal custom-modal fade" role="dialog">
@@ -675,62 +764,54 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form action="{{ url('admin/employee/update-record/'. $user->id) }}" method="POST"
+                        <form action="{{ route('admin.createMemo',  $user->id) }}" method="POST"
                             enctype="multipart/form-data">
                             @csrf
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="form-group">
-                                        <label class="col-form-label">Hired Date</label>
-                                        <input type="text" name="eHired" id="eHired" class="form-control"
-                                            value="{{ $user->dateHired }}" required>
+                                        <label class="col-form-label">Employee Name</label>
+                                        <input type="text" class="form-control"
+                                            value="{{ $user->fName ?? '' }} {{ $user->lName ?? '' }}" readonly>
                                     </div>
                                 </div>
-                                <div class="col-md-12">
+                                <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="col-form-label">Job Title</label>
-                                        <input type="text" name="ePosition" id="ePosition" class="form-control"
-                                            value="{{ $user->position }}" required>
+                                        <label class="col-form-label">Position</label>
+                                        <input type="text" class="form-control" value="{{ $user->position }}" readonly>
                                     </div>
                                 </div>
-                                <div class="col-md-12">
+                                <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="col-form-label">Department</label>
-                                        <input type="text" name="eDepartment" id="eDepartment" class="form-control"
-                                            value="{{ $user->department }}" readonly>
+                                        <input type="text" class="form-control" value="{{ $user->department }}"
+                                            readonly>
                                     </div>
                                 </div>
                             </div>
+
                             <div class="row">
                                 <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label class="col-form-label">Immediate Supervisor</label>
-                                        <input type="text" name="iSupervisor" id="iSupervisor" class="form-control"
-                                            value="  @if(auth()->user()->isHR() || auth()->user()->isSupervisor())
-                                            Upper Management
-                                        @else
-                                            @if($supervisor)
-                                                @if(is_string($supervisor))
-                                                    {{ $supervisor }}
-                                                @else
-                                                    {{ $supervisor->name }}
-                                                @endif
-                                            @else
-                                                N/A
-                                            @endif
-                                        @endif" readonly>
+                                    <label for="">Date</label>
+                                    <div class="form-group form-focus">
+                                        <div class="cal-icon">
+                                            <input type="text" class="datetimepicker form-control floating"
+                                                name="date_issue"
+                                                value="{{ $user->memos->isNotEmpty() ? $user->memos->first()->date_issue : '' }}">
+                                        </div>
+                                        <label class="focus-label">Select Date</label>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="col-form-label">Location</label>
-                                        <input type="text" name="location" id="location" class="form-control" required>
+                                        <label for="">Attach File</label>
+                                        <input type="file" name="attached_file" class="form-control">
                                     </div>
                                 </div>
-                            </div>
-                            <div class="submit-section">
-                                <button class="btn btn-primary submit-btn" type="submit">Save</button>
-                            </div>
+
+                                <div class="submit-section">
+                                    <button class="btn btn-primary submit-btn" type="submit">Save</button>
+                                </div>
                         </form>
                     </div>
                 </div>
