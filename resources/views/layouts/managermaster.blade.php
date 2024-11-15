@@ -325,10 +325,33 @@
                             <a href="{{ url('manager/timesheet') }}"><i class="las la-calendar-check"></i>
                                 <span>Timesheet Approval</span></a>
                         </li>
-                        <!-- <li>
-                            <a href="tickets.html"><i class="la la-ticket"></i>
-                                <span>Tickets</span></a>
-                        </li> -->
+
+                        <li class="menu-title">
+                            <span>Request Section</span>
+                        </li>
+                        <li class="{{ Request::is('manager/overtime') ? 'active':'' }}">
+                            <a href="{{ url('manager/overtime') }}"><i class="la la-clock"></i>
+                                <span>Overtime</span></a>
+                        </li>
+                        <li class="{{ Request::is('manager/attendance/request') ? 'active':'' }}">
+                            <a href="{{ url('manager/attendance/request') }}"><i class="la la-file"></i>
+                                <span>Attendance Certificate</span></a>
+                        </li>
+                        <li class="menu-title">
+                            <span>Shift Management</span>
+                        </li>
+                        <li class="submenu">
+                            <a href="#"><i class="la la-clock"></i>
+                                <span> Shift and Schedules </span>
+                                <span class="menu-arrow"></span></a>
+                            <ul style="display: none">
+                                <li class="{{ Request::is('manager/shift/daily') ? 'active':'' }}">
+                                    <a href="{{ url('manager/shift/daily') }}">
+                                        Daily Scheduling
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
                         <li class="menu-title">
                             <span>Payroll</span>
                         </li>
@@ -336,79 +359,6 @@
                             <a href="{{ url('manager/payslip') }}"><i class="la la-money"></i>
                                 <span>Payslip</span></a>
                         </li>
-                        <li>
-                            <a href="policies.html"><i class="la la-file-pdf-o"></i>
-                                <span>Policies</span></a>
-                        </li>
-
-                        <!-- <li class="menu-title">
-                            <span>Performance</span>
-                        </li>
-                        <li class="submenu">
-                            <a href="#"><i class="la la-graduation-cap"></i>
-                                <span> Performance </span>
-                                <span class="menu-arrow"></span></a>
-                            <ul style="display: none">
-                                <li>
-                                    <a href="performance-indicator.html">
-                                        Performance Indicator
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="performance.html">
-                                        Performance Review
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="performance-appraisal.html">
-                                        Performance Appraisal
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="submenu">
-                            <a href="#"><i class="la la-crosshairs"></i>
-                                <span> Goals </span>
-                                <span class="menu-arrow"></span></a>
-                            <ul style="display: none">
-                                <li>
-                                    <a href="goal-tracking.html">
-                                        Goal List
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="goal-type.html"> Goal Type </a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="submenu">
-                            <a href="#"><i class="la la-edit"></i>
-                                <span> Training </span>
-                                <span class="menu-arrow"></span></a>
-                            <ul style="display: none">
-                                <li>
-                                    <a href="training.html">
-                                        Training List
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="trainers.html"> Trainers</a>
-                                </li>
-                                <li>
-                                    <a href="training-type.html">
-                                        Training Type
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li>
-                            <a href="promotion.html"><i class="la la-bullhorn"></i>
-                                <span>Promotion</span></a>
-                        </li>
-                        <li>
-                            <a href="resignation.html"><i class="la la-external-link-square"></i>
-                                <span>Resignation</span></a> -->
-
 
                     </ul>
                 </div>

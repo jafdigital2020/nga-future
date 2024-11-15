@@ -28,7 +28,7 @@
                     </div>
                 </div>
                 <div class="form-group row">
-                    <label class="col-lg-3 col-form-label">Logo</label>
+                    <label class="col-lg-3 col-form-label">Payslip Logo</label>
                     <div class="col-lg-7">
                         <input type="file" class="form-control" name="logo" id="logo" required>
                         <span class="form-text text-muted">Recommended image size is 150px x 150px</span>
@@ -38,17 +38,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="form-group row">
-                    <label class="col-lg-3 col-form-label">Favicon</label>
-                    <div class="col-lg-7">
-                        <input type="file" class="form-control" name="favicon" id="favicon" required>
-                        <span class="form-text text-muted">Recommended image size is 16px x 16px</span>
-                    </div>
-                    <div class="col-lg-2">
-                        <div class="settings-image img-thumbnail float-right"><img id="previewImage2" class="img-fluid"
-                                width="16" height="16" alt=""></div>
-                    </div>
-                </div>
+
                 <div class="submit-section">
                     <button type="submit" class="btn btn-primary submit-btn">Save</button>
                 </div>

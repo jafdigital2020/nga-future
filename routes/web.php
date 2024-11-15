@@ -24,6 +24,7 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::put('dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'update']);
     Route::put('dashboard/breakin', [App\Http\Controllers\Admin\DashboardController::class, 'breakIn']);
     Route::put('dashboard/breakout', [App\Http\Controllers\Admin\DashboardController::class, 'breakOut']);
+
     // Employee Details & Profile
     Route::get('employee', [App\Http\Controllers\Admin\EmployeeController::class, 'index'])->name('admin.employeeindex');
     Route::get('employee-grid', [App\Http\Controllers\Admin\EmployeeController::class, 'gridView'])->name('admin.employeegrid');
@@ -45,6 +46,9 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::post('employee/leave-credits/{id}', [App\Http\Controllers\Admin\EmployeeController::class, 'leaveCredits'])->name('admin.leaveCredits');
     Route::post('employee/memo/create/{id}', [App\Http\Controllers\Admin\EmployeeController::class, 'createMemo'])->name('admin.createMemo');
     Route::post('employee/memo/update/{id}', [App\Http\Controllers\Admin\EmployeeController::class, 'updateMemo'])->name('admin.updateMemo');
+    Route::get('employee/inactive', [App\Http\Controllers\Admin\EmployeeController::class, 'showInactiveUsers'])->name('admin.showInactiveUsers');
+    Route::put('employee/inactive/activate/{id}', [App\Http\Controllers\Admin\EmployeeController::class, 'activateUser'])->name('admin.activateUser');
+
     // Leave
     Route::get('/leave', [\App\Http\Controllers\Admin\AdminLeaveController::class, 'index'])->name('leave.searchadmin');
     Route::post('/leave/{id}/approve', [\App\Http\Controllers\Admin\AdminLeaveController::class, 'approve'])->name('leave.approveadmin');
@@ -52,6 +56,7 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::post('/leave-request', [\App\Http\Controllers\Admin\AdminLeaveController::class, 'storeLeave'])->name('mstore.leaveadmin');
     Route::post('/leave/{id}', [\App\Http\Controllers\Admin\AdminLeaveController::class, 'update'])->name('leavem.updateadmin');
     Route::delete('/leave/{id}', [\App\Http\Controllers\Admin\AdminLeaveController::class, 'destroy'])->name('leavem.destroyadmin');
+
     // Attendance
     Route::get('/attendance', [App\Http\Controllers\Admin\AttendanceReportController::class, 'index']);
     Route::get('/attendance/search', [App\Http\Controllers\Admin\AttendanceReportController::class, 'index'])->name('attendance.admin');
@@ -59,6 +64,7 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::post('attendance/tableview/update', [App\Http\Controllers\Admin\AttendanceReportController::class, 'updateTable'])->name('admin.table');
     Route::post('/attendance/edit/{id}', [App\Http\Controllers\Admin\AttendanceReportController::class, 'updateTableAttendance'])->name('admin.updateTable');
     Route::delete('/attendance/delete/{id}', [App\Http\Controllers\Admin\AttendanceReportController::class, 'destroyTableAttendance'])->name('admin.destroyTable');
+
     // Profile
     Route::get('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'index']);
     Route::post('profile', [\App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('admin.updateprofile');
@@ -66,18 +72,16 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::post('profile/contact', [App\Http\Controllers\Admin\ProfileController::class, 'contactStore'])->name('admin.econtactr');
     Route::get('profile/changepassword', [\App\Http\Controllers\Admin\ProfileController::class, 'changePasswordHr'])->name('adminchange.pass');
     Route::post('profile/changepassword', [\App\Http\Controllers\Admin\ProfileController::class, 'changePassword']);
+
     // TimeSheet Approval
     Route::get('approve', [App\Http\Controllers\Admin\PayrollController::class, 'approvedTime'])->name('approvedTimeAdmin');
     Route::post('approve/update/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'update'])->name('admin.updateAttendance');
     Route::delete('approve/delete/{id}', [\App\Http\Controllers\Admin\PayrollController::class, 'destroy'])->name('admin.destroy');
     Route::get('payroll/edit/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'payroll'])->name('admin.payroll');
+
     // Payroll 
     Route::post('payroll/edit/payslip/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'payslip'])->name('admin.payslip');
     Route::get('payslip', [App\Http\Controllers\Admin\PayrollController::class, 'payslipView'])->name('admin.payslipView');
-    Route::get('processed', [App\Http\Controllers\Admin\PayrollController::class, 'payslipProcess'])->name('admin.payslipProcess');
-    Route::post('processed/approved/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'processedApproved'])->name('admin.payslipProcessApproved');
-    Route::post('processed/declined/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'processedDeclined'])->name('admin.payslipProcessDeclined');
-    Route::post('processed/revision/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'processedRevision'])->name('admin.payslipProcessRevision');
     Route::get('approved/payslip', [App\Http\Controllers\Admin\PayrollController::class, 'approvedPayslip'])->name('admin.approvedPayslip');
     Route::post('approved/payslip/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'generatePayslip'])->name('admin.generatePayslip');
     Route::get('payslip/view/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'viewPayslip'])->name('admin.viewPayslip');
@@ -90,11 +94,20 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::post('/timesheet/approve/{id}', [App\Http\Controllers\Admin\AttendanceReportController::class, 'updateAttendance'])->name('adminTimesheet.updateAttendance');
     Route::delete('/timesheet/delete/{id}', [App\Http\Controllers\Admin\AttendanceReportController::class, 'destroyAttendance'])->name('admin.deleteAttendance');
     Route::get('/timesheet/view/{id}', [App\Http\Controllers\Admin\AttendanceReportController::class, 'viewTimesheet'])->name('admin.timesheetView');
+
+    // Create(ApproveTimesheet) Payroll
     Route::get('payroll/preview/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'previewPayroll'])->name('payroll.preview');
     Route::post('payroll/preview/process/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'processPreview'])->name('payroll.previewProcess');
     Route::post('payroll/process/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'processPayroll'])->name('payroll.process');
     Route::post('processed/update', [App\Http\Controllers\Admin\PayrollController::class, 'updateSalary'])->name('salary.update');
     Route::post('approve/processed/bulk-action', [App\Http\Controllers\Admin\PayrollController::class, 'processBulkPayroll'])->name('bulk.processBulkPayroll');
+
+    // Processed(Approval of Payroll) Payroll
+    Route::get('processed', [App\Http\Controllers\Admin\PayrollController::class, 'payslipProcess'])->name('admin.payslipProcess');
+    Route::post('processed/approved/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'processedApproved'])->name('admin.payslipProcessApproved');
+    Route::post('processed/declined/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'processedDeclined'])->name('admin.payslipProcessDeclined');
+    Route::post('processed/revision/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'processedRevision'])->name('admin.payslipProcessRevision');
+
     // Create Employee
     Route::post('employee/create/validate-step-1', [App\Http\Controllers\Admin\EmployeeController::class, 'validateStep1'])->name('adminvalidate.step1');
     Route::post('employee/create/validate-step-2', [App\Http\Controllers\Admin\EmployeeController::class, 'validateStep2'])->name('adminvalidate.step2');
@@ -102,6 +115,7 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::post('employee/create/validate-step-4', [App\Http\Controllers\Admin\EmployeeController::class, 'validateStep4'])->name('adminvalidate.step4');
     Route::post('employee/create/validate-step-5', [App\Http\Controllers\Admin\EmployeeController::class, 'validateStep5'])->name('adminvalidate.step5');
     Route::post('/employee/bulk-create', [App\Http\Controllers\Admin\EmployeeController::class, 'bulkCreate'])->name('users.bulkCreate');
+
     // Settings 
     Route::get('settings', [App\Http\Controllers\Admin\SettingsController::class, 'company'])->name('settings.company');
     Route::post('settings/company', [App\Http\Controllers\Admin\SettingsController::class, 'companyStore'])->name('company.store');
@@ -123,34 +137,44 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::get('settings/geofencing/assign/get-users', [App\Http\Controllers\Admin\SettingsController::class, 'getEmployeesByDepartmentGeofence'])->name('settings.getEmployeesByDepartmentGeofence');
     Route::post('settings/geofencing/assign/store', [App\Http\Controllers\Admin\SettingsController::class, 'storeUserGeofence'])->name('settings.storeUserGeofence');
     Route::delete('settings/geofencing/assign/delete/{id}', [App\Http\Controllers\Admin\SettingsController::class, 'deleteUserGeofence'])->name('settings.deleteUserGeofence');
+
     // Training
     Route::get('training', [App\Http\Controllers\Admin\TrainingController::class, 'training'])->name('admin.training');
     Route::get('trainers', [App\Http\Controllers\Admin\TrainingController::class, 'trainers'])->name('admin.trainers');
     Route::get('training-type', [App\Http\Controllers\Admin\TrainingController::class, 'trainingType'])->name('admin.trainingType');
+
     // Processed Payroll
     Route::get('/processed/edit/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'processedEdit'])->name('admin.processedEdit');
     Route::post('/processed/update/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'processedUpdate'])->name('admin.processedUpdate');
+
     // Sales 
     Route::get('sales/estimate', [App\Http\Controllers\Admin\SalesController::class, 'estimate'])->name('admin.estimate');
     Route::get('sales/invoice', [App\Http\Controllers\Admin\SalesController::class, 'invoice'])->name('admin.invoice');
     Route::get('sales/payment', [App\Http\Controllers\Admin\SalesController::class, 'payment'])->name('admin.payment');
     Route::get('sales/expense', [App\Http\Controllers\Admin\SalesController::class, 'expense'])->name('admin.expense');
     Route::get('sales/tax', [App\Http\Controllers\Admin\SalesController::class, 'tax'])->name('admin.tax');
+
     // Accounting
     Route::get('accounting/categories', [App\Http\Controllers\Admin\Accountingcontroller::class, 'categories'])->name('admin.categories');
+
     // Announcement
     Route::post('dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'announcement'])->name('admin.announcement');
+
     // Policy
     Route::get('policy', [App\Http\Controllers\Admin\PolicyController::class, 'policy'])->name('admin.policy');
     Route::post('policy/upload', [App\Http\Controllers\Admin\PolicyController::class, 'policyStore'])->name('admin.policy.store');
+
     // Checkbox Function Processed
     Route::post('processed/bulk-action', [App\Http\Controllers\Admin\PayrollController::class, 'processedBulkAction']);
+
     // Checkbox Function Payslip Generate
     Route::post('approved/generate-payslip/bulk-action', [App\Http\Controllers\Admin\PayrollController::class, 'generatePayslipBulkAction']);
+
     // Overtime Request
     Route::get('overtime', [App\Http\Controllers\Admin\OvertimeController::class, 'overTime'])->name('admin.overtime');
     Route::post('overtime/approve/{id}', [App\Http\Controllers\Admin\OvertimeController::class, 'approveOT'])->name('ot.approveadmin');
     Route::post('overtime/reject/{id}', [App\Http\Controllers\Admin\OvertimeController::class, 'rejectOT'])->name('ot.rejectadmin');
+
     // Shift and Schedules
     Route::get('shift/daily/', [App\Http\Controllers\Admin\ShiftController::class, 'shiftDaily'])->name('admin.dailyShift');
     Route::get('shift/list', [App\Http\Controllers\Admin\ShiftController::class, 'shiftList'])->name('admin.shiftList');
@@ -160,6 +184,7 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::post('shift/assign', [App\Http\Controllers\Admin\ShiftController::class, 'assignSchedule'])->name('admin.assignschedule');
     Route::get('shift/list/employee-search', [App\Http\Controllers\Admin\ShiftController::class, 'getEmployeesByDepartment'])->name('getEmployeesByDepartment');
     Route::post('shift/list/assign', [App\Http\Controllers\Admin\ShiftController::class, 'assignScheduleList'])->name('admin.assignShiftList');
+
     // Attendance Request
     Route::get('request/attendance', [App\Http\Controllers\Admin\RequestController::class, 'attendance'])->name('admin.requestAttendance');
     Route::post('request/attendance/store', [App\Http\Controllers\Admin\RequestController::class, 'storeCertificateAttendance'])->name('admin.storeCertificateAttendance');
@@ -167,26 +192,31 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::post('request/attendance/decline/{id}', [App\Http\Controllers\Admin\RequestController::class, 'declineAttendance'])->name('admin.declineAttendance');
     Route::post('request/attendance/update/{id}', [App\Http\Controllers\Admin\RequestController::class, 'updateCertificateAttendance'])->name('admin.updateCertificateAttendance');
     Route::delete('request/attendance/delete/{id}', [App\Http\Controllers\Admin\RequestController::class, 'deleteCertificateAttendance'])->name('admin.deleteCertificateAttendance');
+   
     // Deductions
     Route::get('deduction', [App\Http\Controllers\Admin\DeductionController::class, 'deductions'])->name('admin.deductions');
     Route::post('deduction/create', [App\Http\Controllers\Admin\DeductionController::class, 'deductionCreate'])->name('admin.createDeduction');
     Route::post('deduction/edit/{id}', [App\Http\Controllers\Admin\DeductionController::class, 'deductionEdit'])->name('admin.editDeduction');
     Route::delete('deduction/delete/{id}', [App\Http\Controllers\Admin\DeductionController::class, 'deductionDestroy'])->name('admin.destroyDeduction');
+    
     // Deduction For User
     Route::get('deduction/user', [App\Http\Controllers\Admin\DeductionController::class, 'userDeductionsIndex'])->name('admin.userDeductionsIndex');
     Route::get('deduction/user/employee-search', [App\Http\Controllers\Admin\DeductionController::class, 'getEmployeesByDepartmentDeduction'])->name('getEmployeesByDepartmentDeduction');
     Route::post('deduction/user/assigned', [App\Http\Controllers\Admin\DeductionController::class, 'storeUserDeduction'])->name('admin.storeUserDeduction');
     Route::delete('deduction/user/delete/{id}', [App\Http\Controllers\Admin\DeductionController::class, 'deleteUserDeduction'])->name('admin.deleteUserDeduction');
+    
     // Earnings
     Route::get('earning', [App\Http\Controllers\Admin\EarningController::class, 'earnings'])->name('admin.earnings');
     Route::post('earning/create', [App\Http\Controllers\Admin\EarningController::class, 'earningCreate'])->name('admin.createEarning');
     Route::post('earning/edit/{id}', [App\Http\Controllers\Admin\EarningController::class, 'earningEdit'])->name('admin.editEarning');
     Route::delete('earning/delete/{id}', [App\Http\Controllers\Admin\EarningController::class, 'earningDestroy'])->name('admin.destroyEarning');
+    
     // Earning For User
     Route::get('earning/user', [App\Http\Controllers\Admin\EarningController::class, 'userEarningsIndex'])->name('admin.userEarningsIndex');
     Route::get('earning/user/employee-search', [App\Http\Controllers\Admin\EarningController::class, 'getEmployeesByDepartmentEarning'])->name('getEmployeesByDepartmentEarning');
     Route::post('earning/user/assigned', [App\Http\Controllers\Admin\EarningController::class, 'storeUserEarning'])->name('admin.storeUserEarning');
     Route::delete('earning/user/delete/{id}', [App\Http\Controllers\Admin\EarningController::class, 'deleteUserEarning'])->name('admin.deleteUserEarning');
+    
     // Loan
     Route::get('loan', [App\Http\Controllers\Admin\LoanController::class, 'loan'])->name('admin.loan');
     Route::post('loan/create', [App\Http\Controllers\Admin\LoanController::class, 'loanStore'])->name('admin.storeloan');
@@ -195,11 +225,13 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::post('loan/active/{id}', [App\Http\Controllers\Admin\LoanController::class, 'loanActive'])->name('admin.loanActive');
     Route::post('loan/edit/{id}', [App\Http\Controllers\Admin\LoanController::class, 'loanEdit'])->name('admin.loanEdit');
     Route::delete('loan/delete/{id}', [App\Http\Controllers\Admin\LoanController::class, 'loanDestroy'])->name('admin.loanDestroy');
+    
     // Report
     Route::get('report/payroll-summary', [App\Http\Controllers\Admin\ReportController::class, 'payrollSummary'])->name('admin.payrollSummary');
     Route::get('report/employee-list', [App\Http\Controllers\Admin\ReportController::class, 'employeeList'])->name('admin.employeeList');
     Route::get('report/get-employees', [App\Http\Controllers\Admin\ReportController::class, 'getEmployeesByDepartment'])->name('admin.getEmployeesByDepartment');
     Route::get('report/get-employee-data', [App\Http\Controllers\Admin\ReportController::class, 'getEmployeeData'])->name('admin.getEmployeeData');
+    
     // Asset
     Route::get('asset', [App\Http\Controllers\Admin\AssetController::class, 'asset'])->name('admin.asset');
     Route::post('asset/creat', [App\Http\Controllers\Admin\AssetController::class, 'assetStore'])->name('admin.assetStore');
@@ -209,6 +241,7 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::post('asset/assign/user', [App\Http\Controllers\Admin\AssetController::class, 'assignAsset'])->name('admin.assignAsset');
     Route::post('asset/assign/return/{id}', [App\Http\Controllers\Admin\AssetController::class, 'returnAsset'])->name('admin.returnAsset');
     Route::get('asset/return', [App\Http\Controllers\Admin\AssetController::class, 'viewReturnedAssets'])->name('admin.viewReturnedAssets');
+    
     // Notifications
     Route::get('/notifications/mark-as-read/{id}', function ($id) {
         $notification = auth()->user()->notifications()->find($id);
@@ -286,12 +319,19 @@ Route::prefix('emp')->middleware(['auth','isEmployee', 'sessionTimeout'])->group
 
 Route::prefix('hr')->middleware(['auth','isHr', 'sessionTimeout'])->group(function () {
     Route::get('dashboard', [App\Http\Controllers\Hr\DashboardController::class, 'index'])->name('main.hr');
-    // Route::get('attendance', [App\Http\Controllers\Hr\HRAttendanceController::class, 'index'])->name('att.test');
     Route::post('dashboard', [App\Http\Controllers\Hr\DashboardController::class, 'store']);
     Route::put('dashboard', [App\Http\Controllers\Hr\DashboardController::class, 'update']);
     Route::put('dashboard/breakin', [App\Http\Controllers\Hr\DashboardController::class, 'breakIn']);
     Route::put('dashboard/breakout', [App\Http\Controllers\Hr\DashboardController::class, 'breakOut']);
     Route::get('/dashboard/get-data', [App\Http\Controllers\Hr\DashboardController::class, 'getUserAttendance'])->name('attendance.getr');
+    Route::post('dashboard/attendance/send', [\App\Http\Controllers\Hr\DashboardController::class, 'saveAttendance'])->name('attendance.saver');
+    Route::post('dashboard/attendance/check', [\App\Http\Controllers\Hr\DashboardController::class, 'check'])->name('attendance.checkr');
+    Route::get('dashboard/attendance/status', [\App\Http\Controllers\Hr\DashboardController::class, 'getStatus'])->name('attendance.statusr');
+    Route::post('dashboard/startbreak', [App\Http\Controllers\Hr\DashboardController::class, 'startBreak'])->name('hr.startBreak');
+    Route::post('dashboard/endbreak', [App\Http\Controllers\Hr\DashboardController::class, 'endBreak'])->name('hr.endBreak');
+    Route::get('/dashboard/holidays', [App\Http\Controllers\Hr\DashboardController::class, 'getHolidays'])->name('holidays.getr');
+
+    //** EMPLOYEE  **/
     Route::get('employee-grid', [App\Http\Controllers\Hr\EmployeeController::class, 'gridView'])->name('hr.employeegrid');
     Route::get('employee', [App\Http\Controllers\Hr\EmployeeController::class, 'index'])->name('hr.employeeindex');
     Route::post('employee', [\App\Http\Controllers\Hr\EmployeeController::class, 'store']);
@@ -300,59 +340,19 @@ Route::prefix('hr')->middleware(['auth','isHr', 'sessionTimeout'])->group(functi
     Route::get('employee/edit/{user_id}', [\App\Http\Controllers\Hr\EmployeeController::class, 'edit'])->name('employee.edit');
     Route::put('employee/update/{user_id}', [\App\Http\Controllers\Hr\EmployeeController::class, 'update'])->name('employee.update');
     Route::put('employee/update/mandates/{user_id}', [\App\Http\Controllers\Hr\EmployeeController::class, 'government'])->name('employee.mandates');
-    Route::get('leave', [App\Http\Controllers\Hr\LeaveAdminController::class, 'index']);
     Route::post('employee/contact/{user_id}', [\App\Http\Controllers\Hr\EmployeeController::class, 'contactStore'])->name('contact.store');
     Route::post('employee/bank/{user_id}', [\App\Http\Controllers\Hr\EmployeeController::class, 'bankInfo'])->name('bank.store');
     Route::post('employee/personal-info/{user_id}', [App\Http\Controllers\Hr\EmployeeController::class, 'personalInfo'])->name('personal.store');
     Route::post('employee/changepassword/{user_id}', [\App\Http\Controllers\Hr\EmployeeController::class, 'changePassword'])->name('hr.changepassword');
     Route::post('employee/shift/{user_id}', [App\Http\Controllers\Hr\EmployeeController::class, 'shiftSchedule'])->name('hr.shift');
-    Route::get('/leave', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'index'])->name('leave.searchr');
-    Route::post('/leave/{id}/approve', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'approve'])->name('leave.approver');
-    Route::post('/leave/{id}/decline', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'decline'])->name('leave.decliner');
-    Route::post('/leave-request', [App\Http\Controllers\Hr\LeaveAdminController::class, 'storeLeave'])->name('mstore.leaver');
-    Route::post('/leave/{id}', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'update'])->name('leavem.updater');
-    Route::delete('/leave/{id}', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'destroy'])->name('leavem.destroyr');
-    Route::post('dashboard/attendance/send', [\App\Http\Controllers\Hr\DashboardController::class, 'saveAttendance'])->name('attendance.saver');
-    Route::post('dashboard/attendance/check', [\App\Http\Controllers\Hr\DashboardController::class, 'check'])->name('attendance.checkr');
-    Route::get('dashboard/attendance/status', [\App\Http\Controllers\Hr\DashboardController::class, 'getStatus'])->name('attendance.statusr');
-    Route::get('/attendance', [App\Http\Controllers\Hr\HRAttendanceController::class, 'index']);
-    Route::get('/attendance/search', [App\Http\Controllers\Hr\HRAttendanceController::class, 'index'])->name('attendance.index');
-    Route::get('/attendance/tableview', [App\Http\Controllers\Hr\HRAttendanceController::class, 'empreport'])->name('report.empindex');
-    Route::post('attendance/tableview/update',[\App\Http\Controllers\Hr\HRAttendanceController::class, 'updateTable'])->name('update.table');
-    Route::get('/profile', [App\Http\Controllers\Hr\ProfileController::class, 'index']);
-    Route::post('profile', [\App\Http\Controllers\Hr\ProfileController::class, 'update'])->name('hr.update');
-    Route::post('/profile/personal-info', [App\Http\Controllers\Hr\ProfileController::class, 'personalInfo'])->name('personal.info');
-    Route::post('profile/contact', [App\Http\Controllers\Hr\ProfileController::class, 'contactStore'])->name('profile.econtactr');
-    Route::get('profile/changepassword', [\App\Http\Controllers\Hr\ProfileController::class, 'changePasswordHr'])->name('hrchange.pass');
-    Route::post('profile/changepassword', [\App\Http\Controllers\Hr\ProfileController::class, 'changePassword']);
+    Route::post('employee/memo/create/{id}', [App\Http\Controllers\Hr\EmployeeController::class, 'createMemo'])->name('hr.createMemo');
+    Route::post('employee/memo/update/{id}', [App\Http\Controllers\Hr\EmployeeController::class, 'updateMemo'])->name('hr.updateMemo');
+    Route::get('employee/inactive', [App\Http\Controllers\Admin\EmployeeController::class, 'showInactiveUsers'])->name('hr.showInactiveUsers');
+    Route::put('employee/inactive/activate/{id}', [App\Http\Controllers\Admin\EmployeeController::class, 'activateUser'])->name('hr.activateUser');
     Route::post('employee/personal-info/{user_id}', [App\Http\Controllers\Admin\EmployeeController::class, 'personalInfo'])->name('hr.personal');
-    Route::get('payroll', [App\Http\Controllers\Hr\PayrollController::class, 'index']);
-    Route::get('approve', [App\Http\Controllers\Hr\PayrollController::class, 'approvedTime'])->name('approvedTime');
-    Route::post('approve/update/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'update'])->name('hr.updateAttendance');
-    Route::delete('approve/delete/{id}', [\App\Http\Controllers\Hr\PayrollController::class, 'destroy'])->name('hr.destroy');
-    Route::get('payroll/edit/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'payroll'])->name('hr.payroll');
-    Route::post('payroll/edit/payslip/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'payslip'])->name('hr.payslip');
-    Route::get('payslip', [App\Http\Controllers\Hr\PayrollController::class, 'payslipView'])->name('hr.payslipView');
-    Route::get('processed', [App\Http\Controllers\Hr\PayrollController::class, 'payslipProcess'])->name('hr.payslipProcess');
-    Route::post('processed/approved/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'processedApproved'])->name('hr.payslipProcessApproved');
-    Route::post('processed/declined/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'processedDeclined'])->name('hr.payslipProcessDeclined');
-    Route::post('processed/revision/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'processedRevision'])->name('hr.payslipProcessRevision');
-    Route::get('approved/payslip', [App\Http\Controllers\Hr\PayrollController::class, 'approvedPayslip'])->name('hr.approvedPayslip');
-    Route::post('approved/payslip/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'generatePayslip'])->name('hr.generatePayslip');
-    Route::get('payslip/view/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'viewPayslip'])->name('hr.viewPayslip');
-    Route::get('payslip/edit/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'editPayslip'])->name('hr.editPayslip');
-    Route::post('payslip/update/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'updatePayslip'])->name('hr.updatePayslip');
-    Route::get('download', [App\Http\Controllers\Hr\PayrollController::class, 'download'])->name('hr.downloadPayslip');
-    Route::get('/timesheet', [App\Http\Controllers\Hr\HRAttendanceController::class, 'timesheet'])->name('attendance.searchr');
-    Route::post('/timesheet/{id}/approve', [\App\Http\Controllers\Hr\HRAttendanceController::class, 'approve'])->name('att.approvehr');
-    Route::post('/timesheet/{id}/decline', [\App\Http\Controllers\Hr\HRAttendanceController::class, 'decline'])->name('att.declinehr');
-    Route::post('/timesheet/approve/{id}', [App\Http\Controllers\Hr\HRAttendanceController::class, 'updateAttendance'])->name('hrTimesheet.updateAttendance');
-    Route::delete('/timesheet/delete/{id}', [App\Http\Controllers\Hr\HRAttendanceController::class, 'destroyAttendance'])->name('hr.deleteAttendance');
-    Route::get('/timesheet/view/{id}', [App\Http\Controllers\Hr\HRAttendanceController::class, 'viewTimesheet'])->name('hr.timesheetView');
-    Route::get('leave/hr', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'indexLeave']);
-    Route::post('leave/hr/request', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'storeLeaveHr'])->name('store.leavehr');
-    Route::post('/leave/update/{id}', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'updateHr'])->name('leave.updatehr');
-    Route::delete('/leave/delete/{id}', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'destroyHr'])->name('leave.destroyhr');
+    Route::post('employee/leave-credits/{id}', [App\Http\Controllers\Admin\EmployeeController::class, 'leaveCredits'])->name('hr.leaveCredits');
+
+    // ** CREATE EMPLOYEE ** //
     Route::get('employee/create', [App\Http\Controllers\Hr\EmployeeController::class, 'createView'])->name('hr.employeeCreateView');
     Route::post('employee/create', [App\Http\Controllers\Hr\EmployeeController::class, 'create'])->name('hr.employeecreate');
     Route::post('employee/create/validate-step-1', [App\Http\Controllers\Hr\EmployeeController::class, 'validateStep1'])->name('hrvalidate.step1');
@@ -360,14 +360,119 @@ Route::prefix('hr')->middleware(['auth','isHr', 'sessionTimeout'])->group(functi
     Route::post('employee/create/validate-step-3', [App\Http\Controllers\Hr\EmployeeController::class, 'validateStep3'])->name('hrvalidate.step3');
     Route::post('employee/create/validate-step-4', [App\Http\Controllers\Hr\EmployeeController::class, 'validateStep4'])->name('hrvalidate.step4');
     Route::post('employee/create/validate-step-5', [App\Http\Controllers\Hr\EmployeeController::class, 'validateStep5'])->name('hrvalidate.step5');
+    Route::post('/employee/bulk-create', [App\Http\Controllers\Hr\EmployeeController::class, 'bulkCreate'])->name('hr.bulkCreate');
+
+    // ** LEAVE ** //
+    Route::get('leave', [App\Http\Controllers\Hr\LeaveAdminController::class, 'index']);
+    Route::get('/leave', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'index'])->name('leave.searchr');
+    Route::post('/leave/{id}/approve', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'approve'])->name('leave.approver');
+    Route::post('/leave/{id}/decline', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'decline'])->name('leave.decliner');
+    Route::post('/leave/{id}', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'update'])->name('leavem.updater');
+    Route::delete('/leave/{id}', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'destroy'])->name('leavem.destroyr');
+    Route::get('/attendance', [App\Http\Controllers\Hr\HRAttendanceController::class, 'index']);
+    Route::get('/attendance/search', [App\Http\Controllers\Hr\HRAttendanceController::class, 'index'])->name('attendance.index');
+    Route::get('/attendance/tableview', [App\Http\Controllers\Hr\HRAttendanceController::class, 'empreport'])->name('report.empindex');
+    Route::post('attendance/tableview/update',[\App\Http\Controllers\Hr\HRAttendanceController::class, 'updateTable'])->name('update.table');
+    Route::get('leave/hr', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'indexLeave']);
+    Route::post('leave/hr/request', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'storeLeaveHr'])->name('store.leavehr');
+    Route::post('/leave/update/{id}', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'updateHr'])->name('leave.updatehr');
+    Route::delete('/leave/delete/{id}', [\App\Http\Controllers\Hr\LeaveAdminController::class, 'destroyHr'])->name('leave.destroyhr');
+
+    // ** PROFILE ** //
+    Route::get('/profile', [App\Http\Controllers\Hr\ProfileController::class, 'index']);
+    Route::post('profile', [\App\Http\Controllers\Hr\ProfileController::class, 'update'])->name('hr.update');
+    Route::post('/profile/personal-info', [App\Http\Controllers\Hr\ProfileController::class, 'personalInfo'])->name('personal.info');
+    Route::post('profile/contact', [App\Http\Controllers\Hr\ProfileController::class, 'contactStore'])->name('profile.econtactr');
+    Route::get('profile/changepassword', [\App\Http\Controllers\Hr\ProfileController::class, 'changePasswordHr'])->name('hrchange.pass');
+    Route::post('profile/changepassword', [\App\Http\Controllers\Hr\ProfileController::class, 'changePassword']);
+
+    // ** DEDUCTONS ** //
+    Route::get('deduction', [App\Http\Controllers\Hr\DeductionController::class, 'deductions'])->name('hr.deductions');
+    Route::post('deduction/create', [App\Http\Controllers\Hr\DeductionController::class, 'deductionCreate'])->name('hr.createDeduction');
+    Route::post('deduction/edit/{id}', [App\Http\Controllers\Hr\DeductionController::class, 'deductionEdit'])->name('hr.editDeduction');
+    Route::delete('deduction/delete/{id}', [App\Http\Controllers\Hr\DeductionController::class, 'deductionDestroy'])->name('hr.destroyDeduction');
+    
+    // ** DEDUCTIONS FOR USER ** //
+    Route::get('deduction/user', [App\Http\Controllers\Hr\DeductionController::class, 'userDeductionsIndex'])->name('hr.userDeductionsIndex');
+    Route::get('deduction/user/employee-search', [App\Http\Controllers\Hr\DeductionController::class, 'getEmployeesByDepartmentDeduction'])->name('HRgetEmployeesByDepartmentDeduction');
+    Route::post('deduction/user/assigned', [App\Http\Controllers\Hr\DeductionController::class, 'storeUserDeduction'])->name('hr.storeUserDeduction');
+    Route::delete('deduction/user/delete/{id}', [App\Http\Controllers\Hr\DeductionController::class, 'deleteUserDeduction'])->name('hr.deleteUserDeduction');
+    
+    // ** EARNINGS ** //
+    Route::get('earning', [App\Http\Controllers\Hr\EarningController::class, 'earnings'])->name('hr.earnings');
+    Route::post('earning/create', [App\Http\Controllers\Hr\EarningController::class, 'earningCreate'])->name('hr.createEarning');
+    Route::post('earning/edit/{id}', [App\Http\Controllers\Hr\EarningController::class, 'earningEdit'])->name('hr.editEarning');
+    Route::delete('earning/delete/{id}', [App\Http\Controllers\Hr\EarningController::class, 'earningDestroy'])->name('hr.destroyEarning');
+    
+    // ** EARNING FOR USER **//
+    Route::get('earning/user', [App\Http\Controllers\Hr\EarningController::class, 'userEarningsIndex'])->name('hr.userEarningsIndex');
+    Route::get('earning/user/employee-search', [App\Http\Controllers\Hr\EarningController::class, 'getEmployeesByDepartmentEarning'])->name('HRgetEmployeesByDepartmentEarning');
+    Route::post('earning/user/assigned', [App\Http\Controllers\Hr\EarningController::class, 'storeUserEarning'])->name('hr.storeUserEarning');
+    Route::delete('earning/user/delete/{id}', [App\Http\Controllers\Hr\EarningController::class, 'deleteUserEarning'])->name('hr.deleteUserEarning');
+    
+    // ** LOAN ** //
+    Route::get('loan', [App\Http\Controllers\Hr\LoanController::class, 'loan'])->name('hr.loan');
+    Route::post('loan/create', [App\Http\Controllers\Hr\LoanController::class, 'loanStore'])->name('hr.storeloan');
+    Route::post('loan/complete/{id}', [App\Http\Controllers\Hr\LoanController::class, 'loanComplete'])->name('hr.loanComplete');
+    Route::post('loan/hold/{id}', [App\Http\Controllers\Hr\LoanController::class, 'loanHold'])->name('hr.loanHold');
+    Route::post('loan/active/{id}', [App\Http\Controllers\Hr\LoanController::class, 'loanActive'])->name('hr.loanActive');
+    Route::post('loan/edit/{id}', [App\Http\Controllers\Hr\LoanController::class, 'loanEdit'])->name('hr.loanEdit');
+    Route::delete('loan/delete/{id}', [App\Http\Controllers\Hr\LoanController::class, 'loanDestroy'])->name('hr.loanDestroy');
+
+    // ** PAYROLL ** //
+    Route::get('payroll', [App\Http\Controllers\Hr\PayrollController::class, 'index']);
+    Route::get('approve', [App\Http\Controllers\Hr\PayrollController::class, 'approvedTime'])->name('approvedTime');
+    Route::post('approve/update/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'update'])->name('hr.updateAttendance');
+    Route::delete('approve/delete/{id}', [\App\Http\Controllers\Hr\PayrollController::class, 'destroy'])->name('hr.destroy');
+    Route::get('payroll/edit/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'payroll'])->name('hr.payroll');
+    Route::post('payroll/edit/payslip/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'payslip'])->name('hr.payslip');
+    Route::get('payslip', [App\Http\Controllers\Hr\PayrollController::class, 'payslipView'])->name('hr.payslipView');
+    Route::post('approved/payslip/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'generatePayslip'])->name('hr.generatePayslip');
+    Route::get('payslip/view/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'viewPayslip'])->name('hr.viewPayslip');
+    Route::get('payslip/edit/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'editPayslip'])->name('hr.editPayslip');
+    Route::post('payslip/update/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'updatePayslip'])->name('hr.updatePayslip');
+    Route::get('download', [App\Http\Controllers\Hr\PayrollController::class, 'download'])->name('hr.downloadPayslip');
+
+    // ** PAYROLL CREATE (APPROVETIMESHEET) HR ** //
+    Route::get('payroll/preview/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'previewPayroll'])->name('hrpayroll.preview');
+    Route::post('payroll/preview/process/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'processPreview'])->name('hrpayroll.previewProcess');
+    Route::post('payroll/process/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'processPayroll'])->name('hrpayroll.process');
+    Route::post('processed/update', [App\Http\Controllers\Hr\PayrollController::class, 'updateSalary'])->name('hrsalary.update');
+    Route::post('approve/processed/bulk-action', [App\Http\Controllers\Hr\PayrollController::class, 'processBulkPayroll'])->name('hrbulk.processBulkPayroll');
+
+    // **PAYROLL PROCESSED(APPROVE PAYROLL) PAYROLL ** //
+    Route::get('processed', [App\Http\Controllers\Hr\PayrollController::class, 'payslipProcess'])->name('hr.payslipProcess');
+    Route::post('processed/approved/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'processedApproved'])->name('hr.payslipProcessApproved');
+    Route::post('processed/declined/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'processedDeclined'])->name('hr.payslipProcessDeclined');
+    Route::post('processed/revision/{id}', [App\Http\Controllers\Hr\PayrollController::class, 'processedRevision'])->name('hr.payslipProcessRevision');
+    Route::get('approved/payslip', [App\Http\Controllers\Hr\PayrollController::class, 'approvedPayslip'])->name('hr.approvedPayslip');
+
+    // ** TIMESHEET ** //
+    Route::get('/timesheet', [App\Http\Controllers\Hr\HRAttendanceController::class, 'timesheet'])->name('attendance.searchr');
+    Route::post('/timesheet/{id}/approve', [\App\Http\Controllers\Hr\HRAttendanceController::class, 'approve'])->name('att.approvehr');
+    Route::post('/timesheet/{id}/decline', [\App\Http\Controllers\Hr\HRAttendanceController::class, 'decline'])->name('att.declinehr');
+    Route::post('/timesheet/approve/{id}', [App\Http\Controllers\Hr\HRAttendanceController::class, 'updateAttendance'])->name('hrTimesheet.updateAttendance');
+    Route::delete('/timesheet/delete/{id}', [App\Http\Controllers\Hr\HRAttendanceController::class, 'destroyAttendance'])->name('hr.deleteAttendance');
+    Route::get('/timesheet/view/{id}', [App\Http\Controllers\Hr\HRAttendanceController::class, 'viewTimesheet'])->name('hr.timesheetView');
     Route::post('/attendance/edit/{id}', [App\Http\Controllers\Hr\HRAttendanceController::class, 'updateTableAttendance'])->name('hr.updateTable');
     Route::delete('/attendance/delete/{id}', [App\Http\Controllers\Hr\HRAttendanceController::class, 'destroyTableAttendance'])->name('hr.destroyTable');
-    // Fetched Holiday to Dashboard
-    Route::get('/dashboard/holidays', [App\Http\Controllers\Hr\DashboardController::class, 'getHolidays'])->name('holidays.getr');
+
+    // **Shift and Schedules** //
+    Route::get('shift/daily/', [App\Http\Controllers\Hr\ShiftController::class, 'shiftDaily'])->name('hr.dailyShift');
+    Route::get('shift/list', [App\Http\Controllers\Hr\ShiftController::class, 'shiftList'])->name('hr.shiftList');
+    Route::post('shift/list/add', [App\Http\Controllers\Hr\ShiftController::class, 'storeShift'])->name('hr.shiftadd');
+    Route::post('shift/daily/add', [App\Http\Controllers\Hr\ShiftController::class, 'dailyScheduling'])->name('hr.dailyschedule');
+    Route::post('shift/daily/edit/{id}', [App\Http\Controllers\Hr\ShiftController::class, 'dailySchedulingEdit'])->name('hr.dailyscheduleEdit');
+    Route::post('shift/assign', [App\Http\Controllers\Hr\ShiftController::class, 'assignSchedule'])->name('hr.assignschedule');
+    Route::get('shift/list/employee-search', [App\Http\Controllers\Hr\ShiftController::class, 'getEmployeesByDepartment'])->name('HRgetEmployeesByDepartment');
+    Route::post('shift/list/assign', [App\Http\Controllers\Hr\ShiftController::class, 'assignScheduleList'])->name('hr.assignShiftList');
+
     // Checkbox Function Processed
     Route::post('processed/bulk-action', [App\Http\Controllers\Hr\PayrollController::class, 'processedBulkAction']);
+
     // Checkbox Function Payslip Generate
     Route::post('approved/generate-payslip/bulk-action', [App\Http\Controllers\Hr\PayrollController::class, 'generatePayslipBulkAction']);
+
     // Overtime
     Route::get('overtime', [App\Http\Controllers\Hr\OvertimeController::class, 'overtimeIndex'])->name('hr.otindex');
     Route::post('overtime/request', [App\Http\Controllers\Hr\OvertimeController::class, 'overtimeRequest'])->name('overtime.request.hr');
@@ -395,6 +500,9 @@ Route::prefix('manager')->middleware(['auth', 'isManager', 'sessionTimeout'])->g
     Route::put('dashboard', [App\Http\Controllers\Manager\DashboardController::class, 'update']);
     Route::put('dashboard/breakin', [App\Http\Controllers\Manager\DashboardController::class, 'breakIn']);
     Route::put('dashboard/breakout', [App\Http\Controllers\Manager\DashboardController::class, 'breakOut']);
+    Route::post('dashboard/startbreak', [App\Http\Controllers\Manager\DashboardController::class, 'startBreak'])->name('manager.startBreak');
+    Route::post('dashboard/endbreak', [App\Http\Controllers\Manager\DashboardController::class, 'endBreak'])->name('manager.endBreak');
+    // Department
     Route::get('/department-employee', [App\Http\Controllers\Manager\DepartmentController::class, 'index']);
     Route::get('/department-record/{user_id}', [\App\Http\Controllers\Manager\DepartmentController::class, 'edit']);
     Route::post('/department-record/update-record/{user_id}', [\App\Http\Controllers\Manager\DepartmentController::class , 'employmentStore'])->name('employment.store');
@@ -434,6 +542,28 @@ Route::prefix('manager')->middleware(['auth', 'isManager', 'sessionTimeout'])->g
     Route::post('employee/shift/{user_id}', [App\Http\Controllers\Manager\DepartmentController::class, 'shiftSchedule'])->name('manager.shift');
     // Fetched Holiday to Dashboard
      Route::get('/dashboard/holidays', [App\Http\Controllers\Manager\DashboardController::class, 'getHolidays'])->name('holidays.getm');
+    //  Overtime Request
+    Route::get('overtime', [App\Http\Controllers\Manager\OvertimeController::class, 'overtimeIndex'])->name('manager.overtime');
+    Route::post('overtime/request', [App\Http\Controllers\Manager\OvertimeController::class, 'overtimeRequest'])->name('manager.overtime.request');
+    Route::post('overtime/edit/{id}', [App\Http\Controllers\Manager\OvertimeController::class, 'updateOT'])->name('manager.overtime.edit');
+    Route::delete('overtime/delete/{id}', [App\Http\Controllers\Manager\OvertimeController::class, 'deleteOT'])->name('manager.overtime.delete');
+    // Attendance Request
+    Route::get('attendance/request', [App\Http\Controllers\Manager\RequestController::class, 'reqattendance'])->name('manager.reqattendance');
+    Route::post('request/attendance/store', [App\Http\Controllers\Manager\RequestController::class, 'storeCertificateAttendance'])->name('manager.storeCertificateAttendance');
+    Route::post('request/attendance/approve/{id}', [App\Http\Controllers\Manager\RequestController::class, 'approveAttendance'])->name('manager.approveAttendance');
+    Route::post('request/attendance/decline/{id}', [App\Http\Controllers\Manager\RequestController::class, 'declineAttendance'])->name('manager.declineAttendance');
+    Route::post('request/attendance/update/{id}', [App\Http\Controllers\Manager\RequestController::class, 'updateCertificateAttendance'])->name('manager.updateCertificateAttendance');
+    Route::delete('request/attendance/delete/{id}', [App\Http\Controllers\Manager\RequestController::class, 'deleteCertificateAttendance'])->name('manager.deleteCertificateAttendance');
+    // ShiftSchedule
+    Route::get('shift/daily/', [App\Http\Controllers\Manager\ShiftController::class, 'shiftDaily'])->name('manager.dailyShift');
+    Route::get('shift/list', [App\Http\Controllers\Manager\ShiftController::class, 'shiftList'])->name('manager.shiftList');
+    Route::post('shift/list/add', [App\Http\Controllers\Manager\ShiftController::class, 'storeShift'])->name('manager.shiftadd');
+    Route::post('shift/daily/add', [App\Http\Controllers\Manager\ShiftController::class, 'dailyScheduling'])->name('manager.dailyschedule');
+    Route::post('shift/daily/edit/{id}', [App\Http\Controllers\Manager\ShiftController::class, 'dailySchedulingEdit'])->name('manager.dailyscheduleEdit');
+    Route::post('shift/assign', [App\Http\Controllers\Manager\ShiftController::class, 'assignSchedule'])->name('manager.assignschedule');
+    Route::get('shift/list/employee-search', [App\Http\Controllers\Manager\ShiftController::class, 'getEmployeesByDepartment'])->name('manager.getEmployeesByDepartment');
+    Route::post('shift/list/assign', [App\Http\Controllers\Manager\ShiftController::class, 'assignScheduleList'])->name('manager.assignShiftList');
+    // Notification
     Route::get('/notifications/clear', function () {
         auth()->user()->notifications()->delete();
         return redirect()->back();

@@ -15,6 +15,7 @@ use Carbon\CarbonInterval;
 use App\Models\LeaveCredit;
 use App\Models\SalaryTable;
 use App\Models\UserEarning;
+use App\Scopes\ActiveScope;
 use App\Models\Announcement;
 use App\Models\LeaveRequest;
 use App\Models\UserGeofence;
@@ -105,11 +106,10 @@ class User extends Authenticatable
         'philHealth',
         'tin',
         'department',
-        'bdayLeave',
-        'vacLeave',
-        'sickLeave',
         'reporting_to',
         'image',
+        'status',
+        'hourlyRate',
     ];
 
     public function isSupervisor()
@@ -186,6 +186,25 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    protected static function booted()
+    {
+        // static::addGlobalScope('active', function ($query) {
+        //     // Apply the 'active' scope by default, excluding inactive users
+        //     if (!request()->is('admin/employee/inactive*')) {
+        //         $query->where('status', 'active');
+        //     }
+        // });
+    
+        // Automatically create overtime credits for new users
+        static::created(function ($user) {
+            OvertimeCredits::create([
+                'users_id' => $user->id,
+                'otCredits' => '16:00:00',
+            ]);
+        });
+    }
+    
 
     public function employeeAttendance ()
     {
@@ -474,143 +493,6 @@ class User extends Authenticatable
     }
     
 
-
-    // public function checkIn(Request $request)
-    // {
-    //     try {
-    //         $currentDate = Carbon::now('Asia/Manila')->toDateString();
-    
-    //         // Check if the user has already timed in for the day
-    //         $employeeAttendance = $this->employeeAttendance()
-    //             ->where('date', $currentDate)
-    //             ->first();
-    
-    //         if ($employeeAttendance) {
-    //             return back()->with('error', 'You have already timed in!');
-    //         }
-    
-    //         // Get user's shift schedule
-    //         $shiftSchedule = ShiftSchedule::where('users_id', auth()->user()->id)
-    //             ->where('date', $currentDate)
-    //             ->first();
-    
-    //         if (!$shiftSchedule) {
-    //             return back()->with('error', 'Shift schedule not found for today.');
-    //         }
-    
-    //         // Geolocation data from request
-    //         $latitude = $request->latitude;
-    //         $longitude = $request->longitude;
-    
-    //         // Retrieve all geofences assigned to the user
-    //         $userGeofences = UserGeofence::where('user_id', auth()->user()->id)
-    //             ->with('geofenceSetting')
-    //             ->get();
-    
-    //         $isWithinGeofence = false;
-    
-    //         foreach ($userGeofences as $userGeofence) {
-    //             if ($userGeofence->geofenceSetting) {
-    //                 $geofence = $userGeofence->geofenceSetting;
-    //                 $distance = $this->calculateDistance(
-    //                     $latitude,
-    //                     $longitude,
-    //                     $geofence->latitude,
-    //                     $geofence->longitude
-    //                 );
-    
-    //                 // If user is within any of the geofence radii, set to true and break loop
-    //                 if ($distance <= $geofence->fencing_radius) {
-    //                     $isWithinGeofence = true;
-    //                     break;
-    //                 }
-    //             }
-    //         }
-    
-    //         // Proceed if within at least one geofence, or if no geofence is assigned (geotagging fallback)
-    //         if ($isWithinGeofence || $userGeofences->isEmpty()) {
-    //             $timeIn = Carbon::now('Asia/Manila');
-    //             $status = 'On Time';
-    //             $totalLate = '00:00:00';
-    
-    //             if (!$shiftSchedule->isFlexibleTime) {
-    //                 $lateThreshold = Carbon::parse($shiftSchedule->lateThreshold, 'Asia/Manila');
-    //                 if ($timeIn->greaterThan($lateThreshold)) {
-    //                     $status = 'Late';
-    //                     $totalLateInSeconds = $timeIn->diffInSeconds($lateThreshold);
-    //                     $totalLate = gmdate("H:i:s", $totalLateInSeconds);
-    //                 }
-    //             }
-
-    //         // Determine status and total late based on shift times if not flexible
-    //         $status = 'On Time';
-    //         $totalLate = '00:00:00';
-    //         $timeEnd = null;
-    //         $shiftOver = null;
-    
-    //         if (!$shiftSchedule->isFlexibleTime) {
-    //             $shiftStart = Carbon::parse($shiftSchedule->shiftStart, 'Asia/Manila');
-    //             $lateThreshold = Carbon::parse($shiftSchedule->lateThreshold, 'Asia/Manila');
-    //             $shiftEnd = Carbon::parse($shiftSchedule->shiftEnd, 'Asia/Manila');
-    
-    //             // If the user is late
-    //             if ($timeIn->gt($lateThreshold)) {
-    //                 $status = 'Late';
-    //                 $totalLateInSeconds = $timeIn->diffInSeconds($lateThreshold);
-    //                 $hours = floor($totalLateInSeconds / 3600);
-    //                 $minutes = floor(($totalLateInSeconds % 3600) / 60);
-    //                 $seconds = $totalLateInSeconds % 60;
-    //                 $totalLate = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
-    //             }
-    
-    //             // Calculate timeEnd based on allowedHours
-    //             $allowedHours = Carbon::parse($shiftSchedule->allowedHours)->secondsSinceMidnight();
-    //             $calculatedTimeEnd = $timeIn->copy()->addSeconds($allowedHours)->addHour();
-    
-    //             // If calculated timeEnd exceeds shiftEnd, cap timeEnd to shiftEnd
-    //             if ($calculatedTimeEnd->greaterThan($shiftEnd)) {
-    //                 $timeEnd = $shiftEnd->format('h:i:s A');
-    //             } else {
-    //                 $timeEnd = $calculatedTimeEnd->format('h:i:s A');
-    //             }
-    
-    //             // Set shiftOver to shiftEnd
-    //             $shiftOver = $shiftEnd->format('h:i:s A');
-    //         }
-
-    //             // Handle device detection
-    //             $userAgent = $request->header('User-Agent');
-    //             $agentDetector = new AgentDetector($userAgent);
-    //             $deviceType = $agentDetector->device();
-    //             $platform = $agentDetector->platform();
-    //             $browser = $agentDetector->browser();
-    //             $deviceInfo = "{$deviceType} ({$platform}, {$browser})";
-    
-    //             // Save attendance record with geotagging or geofencing location data
-    //             $this->employeeAttendance()->create([
-    //                 'name' => auth()->user()->fName . ' ' . auth()->user()->lName,
-    //                 'date' => $currentDate,
-    //                 'timeIn' => $timeIn->format('h:i:s A'),
-    //                 'status' => $status,
-    //                 'totalLate' => $totalLate,
-    //                 'timeEnd' => $timeEnd,  // Ensure null for flexible time
-    //                 'shiftOver' => $shiftOver,  // Ensure null for flexible time
-    //                 'latitude' => $latitude,
-    //                 'longitude' => $longitude,
-    //                 'device' => $deviceInfo,
-    //                 'location' => $request->location, // Address from user input
-    //             ]);
-    
-    //             return back()->with('success', 'Checked in successfully!');
-    //         } else {
-    //             return back()->with('error', 'You are outside all assigned geofence areas.');
-    //         }
-    //     } catch (\Exception $e) {
-    //         Log::error('Check-in Error: ' . $e->getMessage(), ['exception' => $e]);
-    //         return back()->with('error', 'An unexpected error occurred. Please try again later.');
-    //     }
-    // }
-
     // Helper function to calculate distance between two points using latitude and longitude
     protected function calculateDistance($lat1, $lon1, $lat2, $lon2)
     {
@@ -626,322 +508,236 @@ class User extends Authenticatable
         return $earthRadius * $c; // Distance in meters
     }
 
-    // public function checkIn(Request $request)
+    public function breakIn()
+{
+    $now = Carbon::now('Asia/Manila');
+    $dateToday = $now->toDateString();
+    $dateYesterday = $now->copy()->subDay()->toDateString();
+
+    // Look for attendance records that may have started yesterday and continued into today
+    $breakin = $this->employeeAttendance()
+        ->whereIn('date', [$dateYesterday, $dateToday])
+        ->whereNull('breakIn')
+        ->latest('date')
+        ->first();
+
+    if (!$breakin) {
+        return back()->with('error', 'You have already taken a break or have not timed in yet.');
+    }
+
+    // Check if the user has already timed out
+    $timeout = $this->employeeAttendance()
+        ->whereIn('date', [$dateYesterday, $dateToday])
+        ->whereNotNull('timeOut')
+        ->latest('date')
+        ->first();
+
+    if ($timeout) {
+        return back()->with('error', 'You have already timed out.');
+    }
+
+    $breakInTime = $now;
+    $breakEndTime = $breakInTime->copy()->addHour(); // Add 1 hour to calculate break end time
+
+    $breakin->update([
+        'breakIn' => $breakInTime->format('h:i:s A'),
+        'breakEnd' => $breakEndTime->format('h:i:s A'),
+    ]);
+
+    return back()->with('success', 'You have successfully started your break.');
+}
+
+
+public function breakOut()
+{
+    $now = Carbon::now('Asia/Manila');
+    $dateToday = $now->toDateString();
+    $dateYesterday = $now->copy()->subDay()->toDateString();
+
+    // Check if the user has already timed out
+    $timeout = $this->employeeAttendance()
+        ->whereIn('date', [$dateYesterday, $dateToday])
+        ->whereNotNull('timeOut')
+        ->latest('date')
+        ->first();
+
+    if ($timeout) {
+        return back()->with('error', 'You have already timed out.');
+    }
+
+    $breakout = $this->employeeAttendance()
+        ->whereIn('date', [$dateYesterday, $dateToday])
+        ->whereNotNull('breakIn')
+        ->whereNull('breakOut')
+        ->latest('date')
+        ->first();
+
+    if (!$breakout) {
+        return back()->with('error', 'You have not taken a break yet or have already returned.');
+    }
+
+    $breakInTime = Carbon::parse($breakout->breakIn);
+    $breakOutTime = $now;
+    $diffInMinutes = $breakInTime->diffInMinutes($breakOutTime);
+    $breakLateFormat = null;
+
+    // Check if break time exceeded 60 minutes
+    if ($diffInMinutes > 60) {
+        $exceededMinutes = $diffInMinutes - 60;
+        $breakLateFormat = CarbonInterval::minutes($exceededMinutes)->cascade()->format('%H:%I:%S');
+        $breakout->update([
+            'breakLate' => $breakLateFormat,
+        ]);
+    }
+
+    $breakEndTime = Carbon::parse($breakout->breakEnd);
+    if ($breakOutTime->greaterThan($breakEndTime)) {
+        $exceededMinutes = $breakOutTime->diffInMinutes($breakEndTime);
+        $breakLateFormat = CarbonInterval::minutes($exceededMinutes)->cascade()->format('%H:%I:%S');
+        $breakout->update([
+            'breakLate' => $breakLateFormat,
+        ]);
+    }
+
+    $breakout->update([
+        'breakOut' => $now->format('h:i:s A'),
+    ]);
+
+    $message = 'Welcome Back!';
+    if ($breakLateFormat) {
+        $message .= ' You were late by ' . $breakLateFormat . ' (HH:MM:SS).';
+    }
+
+    return back()->with('success', $message);
+}
+
+    // public function checkOut()
     // {
     //     try {
-    //         $now = $this->freshTimestamp();
-    
-    //         // Get the current date
-    //         $currentDate = Carbon::now('Asia/Manila')->toDateString();
-    
-    //         // Check if the user has already timed in for the day
-    //         $employeeAttendance = $this->employeeAttendance()
-    //             ->where('date', $currentDate)
+    //         $now = Carbon::now('Asia/Manila');
+    //         $dateToday = $now->toDateString();
+    //         $dateYesterday = $now->copy()->subDay()->toDateString();
+
+    //         // Get the user's latest timeIn record within the past 24 hours with no timeOut
+    //         $timeIn = $this->employeeAttendance()
+    //             ->where(function($query) use ($dateToday, $dateYesterday) {
+    //                 $query->whereDate('date', $dateToday)
+    //                     ->orWhereDate('date', $dateYesterday);
+    //             })
+    //             ->whereNull('timeOut')
+    //             ->latest('timeIn')
     //             ->first();
-    
-    //         if ($employeeAttendance) {
-    //             return back()->with('error', 'You have already timed in!');
+
+    //         if (!$timeIn) {
+    //             return back()->with('error', "You don't have a time-in record. Please time in first.");
     //         }
-    
-    //         // Get the user's shift schedule for the current date
-    //         $shiftSchedule = ShiftSchedule::where('users_id', auth()->user()->id)
-    //             ->where('date', $currentDate) // Check for the current date
-    //             ->first();
-    
-    //         if (!$shiftSchedule) {
-    //             return back()->with('error', 'Shift schedule not found for today.');
+
+    //         // Check if the user has already timed out for this shift
+    //         $timeoutExists = $this->employeeAttendance()
+    //             ->where('id', $timeIn->id) // Only check for the same time-in record
+    //             ->whereNotNull('timeOut')
+    //             ->exists();
+
+    //         if ($timeoutExists) {
+    //             return back()->with('error', 'You have already timed out.');
     //         }
-    
-    //         $timeIn = Carbon::now('Asia/Manila');
-    
-    //         // Check if the current time is past the shift end time for non-flexible shifts
-    //         if (!$shiftSchedule->isFlexibleTime) {
-    //             $shiftEnd = Carbon::parse($shiftSchedule->shiftEnd, 'Asia/Manila');
-    //             if ($timeIn->greaterThan($shiftEnd)) {
-    //                 return back()->with('error', 'You cannot clock in because your shift has already ended.');
-    //             }
+
+    //         // Check if the user is on a break and hasn't ended it
+    //         $breakOut = $this->employeeAttendance()
+    //             ->where('id', $timeIn->id) // Only check for the same time-in record
+    //             ->whereNotNull('breakIn')
+    //             ->whereNull('breakOut')
+    //             ->exists();
+
+    //         if ($breakOut) {
+    //             return back()->with('error', 'Please end your break first. Thank you!');
     //         }
-    
-    //         // Determine status and total late based on shift times if not flexible
-    //         $status = 'On Time';
-    //         $totalLate = '00:00:00';
-    //         $timeEnd = null;
-    //         $shiftOver = null;
-    
-    //         if (!$shiftSchedule->isFlexibleTime) {
-    //             $shiftStart = Carbon::parse($shiftSchedule->shiftStart, 'Asia/Manila');
-    //             $lateThreshold = Carbon::parse($shiftSchedule->lateThreshold, 'Asia/Manila');
-    //             $shiftEnd = Carbon::parse($shiftSchedule->shiftEnd, 'Asia/Manila');
-    
-    //             // If the user is late
-    //             if ($timeIn->gt($lateThreshold)) {
-    //                 $status = 'Late';
-    //                 $totalLateInSeconds = $timeIn->diffInSeconds($lateThreshold);
-    //                 $hours = floor($totalLateInSeconds / 3600);
-    //                 $minutes = floor(($totalLateInSeconds % 3600) / 60);
-    //                 $seconds = $totalLateInSeconds % 60;
-    //                 $totalLate = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
-    //             }
-    
-    //             // Calculate timeEnd based on allowedHours
-    //             $allowedHours = Carbon::parse($shiftSchedule->allowedHours)->secondsSinceMidnight();
-    //             $calculatedTimeEnd = $timeIn->copy()->addSeconds($allowedHours)->addHour();
-    
-    //             // If calculated timeEnd exceeds shiftEnd, cap timeEnd to shiftEnd
-    //             if ($calculatedTimeEnd->greaterThan($shiftEnd)) {
-    //                 $timeEnd = $shiftEnd->format('h:i:s A');
-    //             } else {
-    //                 $timeEnd = $calculatedTimeEnd->format('h:i:s A');
-    //             }
-    
-    //             // Set shiftOver to shiftEnd
-    //             $shiftOver = $shiftEnd->format('h:i:s A');
-    //         }
-    
-    //         // Handle device detection
-    //         $userAgent = $request->header('User-Agent');
-    //         $agentDetector = new AgentDetector($userAgent);
-    //         $deviceType = $agentDetector->device();
-    //         $platform = $agentDetector->platform();
-    //         $browser = $agentDetector->browser();
-    //         $deviceInfo = "{$deviceType} ({$platform}, {$browser})";
-    
-    //         // Create the attendance record
-    //         $this->employeeAttendance()->create([
-    //             'name' => auth()->user()->fName . ' ' . auth()->user()->lName,
-    //             'date' => $currentDate,
-    //             'timeIn' => $timeIn->format('h:i:s A'),
-    //             'status' => $status,
-    //             'totalLate' => $totalLate,
-    //             'timeEnd' => $timeEnd,  // Ensure null for flexible time
-    //             'shiftOver' => $shiftOver,  // Ensure null for flexible time
-    //             'device' => $deviceInfo,
-    //             'latitude' => $request->latitude,  // Store latitude
-    //             'longitude' => $request->longitude,  // Store longitude
-    //             'location' => $request->location,  // Store address
+
+    //         // Record the timeOut
+    //         $timeOut = $now->format('h:i:s A');
+
+    //         // Update the attendance record with timeOut
+    //         $timeIn->update([
+    //             'timeOut' => $timeOut,
     //         ]);
-    
-    //         return back()->with('success', 'Time in successfully! You are ' . $status . '. Welcome.');
-    
+
+    //         return back()->with('success', 'You have successfully timed out. Thank you for your hard work!');
+
     //     } catch (Exception $e) {
-    //         // Log the error for debugging purposes
-    //         Log::error('Check-in Error: ' . $e->getMessage(), ['exception' => $e]);
-    
-    //         // Return a generic error message to the user
+    //         Log::error('Check-out Error: ' . $e->getMessage(), ['exception' => $e]);
     //         return back()->with('error', 'An unexpected error occurred. Please try again later.');
     //     }
     // }
-     
-    public function breakIn()
-    {
-        $now = $this->freshTimestamp();
-        $breakin = $this->employeeAttendance()
-            ->where('date', Carbon::now('Asia/Manila')->toDateString())
-            ->whereNull('breakIn')
-            ->first();
-    
-        if (!$breakin) {
-            return back()->with('error', 'You have already taken a break or have not timed in yet.');
-        }
-    
-        // Check if the user has already timed out
-        $timeout = $this->employeeAttendance()
-            ->where('date', Carbon::now('Asia/Manila')->toDateString())
-            ->whereNotNull('timeOut')
-            ->first();
-    
-        if ($timeout) {
-            return back()->with('error', 'You have already timed out.');
-        }
-    
-        $breakInTime = Carbon::now('Asia/Manila');
-        $breakEndTime = $breakInTime->copy()->addHour(); // Add 1 hour to the break in time to calculate break end time
-    
-        $breakin->update([
-            'breakIn' => $breakInTime->format('h:i:s A'),
-            'breakEnd' => $breakEndTime->format('h:i:s A'),
-        ]);
-    
-        return back()->with('success', 'You have successfully started your break.');
-    }
-    
-    public function breakOut()
-    {
-        $now = $this->freshTimestamp();
-    
-        // Check if the user has already timed out
-        $timeout = $this->employeeAttendance()
-            ->where('date', Carbon::now('Asia/Manila')->toDateString())
-            ->whereNotNull('timeOut')
-            ->first();
-    
-        if ($timeout) {
-            return back()->with('error', 'You have already timed out.');
-        }
-    
-        $breakout = $this->employeeAttendance()
-            ->where('date', Carbon::now('Asia/Manila')->toDateString())
-            ->whereNotNull('breakIn')
-            ->whereNull('breakOut')
-            ->first();
-    
-        if (!$breakout) {
-            return back()->with('error', 'You have not breaked in yet or you have already broke out.');
-        }
-    
-        $breakInTime = Carbon::parse($breakout->breakInTime);
-        $breakOutTime = Carbon::now('Asia/Manila');
-        $diffInMinutes = $breakInTime->diffInMinutes($breakOutTime);
-        $breakLateFormat = null;
-    
-        // Check if break time exceeded 60 minutes
-        if ($diffInMinutes > 60) {
-            $exceededMinutes = $diffInMinutes - 60;
-            $breakLateFormat = CarbonInterval::minutes($exceededMinutes)->cascade()->format('%H:%I:%S');
-            $breakout->update([
-                'breakLate' => $breakLateFormat,
-            ]);
-        }
-    
-        $breakEndTime = Carbon::parse($breakout->breakEnd);
-        if ($breakOutTime->greaterThan($breakEndTime)) {
-            $exceededMinutes = $breakOutTime->diffInMinutes($breakEndTime);
-            $breakLateFormat = CarbonInterval::minutes($exceededMinutes)->cascade()->format('%H:%I:%S');
-            $breakout->update([
-                'breakLate' => $breakLateFormat,
-            ]);
-        }
-    
-        $breakout->update([
-            'breakOut' => Carbon::now('Asia/Manila')->format('h:i:s A'),
-        ]);
-    
-        $message = 'Welcome Back!';
-        if ($breakLateFormat) {
-            $message .= ' You were late by ' . $breakLateFormat . ' (HH:MM:SS).';
-        }
-    
-        return back()->with('success', $message);
-    }
-    
+
     public function checkOut()
     {
         try {
-            $now = $this->freshTimestamp();
+            $now = Carbon::now('Asia/Manila');
+            $dateToday = $now->toDateString();
+            $dateYesterday = $now->copy()->subDay()->toDateString();
     
-            // Check if the user has already timed out for the day
-            $timeout = $this->employeeAttendance()
-                ->where('date', Carbon::now('Asia/Manila')->toDateString())
-                ->whereNotNull('timeOut')
-                ->first();
-    
-            if ($timeout) {
-                return back()->with('error', 'You have already timed out.');
-            }
-    
-            // Check if the user has timed in for the day
+            // Retrieve the most recent timeIn record without a timeOut
             $timeIn = $this->employeeAttendance()
-                ->where('date', Carbon::now('Asia/Manila')->toDateString())
+                ->where(function ($query) use ($dateToday, $dateYesterday) {
+                    $query->whereDate('date', $dateToday)
+                        ->orWhereDate('date', $dateYesterday);
+                })
                 ->whereNull('timeOut')
+                ->latest('timeIn')
                 ->first();
     
             if (!$timeIn) {
                 return back()->with('error', "You don't have a time-in record. Please time in first.");
             }
     
-            // Check if the user is on a break and hasn't ended it
-            $breakOut = $this->employeeAttendance()
-                ->where('date', Carbon::now('Asia/Manila')->toDateString())
-                ->whereNotNull('breakIn')
-                ->whereNull('breakOut')
-                ->first();
+            // Record the timeOut
+            $timeOut = $now->format('h:i:s A');
     
-            if ($breakOut) {
-                return back()->with('error', 'Please end your break first. Thank you!');
+            // Parse shift start and end times
+            $shiftStart = Carbon::parse($timeIn->timeIn, 'Asia/Manila');
+            $shiftEnd = Carbon::parse($timeOut, 'Asia/Manila');
+    
+            // Adjust timeOut if it's past midnight (i.e., next day)
+            if ($shiftEnd->lt($shiftStart)) {
+                $shiftEnd->addDay();
             }
     
-            // Record the timeOut
-            $timeOut = Carbon::now('Asia/Manila')->format('h:i:s A');
+            // Define night shift period
+            $nightShiftStartToday = Carbon::parse('22:00:00', 'Asia/Manila'); // 10:00 PM today
+            $nightShiftEndNextDay = Carbon::parse('06:00:00', 'Asia/Manila')->addDay(); // 6:00 AM the next day
     
-            // Update the attendance record with timeOut
+            // Calculate overlap with night shift
+            $night_diff_seconds = 0;
+            
+            // Ensure shift intersects with the night shift period
+            if ($shiftStart <= $nightShiftEndNextDay && $shiftEnd >= $nightShiftStartToday) {
+                // Determine the actual start of the night differential within the shift
+                $nightStart = $shiftStart->max($nightShiftStartToday);
+                $nightEnd = $shiftEnd->min($nightShiftEndNextDay);
+    
+                // Calculate the duration of the overlap in seconds
+                $night_diff_seconds = $nightEnd->diffInSeconds($nightStart);
+            }
+    
+            // Convert night differential seconds to HH:MM:SS format
+            $hours = floor($night_diff_seconds / 3600);
+            $minutes = floor(($night_diff_seconds % 3600) / 60);
+            $seconds = $night_diff_seconds % 60;
+            $night_diff_hours = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+    
+            // Save night_diff_hours to the database
             $timeIn->update([
                 'timeOut' => $timeOut,
+                'night_diff_hours' => $night_diff_hours,
             ]);
     
             return back()->with('success', 'You have successfully timed out. Thank you for your hard work!');
     
         } catch (Exception $e) {
-            // Log the error for debugging purposes
             Log::error('Check-out Error: ' . $e->getMessage(), ['exception' => $e]);
-    
-            // Return a generic error message to the user
             return back()->with('error', 'An unexpected error occurred. Please try again later.');
         }
     }
-    
-
-    
-    // public function checkOut()
-    // {
-    //     $now = $this->freshTimestamp();
-    
-    //     $timeout = $this->employeeAttendance()
-    //         ->where('date', Carbon::now('Asia/Manila')->toDateString())
-    //         ->whereNotNull('timeOut')
-    //         ->first();
-    
-    //     if ($timeout) {
-    //         return back()->with('error', 'You have already timed out.');
-    //     }
-    
-    //     $timeIn = $this->employeeAttendance()
-    //         ->where('date', Carbon::now('Asia/Manila')->toDateString())
-    //         ->whereNull('timeOut')
-    //         ->first();
-    
-    //     if (!$timeIn) {
-    //         return back()->with('error', "You don't have a time-in record. Please time in first.");
-    //     }
-    
-    //     $breakOut = $this->employeeAttendance()
-    //         ->where('date', Carbon::now('Asia/Manila')->toDateString())
-    //         ->whereNotNull('breakIn')
-    //         ->whereNull('breakOut')
-    //         ->first();
-    
-    //     if ($breakOut) {
-    //         return back()->with('error', 'Please End your break first. Thank you!');
-    //     }
-    
-    //     $timeOut = Carbon::now('Asia/Manila')->format('h:i:s A');
-    //     $timeInParsed = Carbon::parse($timeIn->timeIn);
-    
-    //     $shiftSchedule = ShiftSchedule::where('users_id', auth()->user()->id)->first();
-    
-    //     // Check if the shift schedule exists and if it is flexible time
-    //     if ($shiftSchedule && $shiftSchedule->isFlexibleTime) {
-    //         // If it's flexible time, we can set timeEnd as the current time or leave it null
-    //         $timeEnd = $timeOut ?? Carbon::now('Asia/Manila')->format('h:i:s A');
-    //     } else {
-    //         // Non-flexible time handling
-    //         // Parse allowedHours from the shift schedule and convert it to seconds
-    //         $allowedHours = Carbon::parse($shiftSchedule->allowedHours)->secondsSinceMidnight();
-
-    //         // Add allowedHours to timeInParsed
-    //         $timeEnd = $timeInParsed->copy()->addSeconds($allowedHours)->format('h:i:s A');
-
-    //         // Parse shiftEnd and format it
-    //         $shiftOver = Carbon::parse($shiftSchedule->shiftEnd, 'Asia/Manila')->format('h:i:s A');
-    //     }
-    
-    //     $timeIn->update([
-    //         'timeOut' => $timeOut,
-    //         'timeEnd' => $timeEnd,
-    //         'shiftOver' => $shiftOver,
-    //     ]);
-    
-    //     return back()->with('success', 'You have successfully timed out. Thank you for your hard work!');
-    // }
     
     public function checkForMissedCheckOuts()
     {
@@ -988,14 +784,6 @@ class User extends Authenticatable
         }
     }
 
-    protected static function booted()
-    {
-        static::created(function ($user) {
-            OvertimeCredits::create([
-                'users_id' => $user->id,
-                'otCredits' => '16:00:00',
-            ]);
-        });
-    }
+
 
 }

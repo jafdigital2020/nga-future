@@ -347,9 +347,9 @@
         csv += ',';
         csv += "{{ $pay->cut_off }}";
         csv += ',';
-        csv += "{{ $pay->totalHours }}";
+        csv += "{{ $pay->total_hours }}";
         csv += ',';
-        csv += "{{ $pay->netPayTotal }}"; // Keep Net Pay without encoding issues
+        csv += "{{ $pay->net_pay }}"; // Keep Net Pay without encoding issues
         csv += '\n';
         @endforeach
 

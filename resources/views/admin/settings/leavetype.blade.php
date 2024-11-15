@@ -31,6 +31,7 @@
                             <th>#</th>
                             <th>Leave Type</th>
                             <th>Leave Days</th>
+                            <th>Restriction Days</th>
                             <th>Paid / Unpaid</th>
                             <th>Status</th>
                             <th class="text-right">Action</th>
@@ -42,6 +43,7 @@
                             <td>{{ $type->id }}</td>
                             <td>{{ $type->leaveType }}</td>
                             <td>{{ $type->leaveDays }}</td>
+                            <td>{{ $type->restriction_days }}</td>
                             <td>{{ $type->is_paid ? 'Paid' : 'Unpaid' }}</td>
                             <td>
                                 <div class="dropdown action-label">
@@ -103,6 +105,10 @@
                     <div class="form-group">
                         <label>Leave Days<span class="text-danger">*</span></label>
                         <input class="form-control" type="text" name="leaveDays" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Restriction Days<span class="text-danger">*</span></label>
+                        <input class="form-control" type="text" name="restriction_days" required>
                     </div>
                     <div class="form-group">
                         <label>Paid / Unpaid</label>

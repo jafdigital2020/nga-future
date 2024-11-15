@@ -1,5 +1,6 @@
 @extends('layouts.managermaster') @section('title', 'Dashboard')
 <meta name="csrf-token" content="{{ csrf_token() }}">
+
 <style>
     .clock-in-btn {
         display: inline-block;
@@ -42,7 +43,6 @@
     <div class="row">
         <div class="col-md-12">
             <div class="employee-alert-box">
-
             </div>
         </div>
     </div>
@@ -50,7 +50,6 @@
     <div class="row">
         <div class="col-xxl-8 col-lg-12 col-md-12">
             <div class="row">
-
                 <div class="col-lg-6 col-md-12">
                     <div class="card employee-welcome-card flex-fill">
                         <div class="card-body">
@@ -103,7 +102,8 @@
                                         @endif</h4>
                                 </div>
                                 <div class="clock-in-btn">
-                                    <form id="clockInForm" action="{{ url('manager/dashboard') }}" method="POST">
+                                    <form id="clockInForm" action="{{ url('manager/dashboard') }}" method="POST"
+                                        enctype="multipart/form-data">
                                         @csrf
                                         <input type="hidden" name="latitude" id="latitude">
                                         <input type="hidden" name="longitude" id="longitude">
@@ -111,6 +111,45 @@
                                         <button type="button" class="btn btn-warning"
                                             id="checkInButton">Clock-In</button>
                                     </form>
+                                </div>
+
+                                <div id="imageUploadModal" class="modal fade" tabindex="-1" role="dialog"
+                                    aria-labelledby="imageUploadModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="imageUploadModalLabel">Capture a Photo</h5>
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                    aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form id="imageUploadForm">
+                                                    <div class="form-group">
+                                                        <label>Your location accuracy is low. Please capture a photo to
+                                                            complete clock-in.</label>
+                                                        <!-- Video element to show camera feed -->
+                                                        <video id="video" autoplay style="width: 100%;"></video>
+                                                        <!-- Canvas element for capturing photo -->
+                                                        <canvas id="canvas" style="display: none;"></canvas>
+                                                        <!-- Button to capture photo -->
+                                                        <button type="button" class="btn btn-primary mt-2"
+                                                            id="captureButton">Capture Photo</button>
+                                                        <!-- Preview captured image -->
+                                                        <img id="capturedImage"
+                                                            style="display: none; width: 100%; margin-top: 10px;" />
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-primary"
+                                                    id="submitImage">Submit</button>
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-dismiss="modal">Cancel</button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="clock-in-btn">
@@ -153,8 +192,9 @@
                                 </div>
                                 <!-- Clock Out Modal -->
                             </div>
-                            <div class="clock-in-list">
+                            <div class="clock-in-list mt-4">
                                 <ul class="nav">
+                                    <!-- Start Break Button -->
                                     <form action="{{ url('manager/dashboard/breakin/') }}" method="POST">
                                         @csrf @method('PUT')
                                         <div class="clock-in-btn">
@@ -162,20 +202,40 @@
                                                 Break</button>
                                         </div>
                                     </form>
+
+                                    <!-- End Break Button -->
                                     <form action="{{ url('manager/dashboard/breakout/') }}" method="POST">
                                         @csrf @method('PUT')
                                         <div class="clock-in-btn">
                                             <button type="submit" class="btn btn-outline-danger btn-sm"
-                                                id="resetButton">End
-                                                Break</button>
+                                                id="resetButton">End Break</button>
                                         </div>
                                     </form>
-                                    <li>
-                                        <p>Break Timer</p>
-                                        <h6 id="countdown">01:00:00</h6>
-                                    </li>
+
+                                    <!-- Break Options Dropdown for 1st and 2nd 15 Minutes Break -->
+
+                                    <div class="dropdown mx-2">
+                                        <button class="btn btn-danger btn-sm dropdown-toggle" type="button"
+                                            id="breakDropdown" data-toggle="dropdown" aria-haspopup="true"
+                                            aria-expanded="false">
+                                            15mins
+                                        </button>
+                                        <div class="dropdown-menu" aria-labelledby="breakDropdown">
+                                            <form action="{{ route('manager.startBreak') }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="dropdown-item">Start 15mins
+                                                    Break</button>
+                                            </form>
+                                            <form action="{{ route('manager.endBreak') }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="dropdown-item">End 15mins
+                                                    Break</button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </ul>
                             </div>
+
                             <div class="view-attendance">
                                 <a href="#">
                                     View Attendance <i class="fa-solid fa-arrow-right"></i>
@@ -212,39 +272,21 @@
                                     <div class="col-md-4">
                                         <div class="attendance-details">
                                             <h4 class="text-primary">
-                                                {{ Auth::user()->vacLeave + Auth::user()->sickLeave + Auth::user()->bdayLeave }}
+                                                {{ $totalLeaveCredits ?? 0 }}
                                             </h4>
                                             <p>Total Leaves</p>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="attendance-details">
-                                            <h4 class="text-pink">{{ $leaveApproved }}</h4>
+                                            <h4 class="text-pink">{{ $leaveApproved + $attendanceApproved ?? 0 }}</h4>
                                             <p>Leaves Taken</p>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="attendance-details">
-                                            <h4 class="text-success">{{ $leavePending }}</h4>
+                                            <h4 class="text-success">{{ $leavePending ?? 0 }}</h4>
                                             <p>Pending Approval</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="attendance-details">
-                                            <h4 class="text-purple">{{ Auth::user()->vacLeave }}</h4>
-                                            <p>Vacation Leave</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="attendance-details">
-                                            <h4 class="text-info">{{ Auth::user()->sickLeave }}</h4>
-                                            <p>Sick <br>Leave</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="attendance-details">
-                                            <h4 class="text-danger">{{ Auth::user()->bdayLeave }}</h4>
-                                            <p>Birthday Leave</p>
                                         </div>
                                     </div>
                                 </div>
@@ -299,6 +341,32 @@
                                 {{ $latest->timeIn }}
                             </p>
                         </li>
+                        <!-- Start -->
+                        @if(is_array($breaks) && count($breaks) > 0)
+                        @foreach($breaks as $index => $break)
+                        <li>
+                            <p class="mb-0">15-Min Break {{ $index + 1 }} Start</p>
+                            <p class="res-activity-time">
+                                <i class="fa fa-clock-o"></i>
+                                {{ $break['start'] ?? 'N/A' }}
+                            </p>
+                        </li>
+                        @if(isset($break['end']))
+                        <li>
+                            <p class="mb-0">15-Min Break {{ $index + 1 }} End</p>
+                            <p class="res-activity-time">
+                                <i class="fa fa-clock-o"></i>
+                                {{ $break['end'] }}
+                            </p>
+                        </li>
+                        @endif
+                        @endforeach
+                        @else
+                        <li>
+                            <p class="text-muted">No breaks recorded for today.</p>
+                        </li>
+                        @endif
+                        <!-- END -->
                         @endif @if($latest->breakIn)
                         <li>
                             <p class="mb-0">Break Out at</p>
@@ -400,12 +468,11 @@
             <div id="calendar"></div>
         </div>
     </div>
-
-
-
     <!-- /Calendar Record -->
-    <div class="row">
 
+    <!-- Announcement & Policies -->
+
+    <div class="row">
         <div class="col-xl-6 col-md-12 d-flex">
             <div class="card employee-month-card flex-fill">
                 <div class="card-body">
@@ -431,6 +498,7 @@
                 </div>
             </div>
         </div>
+
 
 
         <div class="col-xl-6 col-md-12 d-flex">
@@ -507,14 +575,18 @@
 
 <!-- GOOGLE MAP API -->
 <script>
+    let videoStream;
+
     document.getElementById("checkInButton").addEventListener("click", getLocation);
+    let lowAccuracyCheckIn = false;
+    let geofences = [];
 
     function getLocation() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(showPosition, showError, {
-                enableHighAccuracy: true, // Request high accuracy
-                timeout: 5000, // Timeout in milliseconds
-                maximumAge: 0 // Do not use a cached position
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0,
             });
         } else {
             alert("Geolocation is not supported by this browser.");
@@ -524,22 +596,81 @@
     function showPosition(position) {
         const latitude = position.coords.latitude;
         const longitude = position.coords.longitude;
+        document.getElementById("latitude").value = latitude;
+        document.getElementById("longitude").value = longitude;
 
-        // accuray meters
-        // if (position.coords.accuracy > 20) {
-        //     alert("Location accuracy is too low. Please try again.");
-        //     return;
-        // }
-
-        // Call the function to reverse geocode and get the address
-        getAddressFromLatLng(latitude, longitude);
+        fetch("{{ url('manager/dashboard') }}", {
+                method: "POST",
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    latitude,
+                    longitude
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    window.location.reload();
+                } else if (data.status === 'low_accuracy') {
+                    alert(data.message);
+                    lowAccuracyCheckIn = true;
+                    $('#imageUploadModal').modal('show');
+                    startCamera();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Check-in error:', error);
+                alert("Error submitting check-in. Please try again.");
+            });
     }
 
+    // Start the camera feed
+    function startCamera() {
+        const video = document.getElementById('video');
+        navigator.mediaDevices.getUserMedia({
+                video: true
+            })
+            .then(stream => {
+                videoStream = stream;
+                video.srcObject = stream;
+            })
+            .catch(error => console.error("Camera access error:", error));
+    }
+
+    // Capture the image from the video feed
+    document.getElementById("captureButton").addEventListener("click", function () {
+        const canvas = document.getElementById("canvas");
+        const video = document.getElementById("video");
+        const capturedImage = document.getElementById("capturedImage");
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        capturedImage.src = canvas.toDataURL('image/png');
+        capturedImage.style.display = "block";
+        canvas.style.display = "none";
+    });
+
+    // Stop the camera feed
+    function stopCamera() {
+        if (videoStream) {
+            videoStream.getTracks().forEach(track => track.stop());
+        }
+    }
+
+
     function showError(error) {
+        console.error("Geolocation error:", error);
         switch (error.code) {
             case error.PERMISSION_DENIED:
                 if (confirm("Location access was denied. Would you like to try again?")) {
-                    getLocation(); // Retry geolocation request
+                    getLocation();
                 } else {
                     alert("Please enable location access in your browser settings.");
                 }
@@ -557,35 +688,119 @@
     }
 
     function getAddressFromLatLng(latitude, longitude) {
-        const apiKey = 'AIzaSyCoZSVkyGR645u4B_OOFmepLzrRBB8Hgmc'; // Your Google Maps API Key
+        const apiKey = 'AIzaSyCoZSVkyGR645u4B_OOFmepLzrRBB8Hgmc'; // Replace with your actual Google Maps API key
         const geocodeUrl =
             `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`;
 
         fetch(geocodeUrl)
             .then(response => response.json())
             .then(data => {
+                console.log("Geocode response:", data); // Debugging line
                 if (data.status === "OK") {
-                    const address = data.results[0].formatted_address; // Get the formatted address
-                    console.log("Latitude: " + latitude);
-                    console.log("Longitude: " + longitude);
-                    console.log("Location: " + address);
-
-                    // Store the location data in hidden fields
-                    document.getElementById("latitude").value = latitude;
-                    document.getElementById("longitude").value = longitude;
+                    const address = data.results[0].formatted_address;
                     document.getElementById("location").value = address;
 
                     // Submit the form
-                    document.getElementById("clockInForm").submit();
+                    submitForm();
                 } else {
-                    console.error("Geocoding failed: " + data.status);
+                    alert("Could not fetch address. Please try again.");
                 }
             })
-            .catch(error => console.error("Error fetching address:", error));
+            .catch(error => {
+                alert("Error fetching address. Please check your connection.");
+                console.error("Geocoding error:", error);
+            });
     }
+
+    function submitForm() {
+        const formData = new FormData(document.getElementById("clockInForm"));
+
+        fetch("{{ url('manager/dashboard') }}", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Full check-in response:", data); // Log full response for debugging
+
+                // Show modal only if the status is explicitly 'low_accuracy'
+                if (data.status === 'low_accuracy') {
+                    alert(data.message); // Notify user of low accuracy
+                    $('#imageUploadModal').modal('show'); // Show image upload modal
+                } else if (data.status === 'success') {
+                    alert(data.message); // Success message
+                    window.location.reload(); // Reload page on successful check-in
+                } else {
+                    alert(data.message); // Any other error messages
+                }
+            })
+            .catch(error => {
+                console.error('Check-in error:', error);
+                alert("Error submitting check-in. Please try again.");
+            });
+    }
+
+
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const earthRadius = 6371000;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return earthRadius * c;
+    }
+
+    // Submit captured image
+    document.getElementById("submitImage").addEventListener("click", function () {
+        const capturedImage = document.getElementById("capturedImage").src;
+
+        // Convert base64 image to file for submission
+        fetch(capturedImage)
+            .then(res => res.blob())
+            .then(blob => {
+                const formData = new FormData(document.getElementById("clockInForm"));
+                formData.append('image', blob, 'checkin_photo.png');
+                formData.append('low_accuracy', lowAccuracyCheckIn);
+
+                fetch("{{ url('manager/dashboard') }}", {
+                        method: "POST",
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Image upload response:", data);
+                        if (data.status === 'success') {
+                            stopCamera();
+                            $('#imageUploadModal').modal('hide');
+                            alert('Check-in completed with photo!');
+                            window.location.reload();
+                        } else {
+                            alert(data.message || "Error submitting clock-in. Please try again.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error uploading image:", error);
+                        alert("Error submitting clock-in. Please try again.");
+                    });
+            });
+    });
+
+    // Stop the camera feed when modal is closed
+    $('#imageUploadModal').on('hidden.bs.modal', stopCamera);
 
 </script>
 
+
+<!-- CAROUSEL -->
 <script>
     $(document).ready(function () {
         // Initialize the Owl Carousel
@@ -608,6 +823,7 @@
 
 </script>
 
+<!-- POLICY DOWNLOAD -->
 <script>
     function downloadPolicy(url) {
         if (url) {
@@ -619,6 +835,7 @@
 
 </script>
 
+<!-- TIME -->
 <script>
     function startTime() {
         const today = new Date();
@@ -643,6 +860,7 @@
 
 </script>
 
+<!-- CALENDAR -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const calendar = document.getElementById('calendar');
@@ -670,21 +888,20 @@
             });
         }
 
-        function renderCalendar(startDate, endDate, attendanceData, leaveData, holidays, status = 'new') {
-            console.log("Rendering calendar from ", startDate, " to ", endDate); // Debugging line
+        function renderCalendar(startDate, endDate, attendanceData, leaveData, holidays, overtimeData, status =
+            'new') {
+            console.log("Rendering calendar from ", startDate, " to ", endDate);
 
             calendar.innerHTML = '';
 
             let totalWorkedSeconds = 0;
             let totalLateSeconds = 0;
-            let unpaidLeaveCount = 0;
-            let vacationLeaveCount = 0;
-            let sickLeaveCount = 0;
-            let bdayLeaveCount = 0;
+            let totalOvertimeSeconds = 0; // Counter for total overtime
+            let paidLeaveCount = 0; // Counter for paid leaves
+            let unpaidLeaveCount = 0; // Counter for unpaid leaves
 
             let currentDate = new Date(startDate);
             while (currentDate <= endDate) {
-                console.log("Current date: ", currentDate); // Debugging line
                 const dayDiv = document.createElement('div');
                 dayDiv.className = 'day-att';
                 dayDiv.style.padding = '5px';
@@ -695,12 +912,14 @@
                     `${monthNames[currentDate.getMonth()]} ${currentDate.getDate()}, ${currentDate.getFullYear()}, ${daysOfWeek[currentDate.getDay()]}`;
                 dayDiv.appendChild(dateHeader);
 
+                // Check for attendance on this day
                 const dayData = attendanceData.find(item => {
                     const itemDate = new Date(item.date);
                     return itemDate.getDate() === currentDate.getDate() &&
                         itemDate.getMonth() === currentDate.getMonth() &&
                         itemDate.getFullYear() === currentDate.getFullYear();
                 });
+
                 if (dayData) {
                     const timeIn = document.createElement('div');
                     timeIn.className = 'calendar-text';
@@ -733,7 +952,7 @@
                     }
                 }
 
-                // Check for leave data on this day and status is Approved
+                // Check for approved leave on this day
                 const leaveOnDay = leaveData.filter(leave => {
                     const leaveStart = new Date(leave.start_date);
                     const leaveEnd = new Date(leave.end_date);
@@ -743,30 +962,49 @@
 
                 leaveOnDay.forEach(leave => {
                     const leaveTypeDiv = document.createElement('div');
-                    leaveTypeDiv.className =
-                        'calendar-text leave-type-button';
-                    leaveTypeDiv.innerText = leave.type;
-                    dayDiv.appendChild(leaveTypeDiv);
+                    leaveTypeDiv.className = 'calendar-text leave-type-button';
+                    leaveTypeDiv.innerText = leave.leave_type.leaveType;
 
-                    if (leave.type === 'Unpaid Leave') {
+                    if (leave.leave_type.is_paid) {
+                        leaveTypeDiv.style.backgroundColor = 'green';
+                        paidLeaveCount++;
+                    } else {
+                        leaveTypeDiv.style.backgroundColor = 'red';
                         unpaidLeaveCount++;
-                    } else if (leave.type === 'Vacation Leave') {
-                        vacationLeaveCount++;
-                    } else if (leave.type === 'Sick Leave') {
-                        sickLeaveCount++;
-                    } else if (leave.type === 'Birthday Leave') {
-                        bdayLeaveCount++;
                     }
+
+                    leaveTypeDiv.style.color = 'white';
+                    leaveTypeDiv.style.padding = '5px';
+                    leaveTypeDiv.style.borderRadius = '5px';
+                    leaveTypeDiv.style.marginTop = '5px';
+                    dayDiv.appendChild(leaveTypeDiv);
                 });
+
+                // Check for approved overtime on this day
+                const overtimeOnDay = overtimeData.find(ot => {
+                    const otDate = new Date(ot.date);
+                    return otDate.getDate() === currentDate.getDate() &&
+                        otDate.getMonth() === currentDate.getMonth() &&
+                        otDate.getFullYear() === currentDate.getFullYear();
+                });
+
+                if (overtimeOnDay) {
+                    const overtimeDiv = document.createElement('div');
+                    overtimeDiv.className = 'calendar-text overtime-approved';
+                    overtimeDiv.innerText = "Approved Overtime: " + overtimeOnDay.total_hours;
+                    dayDiv.appendChild(overtimeDiv);
+
+                    const otParts = overtimeOnDay.total_hours.split(':').map(Number);
+                    totalOvertimeSeconds += otParts[0] * 3600 + otParts[1] * 60 + otParts[2];
+                }
 
                 // Check for holidays
                 const holiday = checkHoliday(currentDate, holidays);
                 if (holiday) {
                     const holidayDiv = document.createElement('div');
                     holidayDiv.className = 'holiday-button';
-                    holidayDiv.innerText = holiday.title; // Use holiday title from the DB
-
-                    holidayDiv.style.backgroundColor = 'green'; // Highlight the holiday
+                    holidayDiv.innerText = holiday.title;
+                    holidayDiv.style.backgroundColor = 'green';
                     holidayDiv.style.color = 'white';
                     holidayDiv.style.padding = '5px';
                     holidayDiv.style.marginTop = '5px';
@@ -784,19 +1022,27 @@
             const totalWorkedFormatted =
                 `${workedHours.toString().padStart(2, '0')}:${workedMinutes.toString().padStart(2, '0')}:${workedSeconds.toString().padStart(2, '0')}`;
 
+            const overtimeHours = Math.floor(totalOvertimeSeconds / 3600);
+            const overtimeMinutes = Math.floor((totalOvertimeSeconds % 3600) / 60);
+            const overtimeSeconds = totalOvertimeSeconds % 60;
+            const totalOvertimeFormatted =
+                `${overtimeHours.toString().padStart(2, '0')}:${overtimeMinutes.toString().padStart(2, '0')}:${overtimeSeconds.toString().padStart(2, '0')}`;
+
             const lateHours = Math.floor(totalLateSeconds / 3600);
             const lateMinutes = Math.floor((totalLateSeconds % 3600) / 60);
             const lateSeconds = totalLateSeconds % 60;
             const totalLateFormatted =
                 `${lateHours.toString().padStart(2, '0')}:${lateMinutes.toString().padStart(2, '0')}:${lateSeconds.toString().padStart(2, '0')}`;
 
+            // Display total stats at the bottom
             const totalBox = document.createElement('div');
             totalBox.className = 'day total-box';
             totalBox.innerText =
-                `Total Worked Hours: ${totalWorkedFormatted}\nTotal Late: ${totalLateFormatted}\nUnpaid Leave: ${unpaidLeaveCount}\nVacation Leave: ${vacationLeaveCount}\nSick Leave: ${sickLeaveCount}\nBirthday Leave: ${bdayLeaveCount}\nStatus: ${status}`;
+                `Total Worked Hours: ${totalWorkedFormatted}\nTotal Late: ${totalLateFormatted}\nApproved Overtime: ${totalOvertimeFormatted}\nPaid Leaves: ${paidLeaveCount}\nUnpaid Leaves: ${unpaidLeaveCount}\nStatus: ${status}`;
             calendar.appendChild(totalBox);
-
         }
+
+
 
         function checkHoliday(date, holidays) {
             const formattedDate =
@@ -816,11 +1062,11 @@
                     end_date: endDate.toISOString().split('T')[0]
                 },
                 success: function (data) {
-                    callback(data.attendance, data.leaves);
+                    callback(data.attendance, data.leaves, data
+                        .overtime); // Now includes overtime data
                 },
                 error: function (err) {
                     console.error('Error fetching attendance data:', err);
-                    // Handle the error on the front-end, e.g., display an alert or message to the user
                 }
             });
         }
@@ -961,11 +1207,14 @@
             } = getCutoffDates(monthIndex, year);
 
             fetchHolidays(function (holidays) {
-                fetchAttendanceData(startDate, endDate, function (attendanceData, leaveData) {
-                    renderCalendar(startDate, endDate, attendanceData, leaveData, holidays);
+                fetchAttendanceData(startDate, endDate, function (attendanceData, leaveData,
+                    overtimeData) {
+                    renderCalendar(startDate, endDate, attendanceData, leaveData, holidays,
+                        overtimeData);
                 });
             });
         }
+
 
         function saveAttendance() {
             const monthSelect = document.getElementById('monthSelect');
@@ -980,23 +1229,27 @@
             } = getCutoffDates(monthSelect.selectedIndex, year);
 
             const totalBox = document.querySelector('.total-box');
+
+            // Extract total worked hours, late hours, overtime, and leave counts
             const totalWorked = totalBox.innerText.match(/Total Worked Hours: (\d{2}:\d{2}:\d{2})/)[1];
             const totalLate = totalBox.innerText.match(/Total Late: (\d{2}:\d{2}:\d{2})/)[1];
-            const unpaidLeaveCount = totalBox.innerText.match(/Unpaid Leave: (\d+)/)[1];
-            const vacationLeaveCount = totalBox.innerText.match(/Vacation Leave: (\d+)/)[1];
-            const sickLeaveCount = totalBox.innerText.match(/Sick Leave: (\d+)/)[1];
-            const bdayLeaveCount = totalBox.innerText.match(/Birthday Leave: (\d+)/)[1];
+            const unpaidLeaveCount = totalBox.innerText.match(/Unpaid Leaves: (\d+)/)[
+                1]; // Updated to match unpaid leaves
+            const paidLeaveCount = totalBox.innerText.match(/Paid Leaves: (\d+)/)[
+                1]; // Updated to match paid leaves
+            const approvedOvertime = totalBox.innerText.match(/Approved Overtime: (\d{2}:\d{2}:\d{2})/)[
+                1]; // Updated to match approved overtime
 
+            // Create the data object to be sent to the server
             const data = {
                 total_worked: totalWorked,
                 total_late: totalLate,
                 cutoff: cutoff,
                 start_date: startDate.toISOString().split('T')[0],
                 end_date: endDate.toISOString().split('T')[0],
-                unpaid_leave: unpaidLeaveCount,
-                vacation_leave: vacationLeaveCount,
-                sick_leave: sickLeaveCount,
-                birthday_leave: bdayLeaveCount,
+                unpaid_leave: unpaidLeaveCount, // New unpaid leave count
+                paid_leave: paidLeaveCount, // New paid leave count
+                approved_overtime: approvedOvertime, // New approved overtime value
                 year: year,
                 status: 'pending'
             };
@@ -1047,7 +1300,6 @@
                                 error: function (err) {
                                     console.error('Error saving attendance:', err);
                                     if (err.status === 409) {
-                                        // Handle conflict error (duplicate record)
                                         alert(err.responseJSON
                                             .message
                                         ); // Display specific conflict message
@@ -1064,8 +1316,8 @@
                     alert('Error checking attendance.');
                 }
             });
-
         }
+
 
         function updateStatus(status) {
             const totalBox = document.querySelector('.total-box');
@@ -1100,6 +1352,7 @@
 
 </script>
 
+<!-- TIMER COUNTDOWN -->
 <script>
     const countdownElement = document.getElementById('countdown');
     const startButton = document.getElementById('startButton');
@@ -1170,6 +1423,7 @@
 
 </script>
 
+<!-- PAGE REFRESH -->
 <script>
     // Function to refresh the page
     function refreshPage() {
@@ -1180,6 +1434,5 @@
     setTimeout(refreshPage, 1800000); // 30 minutes = 1800000 milliseconds
 
 </script>
-
 
 @endsection

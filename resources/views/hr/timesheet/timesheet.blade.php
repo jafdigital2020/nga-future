@@ -20,7 +20,7 @@
                 <div class="view-icons">
                     <a href="{{ url('hr/timesheet') }}" class="grid-view btn btn-link active"><i
                             class="las la-calendar-check"></i></a>
-                    <a href="{{ url('hr/attendance') }}" class="list-view btn btn-link "><i
+                    <a href="{{ url('hr/attendance') }}" class="list-view btn btn-link"><i
                             class="la la-calendar"></i></a>
                 </div>
             </div>
@@ -60,12 +60,14 @@
                     <label class="focus-label">Employee Name</label>
                 </div>
             </div>
+
             <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
                 <div class="form-group form-focus select-focus">
                     <select class="select floating" name="cut_off">
                         <option value=""> -- Select -- </option>
                         <option value="December - January 1st Cut-off"
-                            {{ request('cut_off') == 'December - January 1st Cut-off' ? 'selected' : '' }}>December -
+                            {{ request('cut_off') == 'December - January 1st Cut-off' ? 'selected' : '' }}>December
+                            -
                             January 1st Cut-off</option>
                         <option value="January 2nd Cut-off"
                             {{ request('cut_off') == 'January 2nd Cut-off' ? 'selected' : '' }}>January 2nd Cut-off
@@ -74,18 +76,22 @@
                             {{ request('cut_off') == 'January - February 1st Cut-off' ? 'selected' : '' }}>January -
                             February 1st Cut-off</option>
                         <option value="February 2nd Cut-off"
-                            {{ request('cut_off') == 'February 2nd Cut-off' ? 'selected' : '' }}>February 2nd Cut-off
+                            {{ request('cut_off') == 'February 2nd Cut-off' ? 'selected' : '' }}>February 2nd
+                            Cut-off
                         </option>
                         <option value="February - March 1st Cut-off"
                             {{ request('cut_off') == 'February - March 1st Cut-off' ? 'selected' : '' }}>February -
                             March 1st Cut-off</option>
                         <option value="March 2nd Cut-off"
-                            {{ request('cut_off') == 'March 2nd Cut-off' ? 'selected' : '' }}>March 2nd Cut-off</option>
+                            {{ request('cut_off') == 'March 2nd Cut-off' ? 'selected' : '' }}>March 2nd Cut-off
+                        </option>
                         <option value="March - April 1st Cut-off"
-                            {{ request('cut_off') == 'March - April 1st Cut-off' ? 'selected' : '' }}>March - April 1st
+                            {{ request('cut_off') == 'March - April 1st Cut-off' ? 'selected' : '' }}>March - April
+                            1st
                             Cut-off</option>
                         <option value="April 2nd Cut-off"
-                            {{ request('cut_off') == 'April 2nd Cut-off' ? 'selected' : '' }}>April 2nd Cut-off</option>
+                            {{ request('cut_off') == 'April 2nd Cut-off' ? 'selected' : '' }}>April 2nd Cut-off
+                        </option>
                         <option value="April - May 1st Cut-off"
                             {{ request('cut_off') == 'April - May 1st Cut-off' ? 'selected' : '' }}>April - May 1st
                             Cut-off</option>
@@ -95,14 +101,17 @@
                             {{ request('cut_off') == 'May - June 1st Cut-off' ? 'selected' : '' }}>May - June 1st
                             Cut-off</option>
                         <option value="June 2nd Cut-off"
-                            {{ request('cut_off') == 'June 2nd Cut-off' ? 'selected' : '' }}>June 2nd Cut-off</option>
+                            {{ request('cut_off') == 'June 2nd Cut-off' ? 'selected' : '' }}>June 2nd Cut-off
+                        </option>
                         <option value="June - July 1st Cut-off"
                             {{ request('cut_off') == 'June - July 1st Cut-off' ? 'selected' : '' }}>June - July 1st
                             Cut-off</option>
                         <option value="July 2nd Cut-off"
-                            {{ request('cut_off') == 'July 2nd Cut-off' ? 'selected' : '' }}>July 2nd Cut-off</option>
+                            {{ request('cut_off') == 'July 2nd Cut-off' ? 'selected' : '' }}>July 2nd Cut-off
+                        </option>
                         <option value="July - August 1st Cut-off"
-                            {{ request('cut_off') == 'July - August 1st Cut-off' ? 'selected' : '' }}>July - August 1st
+                            {{ request('cut_off') == 'July - August 1st Cut-off' ? 'selected' : '' }}>July - August
+                            1st
                             Cut-off</option>
                         <option value="August 2nd Cut-off"
                             {{ request('cut_off') == 'August 2nd Cut-off' ? 'selected' : '' }}>August 2nd Cut-off
@@ -111,10 +120,12 @@
                             {{ request('cut_off') == 'August - September 1st Cut-off' ? 'selected' : '' }}>August -
                             September 1st Cut-off</option>
                         <option value="September 2nd Cut-off"
-                            {{ request('cut_off') == 'September 2nd Cut-off' ? 'selected' : '' }}>September 2nd Cut-off
+                            {{ request('cut_off') == 'September 2nd Cut-off' ? 'selected' : '' }}>September 2nd
+                            Cut-off
                         </option>
                         <option value="September - October 1st Cut-off"
-                            {{ request('cut_off') == 'September - October 1st Cut-off' ? 'selected' : '' }}>September -
+                            {{ request('cut_off') == 'September - October 1st Cut-off' ? 'selected' : '' }}>
+                            September -
                             October 1st Cut-off</option>
                         <option value="October 2nd Cut-off"
                             {{ request('cut_off') == 'October 2nd Cut-off' ? 'selected' : '' }}>October 2nd Cut-off
@@ -123,13 +134,16 @@
                             {{ request('cut_off') == 'October - November 1st Cut-off' ? 'selected' : '' }}>October -
                             November 1st Cut-off</option>
                         <option value="November 2nd Cut-off"
-                            {{ request('cut_off') == 'November 2nd Cut-off' ? 'selected' : '' }}>November 2nd Cut-off
+                            {{ request('cut_off') == 'November 2nd Cut-off' ? 'selected' : '' }}>November 2nd
+                            Cut-off
                         </option>
                         <option value="November - December 1st Cut-off"
-                            {{ request('cut_off') == 'November - December 1st Cut-off' ? 'selected' : '' }}>November -
+                            {{ request('cut_off') == 'November - December 1st Cut-off' ? 'selected' : '' }}>November
+                            -
                             December 1st Cut-off</option>
                         <option value="December 2nd Cut-off"
-                            {{ request('cut_off') == 'December 2nd Cut-off' ? 'selected' : '' }}>December 2nd Cut-off
+                            {{ request('cut_off') == 'December 2nd Cut-off' ? 'selected' : '' }}>December 2nd
+                            Cut-off
                         </option>
                     </select>
 
@@ -140,7 +154,8 @@
                 <div class="form-group form-focus select-focus">
                     <select class="select floating" name="status">
                         <option value=""> -- Select -- </option>
-                        <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>Pending
+                        </option>
                         <option value="Approved" {{ request('status') == 'Approved' ? 'selected' : '' }}>Approved
                         </option>
                         <option value="Declined" {{ request('status') == 'Declined' ? 'selected' : '' }}>Declined
@@ -164,7 +179,9 @@
                     </div>
                     <label class="focus-label">To</label>
                 </div>
+
             </div>
+
             <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
                 <button type="submit" class="btn btn-primary btn-block">Search</button>
             </div>
@@ -186,9 +203,7 @@
                             <th>Total Hours</th>
                             <th>Total Late</th>
                             <th>OT Hours</th>
-                            <th>Vacation Leave</th>
-                            <th>Sick Leave</th>
-                            <th>Birthday Leave</th>
+                            <th>Paid Leave</th>
                             <th>Unpaid Leave</th>
                             <th>Date Submitted</th>
                             <th class="text-center">Status</th>
@@ -200,13 +215,13 @@
                         <tr>
                             <td>
                                 <h2 class="table-avatar">
-                                    <a href="#" class="avatar">
+                                    <a href="{{ url('hr/employee/edit/' . $att->user->id) }}" class="avatar">
                                         @if ($att->user->image)
                                         <img src="{{ asset('images/' . $att->user->image) }}" alt="Profile Image" />
                                         @else
                                         <img src="{{ asset('images/default.png') }}" alt="Profile Image" /></a>
                                     @endif
-                                    <a href="#">{{ $att->user->fName }}
+                                    <a href="{{ url('hr/employee/edit/' . $att->user->id) }}">{{ $att->user->fName }}
                                         {{ $att->user->lName }}<span>{{ $att->department }}</span></a>
                                 </h2>
                             </td>
@@ -216,10 +231,8 @@
                             <td>{{ $att->cut_off }}</td>
                             <td>{{ $att->totalHours }}</td>
                             <td>{{ $att->totalLate }}</td>
-                            <td>{{ $att->otHours }}</td>
-                            <td>{{ $att->vacLeave }}</td>
-                            <td>{{ $att->sickLeave }}</td>
-                            <td>{{ $att->bdayLeave }}</td>
+                            <td>{{ $att->approvedOvertime }}</td>
+                            <td>{{ $att->paidLeave }}</td>
                             <td>{{ $att->unpaidLeave }}</td>
                             <td>{{ $att->created_at->format('Y-m-d') }}</td>
                             <td class="text-center">

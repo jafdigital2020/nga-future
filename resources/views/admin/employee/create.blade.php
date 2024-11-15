@@ -226,9 +226,7 @@
                                 <option value="3">Employee</option>
                                 <option value="1">Admin</option>
                                 <option value="2">HR</option>
-                                <option value="4">Operations Manager</option>
-                                <option value="5">IT Manager</option>
-                                <option value="6">Marketing Manager</option>
+                                <option value="4">Manager</option>
                             </select>
                             @error('role_as')
                             <div class="error-message">{{ $message }}</div>
@@ -302,8 +300,8 @@
                                     </select>
                                 </div>
                                 <div class="col-sm-6">
-                                    <label class="fieldlabels">Monthly Salary: *</label> <input type="text"
-                                        name="mSalary" />
+                                    <label class="fieldlabels">Hourly Rate: *</label> <input type="text"
+                                        name="hourly_rate" />
                                 </div>
                                 <div class="col-sm-6">
                                     <label class="fieldlabels">Department : *</label> <input type="text"

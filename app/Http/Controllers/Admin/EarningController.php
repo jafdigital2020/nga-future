@@ -253,7 +253,6 @@ class EarningController extends Controller
         }
     }
     
-    
     public function deleteUserEarning($id)
     {
         try {

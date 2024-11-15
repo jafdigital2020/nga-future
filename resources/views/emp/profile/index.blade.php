@@ -10,7 +10,7 @@
             <div class="col-sm-12">
                 <h3 class="page-title">Employee Profile</h3>
                 <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url('emp/dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item active">Profile</li>
                 </ul>
             </div>
@@ -833,7 +833,7 @@
                                     <div class="form-group">
                                         <label for="name">First Name<span class="text-danger">*</span></label>
                                         <input type="text" name="fName" id="fName" class="form-control"
-                                            value="{{ $user->fName }}" required />
+                                            value="{{ $user->fName }}" readonly />
                                     </div>
                                 </div>
                                 <!-- Middle Name -->
@@ -841,7 +841,7 @@
                                     <div class="form-group">
                                         <label for="name">Middle Name<span class="text-danger">*</span></label>
                                         <input type="text" name="mName" id="mName" class="form-control"
-                                            value="{{ $user->mName }}" required />
+                                            value="{{ $user->mName }}" readonly />
 
                                     </div>
                                 </div>
@@ -850,7 +850,7 @@
                                     <div class="form-group">
                                         <label for="name">Last Name<span class="text-danger">*</span></label>
                                         <input type="text" name="lName" id="lName" class="form-control"
-                                            value="{{ $user->lName }}" required />
+                                            value="{{ $user->lName }}" readonly />
 
                                     </div>
                                 </div>
@@ -859,14 +859,14 @@
                                     <div class="form-group">
                                         <label for="suffix">Suffix</label>
                                         <input type="text" name="suffix" id="suffix" value="{{ $user->suffix }}"
-                                            class="form-control" />
+                                            class="form-control" readonly />
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Professional Name</label>
                                         <input type="text" name="name" id="name" class="form-control"
-                                            value="{{ $user->name }}">
+                                            value="{{ $user->name }}" readonly>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -881,7 +881,7 @@
                                         <label>Birth Date</label>
                                         <div class="cal-icon">
                                             <input class="form-control datetimepicker" type="text" name="birthday"
-                                                id="birthday" value="{{ $user->birthday }}">
+                                                id="birthday" value="{{ $user->birthday }}" readonly>
                                         </div>
                                     </div>
                                 </div>

@@ -384,16 +384,24 @@
                     @csrf
                     <input type="hidden" name="leave_id" id="leave_id">
                     <div class="form-group">
-                        <label>Leave Type</label>
-                        <select class="form-control" name="leave_type_id" id="leave_type_id" required>
+                        <label>Leave Type <span class="text-danger">*</span></label>
+                        <select class="form-control" name="typee" id="typee" required>
                             <option value="">-- Select Leave Type --</option>
+                            @if($leaveCredits->isNotEmpty())
+                            @foreach($leaveCredits as $leaveCredit)
+                            <option value="{{ $leaveCredit->leave_type_id }}"
+                                data-credits="{{ $leaveCredit->remaining_credits }}">
+                                {{ $leaveCredit->leaveType->leaveType }}
+                            </option>
+                            @endforeach
+                            @else
+                            <!-- Fallback to all leave types if leave credits are empty -->
                             @foreach($leaveTypes as $leaveType)
-                            <option value="{{ $leaveType->id }}"
-                                data-credits="{{ $leaveType->leaveCredits->sum('remaining_credits') }}"
-                                @if(isset($leaveTypeId) && $leaveTypeId==$leaveType->id) selected @endif>
+                            <option value="{{ $leaveType->id }}">
                                 {{ $leaveType->leaveType }}
                             </option>
                             @endforeach
+                            @endif
                         </select>
 
                     </div>
@@ -507,6 +515,8 @@
 
 @section('scripts')
 
+
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         var approveButtons = document.querySelectorAll('.approve-button');
@@ -547,6 +557,7 @@
 
 <script>
     $(document).ready(function () {
+        // Initialize datetime pickers for start and end date fields
         $('#start_date, #end_date, #start_datee, #end_datee').datetimepicker({
             format: 'YYYY-MM-DD'
         });
@@ -555,48 +566,50 @@
             calculateTotalDays('#start_date', '#end_date', '#total_days');
         });
 
-        $('#start_datee').on('focus', function () {
-            $('#end_datee').val('');
-        });
-
         $('#start_datee, #end_datee').on('dp.change', function () {
             calculateTotalDays('#start_datee', '#end_datee', '#dayse');
         });
 
+        // Function to calculate total days between two dates
         function calculateTotalDays(startSelector, endSelector, outputSelector) {
             var startDate = $(startSelector).data('DateTimePicker').date();
             var endDate = $(endSelector).data('DateTimePicker').date();
 
             if (startDate && endDate) {
-                var diffDays = endDate.diff(startDate, 'days') +
-                    1; // Calculate difference in days and add 1
+                var diffDays = endDate.diff(startDate, 'days') + 1; // Calculate difference in days and add 1
                 $(outputSelector).val(diffDays);
             } else {
-                $(outputSelector).val('');
+                $(outputSelector).val(''); // Clear the output if dates are not both set
             }
         }
 
-        // Edit leave request
         $('.edit-leave').on('click', function () {
             var leaveId = $(this).data('id');
-            var leaveTypeId = $(this).data('type_id'); // Fetch the leave type ID
+            var leaveTypeId = $(this).data('type_id');
             var startDate = $(this).data('start_date');
             var endDate = $(this).data('end_date');
             var days = $(this).data('days');
             var reason = $(this).data('reason');
             var status = $(this).data('status');
 
-            // Populate the modal fields
+            // if (status === 'Approved') {
+            //     alert('This leave request has already been approved and cannot be edited.');
+            //     return;
+            // }
+
             $('#leave_id').val(leaveId);
-            $('#leave_type_id').val(leaveTypeId); // Set the selected leave type ID
+            $('#typee').val(leaveTypeId);
             $('#start_datee').val(startDate);
             $('#end_datee').val(endDate);
             $('#dayse').val(days);
             $('#reasone').val(reason);
 
             $('#editLeaveForm').attr('action', '/admin/leave/' + leaveId);
-            $('#edit_leave').modal('show'); // Show the modal
+            $('#edit_leave').modal('show');
         });
+
+
+
 
         // View leave request
         $('.view-leave').on('click', function () {

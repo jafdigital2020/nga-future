@@ -74,8 +74,6 @@ class ShiftController extends Controller
         return view('admin.shiftschedule.daily', compact('dates', 'users', 'startDate', 'endDate', 'departments'));
     }
     
-    
-
     public function shiftList()
     {
       $shiftlist = Shift::all();

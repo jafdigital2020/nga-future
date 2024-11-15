@@ -1,9 +1,164 @@
 @extends('layouts.hrmaster') @section('title', 'Employees')
 <meta name="csrf-token" content="{{ csrf_token() }}">
+<style>
+    .container-btn-file {
+        display: flex;
+        position: relative;
+        justify-content: center;
+        align-items: center;
+        background-color: #307750;
+        color: #fff;
+        border-style: none;
+        padding: 1em 2em;
+        border-radius: 0.5em;
+        overflow: hidden;
+        z-index: 1;
+        box-shadow: 4px 8px 10px -3px rgba(0, 0, 0, 0.356);
+        transition: all 250ms;
+    }
+
+    .container-btn-file input[type="file"] {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .container-btn-file>svg {
+        margin-right: 1em;
+    }
+
+    .container-btn-file::before {
+        content: "";
+        position: absolute;
+        height: 100%;
+        width: 0;
+        border-radius: 0.5em;
+        background-color: #469b61;
+        z-index: -1;
+        transition: all 350ms;
+    }
+
+    .container-btn-file:hover::before {
+        width: 100%;
+    }
+
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100px;
+        height: 120px;
+        background-color: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-content {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn {
+        margin: 10px;
+        padding: 10px 20px;
+    }
+
+</style>
 @section('content')
 @include('sweetalert::alert')
 
 <div class="content container-fluid">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="page-title">Create Employee</h3>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url('hr/dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Create Employee</li>
+                </ul>
+            </div>
+            <div class="col-auto float-right ml-auto">
+                <div class="col-auto float-right ml-auto">
+                    <div class="btn-group btn-group-sm">
+                        <button class="container-btn-file">
+                            <svg fill="#fff" width="20" height="20" viewBox="0 0 50 50">
+                                <path d="M28.8125 .03125L.8125 5.34375C.339844 
+                              5.433594 0 5.863281 0 6.34375L0 43.65625C0 
+                              44.136719 .339844 44.566406 .8125 44.65625L28.8125 
+                              49.96875C28.875 49.980469 28.9375 50 29 50C29.230469 
+                              50 29.445313 49.929688 29.625 49.78125C29.855469 49.589844 
+                              30 49.296875 30 49L30 1C30 .703125 29.855469 .410156 29.625 
+                              .21875C29.394531 .0273438 29.105469 -.0234375 28.8125 .03125ZM32 
+                              6L32 13L34 13L34 15L32 15L32 20L34 20L34 22L32 22L32 27L34 27L34 
+                              29L32 29L32 35L34 35L34 37L32 37L32 44L47 44C48.101563 44 49 
+                              43.101563 49 42L49 8C49 6.898438 48.101563 6 47 6ZM36 13L44 
+                              13L44 15L36 15ZM6.6875 15.6875L11.8125 15.6875L14.5 21.28125C14.710938 
+                              21.722656 14.898438 22.265625 15.0625 22.875L15.09375 22.875C15.199219 
+                              22.511719 15.402344 21.941406 15.6875 21.21875L18.65625 15.6875L23.34375 
+                              15.6875L17.75 24.9375L23.5 34.375L18.53125 34.375L15.28125 
+                              28.28125C15.160156 28.054688 15.035156 27.636719 14.90625 
+                              27.03125L14.875 27.03125C14.8125 27.316406 14.664063 27.761719 
+                              14.4375 28.34375L11.1875 34.375L6.1875 34.375L12.15625 25.03125ZM36 
+                              20L44 20L44 22L36 22ZM36 27L44 27L44 29L36 29ZM36 35L44 35L44 37L36 37Z"></path>
+                            </svg>
+                            Bulk Upload
+                            <input class="file" name="file" type="file" id="file-upload" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /Page Header -->
+
+    <!-- Modal -->
+    <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">File Upload</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="file-name"></p>
+                    <p>Are you sure you want to upload this file?</p>
+                </div>
+                <form id="uploadForm" action="{{ route('hr.bulkCreate') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="file_name" id="hidden-file-name">
+                    <button type="submit" class="btn btn-primary">Yes</button>
+                    <button type="button" class="btn btn-secondary" id="cancel-upload">No</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
 
     <div class="row justify-content-center">
         <div class="col-12 col-sm-10 col-md-10 col-lg-6 col-xl-5 text-center p-0 mt-3 mb-2">
@@ -36,6 +191,7 @@
                                     <h2 class="steps">Step 1 - 5</h2>
                                 </div>
                             </div>
+
                             <label class="fieldlabels">Email: *</label>
                             <input type="email" class="form-control" name="email" placeholder="Email Id" required />
                             @error('email')
@@ -67,10 +223,9 @@
                             <select name="role_as" class="form-control" required>
                                 <option value="">-- Select --</option>
                                 <option value="3">Employee</option>
+                                <option value="1">Admin</option>
                                 <option value="2">HR</option>
-                                <option value="4">Operations Manager</option>
-                                <option value="5">IT Manager</option>
-                                <option value="6">Marketing Manager</option>
+                                <option value="4">Manager</option>
                             </select>
                             @error('role_as')
                             <div class="error-message">{{ $message }}</div>
@@ -99,11 +254,8 @@
                                         name="phoneNumber" />
                                 </div>
                                 <div class="col-sm-6">
-                                    <label class="fieldlabels">Birthday: *</label>
-                                    <div class="cal-icon">
-                                        <input class="datetimepicker" type="text" name="birthday"
-                                            placeholder="-- Select Date --" required />
-                                    </div>
+                                    <label class="fieldlabels">Birthday: *</label> <input class="datetimepicker"
+                                        type="text" name="birthday" placeholder="-- Select Date --" required />
                                 </div>
                             </div>
                             <label class="fieldlabels">Address: *</label> <textarea name="completeAddress" cols="30"
@@ -130,11 +282,8 @@
                                         name="empNumber" />
                                 </div>
                                 <div class="col-sm-6">
-                                    <label class="fieldlabels">Date Hired: *</label>
-                                    <div class="cal-icon">
-                                        <input class="datetimepicker" type="text" name="dateHired"
-                                            placeholder="-- Select Date --" required />
-                                    </div>
+                                    <label class="fieldlabels">Date Hired: *</label> <input class="datetimepicker"
+                                        type="text" name="dateHired" placeholder="-- Select Date --" required />
                                 </div>
                             </div>
                             <div class="row">
@@ -168,35 +317,6 @@
                                         <option value="{{ $user->id }}">{{ $user->fName }} {{ $user->lName }}</option>
                                         @endforeach
                                     </select>
-                                </div>
-                                <div class="col-sm-12">
-                                    <div class="form-group">
-                                        <label class="fieldlabels">Flexible Time:</label>
-                                        <div class="custom-control custom-switch">
-                                            <input type="checkbox" onchange="toggleShiftFields(this)"
-                                                class="custom-control-input" id="flexibleTime" name="flexibleTime"
-                                                value="1"> <!-- Default is off -->
-                                            <label class="custom-control-label" for="flexibleTime"></label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label class="fieldlabels">Shift Start: *</label>
-                                        <input type="time" name="shiftStart" id="shiftStart" required>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label class="fieldlabels">Late Threshold: *</label>
-                                        <input type="time" name="lateThreshold" id="lateThreshold" required>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label class="fieldlabels">Shift End: *</label>
-                                        <input type="time" name="shiftEnd" id="shiftEnd">
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -240,31 +360,39 @@
                         <div class="form-card">
                             <div class="row">
                                 <div class="col-7">
-                                    <h2 class="fs-title">Leave Credits:</h2>
+                                    <h2 class="fs-title">Assign Leave Credits:</h2>
                                 </div>
                                 <div class="col-5">
                                     <h2 class="steps">Step 5 - 5</h2> <!-- Updated step count -->
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-sm-4">
-                                    <label class="fieldlabels">Vacation Leave: *</label> <input type="number"
-                                        name="vacLeave" />
-                                </div>
-                                <div class="col-sm-4">
-                                    <label class="fieldlabels">Sick Leave: *</label> <input type="number"
-                                        name="sickLeave" />
-                                </div>
-                                <div class="col-sm-4">
-                                    <label class="fieldlabels">Birthday Leave: *</label> <input type="number"
-                                        name="bdayLeave" />
+                                <div class="d-flex flex-wrap">
+                                    @foreach($availableLeaveTypes as $leaveType)
+                                    <div class="form-group mx-2">
+                                        <div class="checkbox-wrapper">
+                                            <input style="display: none;" type="checkbox" class="inp-cbx"
+                                                name="leave_types[]" value="{{ $leaveType->id }}"
+                                                id="leaveType{{ $leaveType->id }}" />
+                                            <label for="leaveType{{ $leaveType->id }}" class="cbx">
+                                                <span>
+                                                    <svg viewBox="0 0 12 9" height="9px" width="12px">
+                                                        <polyline points="1 5 4 8 11 1"></polyline>
+                                                    </svg>
+                                                </span>
+                                                <span>{{ $leaveType->leaveType }} ({{ $leaveType->leaveDays }}
+                                                    days)</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    @endforeach
                                 </div>
                             </div>
-
                         </div>
                         <input type="submit" class="action-button" value="Submit" />
                         <input type="button" name="previous" class="previous action-button-previous" value="Previous" />
                     </fieldset>
+
                 </form>
             </div>
         </div>
@@ -455,6 +583,43 @@
             shiftEnd.val('');
         }
     }
+
+</script>
+
+<script>
+    // When the file is selected
+    document.getElementById('file-upload').addEventListener('change', function () {
+        const file = this.files[0];
+
+        if (file) {
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('uploadModal'));
+            modal.show();
+
+            // Display the selected file name
+            document.getElementById('file-name').textContent = `Selected file: ${file.name}`;
+
+            // Create a hidden input with the file name (only the name is passed here for confirmation)
+            document.getElementById('hidden-file-name').value = file.name;
+
+            // Save the file data to submit
+            const hiddenFileInput = document.createElement('input');
+            hiddenFileInput.type = 'file';
+            hiddenFileInput.name = 'file';
+            hiddenFileInput.id = 'hidden-file';
+            hiddenFileInput.style.display = 'none';
+            hiddenFileInput.files = this.files; // Assign the selected file to this input
+
+            // Append the hidden input to the form
+            document.getElementById('uploadForm').appendChild(hiddenFileInput);
+        }
+    });
+
+    // Close modal on 'No' button click
+    document.getElementById('cancel-upload').addEventListener('click', function () {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('uploadModal'));
+        modal.hide();
+    });
 
 </script>
 

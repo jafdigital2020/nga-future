@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers\HR;
 
+use Exception;
 use Carbon\Carbon;
+use App\Models\Memo;
 use App\Models\User;
+use App\Models\LeaveType;
 use Illuminate\Http\Request;
 use App\Models\ShiftSchedule;
 use App\Models\BankInformation;
@@ -15,6 +18,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 
 class EmployeeController extends Controller
@@ -203,6 +207,7 @@ class EmployeeController extends Controller
         }
     }
 
+    // ** DELETE ** //
     public function delete_function(Request $request)
     {
         $data = User::find($request->emp_delete_id);
@@ -210,12 +215,14 @@ class EmployeeController extends Controller
         return back();
     }
 
+    // ** EMPLOYEE FETCH (EDIT) ** //
     public function edit($user_id)
     {
-        $user = User::with('contactEmergency', 'bankInfo', 'employmentRecord','employmentSalary','shiftSchedule')->findOrFail($user_id);
+        $user = User::with('contactEmergency', 'bankInfo', 'employmentRecord', 'employmentSalary', 'shiftSchedule', 'leaveCredits', 'userAssets.asset', 'memos',)->findOrFail($user_id);
         $department = $user->department;
         $supervisor = $user->supervisor;
         $users = User::all();
+        $leaveTypes = LeaveType::all();
 
         switch ($user->role_as) {
             case 1:
@@ -230,14 +237,14 @@ class EmployeeController extends Controller
             default:
                 $user->role_as_text = 'Unknown';
         }
-        return view('hr.employee.edit', compact('user', 'supervisor', 'users'));
+        return view('hr.employee.edit', compact('user', 'supervisor', 'users', 'leaveTypes'));
     }
 
-
+    // ** EMPLOYEE UPDATE ** //
     public function update(Request $request, $user_id)
     {
         $user = User::findOrFail($user_id);
-
+    
         // Create a Validator instance
         $validator = Validator::make($request->all(), [
             'empNumber' => 'required|string',
@@ -265,8 +272,7 @@ class EmployeeController extends Controller
         if ($validator->fails()) {
             // Get all validation error messages
             $errors = $validator->errors();
-
-            // Check for specific field errors and set the message accordingly
+    
             if ($errors->has('reporting_to')) {
                 $errorMessage = $errors->first('reporting_to');
             } elseif ($errors->has('empNumber')) {
@@ -280,10 +286,9 @@ class EmployeeController extends Controller
             } elseif ($errors->has('mSalary')) {
                 $errorMessage = $errors->first('mSalary');
             } else {
-                // General error message if no specific field error
                 $errorMessage = 'Please correct the errors and try again.';
             }
-
+    
             Alert::error('Validation Error', $errorMessage);
             return redirect()->back()->withErrors($validator)->withInput();
         }
@@ -302,9 +307,6 @@ class EmployeeController extends Controller
         $user->position = $request->input('position');
         $user->email = $request->input('email');
         $user->mSalary = $request->input('mSalary');
-        $user->vacLeave = $request->input('vacLeave');
-        $user->sickLeave = $request->input('sickLeave');
-        $user->bdayLeave = $request->input('bdayLeave');
         $user->reporting_to = $request->input('reporting_to');
         
         if ($request->filled('password')) {
@@ -319,11 +321,70 @@ class EmployeeController extends Controller
         }
         
         $user->save();
-        
-        Alert::success('Employee Updated');
-        return redirect()->back();
+    
+        return redirect()->back()->with('success', 'Employee Updated!');
     }
 
+    // ** LEAVE CREDITS ** //
+    public function leaveCredits(Request $request, $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+    
+            // Validate leave credits input
+            $validator = Validator::make($request->all(), [
+                'leave_credits.*' => 'required|numeric|min:0',
+            ], [
+                'leave_credits.*.required' => 'Leave credit is required.',
+                'leave_credits.*.numeric' => 'Leave credit must be a number.',
+                'leave_credits.*.min' => 'Leave credit cannot be negative.',
+            ]);
+    
+            if ($validator->fails()) {
+                return redirect()->back()->withErrors($validator)->withInput();
+            }
+    
+            // Fetch leave types to check maximum allowed days for each leave type
+            $leaveTypes = LeaveType::whereIn('id', array_keys($request->input('leave_credits', [])))->get()->keyBy('id');
+    
+            $leaveCreditsData = $request->input('leave_credits', []);
+    
+            // Iterate through each leave type and validate against maximum allowed days
+            foreach ($leaveCreditsData as $leaveTypeId => $remainingCredits) {
+                if (!isset($leaveTypes[$leaveTypeId])) {
+                    return redirect()->back()->with('error', "Leave type ID $leaveTypeId is invalid.");
+                }
+    
+                $maxAllowedDays = $leaveTypes[$leaveTypeId]->leaveDays;
+    
+                // Check if the submitted credits exceed the allowed leave days
+                if ($remainingCredits > $maxAllowedDays) {
+                    return redirect()->back()->with([
+                        "error" => "The leave credit for leave type {$leaveTypes[$leaveTypeId]->leaveType} cannot exceed $maxAllowedDays days."
+                    ])->withInput();
+                }
+    
+                // Create or update leave credits
+                LeaveCredit::updateOrCreate(
+                    [
+                        'user_id' => $user->id,
+                        'leave_type_id' => $leaveTypeId,
+                    ],
+                    [
+                        'remaining_credits' => $remainingCredits
+                    ]
+                );
+            }
+    
+            return redirect()->back()->with('success', 'Leave Updated!');
+    
+        } catch (\Exception $e) {
+            Log::error('Error updating leave credits for user ID ' . $id . ': ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong while updating leave credits. Please try again.');
+        }
+    }
+
+    // ** GOVERTNMENT ** //
     public function government (Request $request, $user_id)
     {
         $user = User::findOrFail($user_id);
@@ -339,6 +400,7 @@ class EmployeeController extends Controller
         return redirect()->back();
     }
 
+    // ** EMERGENCY CONTACT ** //
     public function contactStore (Request $request, $user_id)
     {
         $user = User::with('contactEmergency')->findOrFail($user_id);
@@ -376,6 +438,7 @@ class EmployeeController extends Controller
         return redirect()->back();
     }
 
+    // ** BANK INFO ** //
     public function bankInfo (Request $request, $user_id)
     {
         $user = User::with('bankInfo')->findOrfail($user_id);
@@ -445,6 +508,69 @@ class EmployeeController extends Controller
         return redirect()->back();
     }
 
+    // ** CREATE MEMO ** //
+    public function createMemo(Request $request, $id)
+    {
+        try {
+            // Validate the incoming request data
+            $request->validate([
+                'date_issue' => 'required|date',
+                'attached_file' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048', // Allows image and PDF files up to 2MB
+            ]);
+    
+            // Find the user by ID and load any existing memos
+            $user = User::with('memos')->findOrFail($id);
+    
+            // Prepare to create a new memo
+            $memo = new Memo();
+            $memo->users_id = $user->id;
+            $memo->date_issue = $request->input('date_issue');
+    
+            // Handle file upload if provided
+            if ($request->hasFile('attached_file')) {
+                $filePath = $request->file('attached_file')->store('memos', 'public');
+                $memo->attached_file = $filePath;
+            }
+    
+            // Save the memo
+            $memo->save();
+    
+            // Return success response
+            return redirect()->back()->with('success', 'Memo created successfully.');
+    
+        } catch (\Exception $e) {
+            // Log and handle errors
+            Log::error('Memo creation failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while creating the memo. Please try again.');
+        }
+    }
+
+    // ** UPDATE MEMO **//
+    public function updateMemo(Request $request, $id)
+    {
+        $request->validate([
+            'date_issue' => 'required|date',
+            'attached_file' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
+        ]);
+
+        $memo = Memo::findOrFail($id);
+        $memo->date_issue = $request->date_issue;
+
+        if ($request->hasFile('attached_file')) {
+            // Delete old file if exists
+            if ($memo->attached_file && \Storage::disk('public')->exists($memo->attached_file)) {
+                \Storage::disk('public')->delete($memo->attached_file);
+            }
+            // Store new file
+            $memo->attached_file = $request->file('attached_file')->store('memos', 'public');
+        }
+
+        $memo->save();
+
+        return redirect()->back()->with('success', 'Memo updated successfully.');
+    }
+
+    // ** CHANGE THE PASSWORD OF THE USER ** //
     public function changePassword(Request $request, $user_id)
     {
         $user = User::findOrFail($user_id);
@@ -475,75 +601,23 @@ class EmployeeController extends Controller
         ]);
     }
 
-    public function shiftSchedule(Request $request, $user_id)
-    {
-        // Find the user and their shift schedule
-        $user = User::with('shiftSchedule')->findOrFail($user_id);
-        $shift = ShiftSchedule::where('users_id', $user->id)->first();
-    
-        // Determine if flexible time is enabled
-        $flexibleTime = $request->input('flexibleTime') == '1';
-    
-        if ($flexibleTime) {
-            // If flexible time is enabled, save this state
-            if ($shift) {
-                $shift->isFlexibleTime = true;
-                $shift->shiftStart = null;
-                $shift->lateThreshold = null;
-                $shift->shiftEnd = null;
-                $shift->save();
-                Alert::success('Flexible Time Set');
-            } else {
-                // Create new shift schedule with flexible time
-                $shift = new ShiftSchedule();
-                $shift->users_id = $user->id;
-                $shift->shiftStart = null;
-                $shift->lateThreshold = null;
-                $shift->shiftEnd = null;
-                $shift->isFlexibleTime = true;
-                $shift->save();
-                Alert::success('Added Schedule with Flexible Time');
-            }
-        } else {
-            // If flexible time is not enabled, save shift details
-            $shiftStart = Carbon::parse($request->input('shiftStart'))->format('H:i:s');
-            $lateThreshold = Carbon::parse($request->input('lateThreshold'))->format('H:i:s');
-            $shiftEnd = Carbon::parse($request->input('shiftEnd'))->format('H:i:s');
-    
-            if ($shift) {
-                // Update existing shift
-                $shift->shiftStart = $shiftStart;
-                $shift->lateThreshold = $lateThreshold;
-                $shift->shiftEnd = $shiftEnd;
-                $shift->isFlexibleTime = false;
-                $shift->save();
-                Alert::success('Shift Successfully Changed');
-            } else {
-                // Create new shift
-                $shift = new ShiftSchedule();
-                $shift->users_id = $user->id;
-                $shift->shiftStart = $shiftStart;
-                $shift->lateThreshold = $lateThreshold;
-                $shift->shiftEnd = $shiftEnd;
-                $shift->isFlexibleTime = false;
-                $shift->save();
-                Alert::success('Added Schedule');
-            }
-        }
-    
-        return redirect()->back();
-    }
-
+    // ** CREATE EMPLOYEE (VIEW) ** //
     public function createView ()
     {
-        $users = User::all();
+        $users = User::all(); 
+        $availableLeaveTypes = LeaveType::all(); 
+    
+        $assignedLeaveTypes = []; 
+        $leaveCredits = []; 
 
-        return view('hr.employee.create', compact('users'));
+        return view('hr.employee.create', compact('users', 'availableLeaveTypes', 'assignedLeaveTypes', 'leaveCredits'));
     }
 
-    public function create (Request $request)
+    // ** CREATE EMPLOYEE **//
+    public function create(Request $request)
     {
         try {
+
             // Handle image upload
             $imageName = 'default.png';
             if ($request->hasFile('image')) {
@@ -573,40 +647,41 @@ class EmployeeController extends Controller
                 'philHealth' => $request->input('philHealth'),
                 'tin' => $request->input('tin'),
                 'department' => $request->input('department'),
-                'bdayLeave' => $request->input('bdayLeave'),
-                'vacLeave' => $request->input('vacLeave'),
-                'sickLeave' => $request->input('sickLeave'),
                 'reporting_to' => $request->input('reporting_to'),
                 'image' => $imageName,
             ]);
     
-            // Handle shift schedule
-            $shift = ShiftSchedule::firstOrNew(['users_id' => $user->id]);
-            $flexibleTime = $request->input('flexibleTime') == '1';
-    
-            if ($flexibleTime) {
-                $shift->isFlexibleTime = true;
-            } else {
-                $shift->shiftStart = Carbon::parse($request->input('shiftStart'))->format('H:i:s');
-                $shift->lateThreshold = Carbon::parse($request->input('lateThreshold'))->format('H:i:s');
-                $shift->shiftEnd = Carbon::parse($request->input('shiftEnd'))->format('H:i:s');
-                $shift->isFlexibleTime = false;
+            // Handle leave credits
+            $leaveTypes = $request->input('leave_types'); // This should be an array of leave type IDs
+            if ($leaveTypes && is_array($leaveTypes)) {
+                foreach ($leaveTypes as $leaveTypeId) {
+                    // Check if the leave type exists
+                    $leaveType = LeaveType::find($leaveTypeId);
+                    if ($leaveType) {
+                        // Save leave credits for the user
+                        LeaveCredit::create([
+                            'user_id' => $user->id,
+                            'leave_type_id' => $leaveTypeId,
+                            'remaining_credits' => $leaveType->leaveDays, // Set initial credits based on leaveDays
+                        ]);
+                    } else {
+                        // Handle the case where the leave type does not exist
+                        Log::warning("Leave type ID {$leaveTypeId} does not exist. Skipping leave credit assignment for user ID {$user->id}.");
+                    }
+                }
             }
-            
-            $shift->save();
-
-            Alert::success('Employee Added Successfully', 'Employee Added');
-            return redirect()->route('hr.employeeindex');
-        } catch (\Illuminate\Validation\ValidationException $e) {
+     
+            return redirect()->back()->with('success', 'Employee Added Successfully');
+        } catch (ValidationException $e) {
             Alert::error('Validation Error', $e->getMessage())->persistent(true);
             return redirect()->back()->withErrors($e->errors())->withInput();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error($e->getMessage());
             Alert::error('Error Occurred', $e->getMessage())->persistent(true);
             return redirect()->back()->withInput();
         }
     }
-
+    
     public function validateStep1(Request $request)
     {
         $validatedData = $request->validate([
@@ -699,6 +774,132 @@ class EmployeeController extends Controller
             'vacLeave.required' => 'Vacation Leave field is required.',
             'bdayLeave.required' => 'Birthday Leave field is required.',
         ]);
+    }
+
+    // ** BULK CREATE USER ** //
+
+    public function bulkCreate(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:csv,txt',
+        ]);
+    
+        // Log start of the bulk upload process
+        Log::info('Bulk user creation process started.');
+    
+        // Get the current user count
+        $userCount = User::count();
+        Log::info('Current user count: ' . $userCount);
+        
+        // If the total user count is already at 11, prevent further creation
+        if ($userCount >= 100) {
+            return redirect()->back()->with('error', 'User limit reached. You cannot add more users.');
+        }
+    
+        if ($file = $request->file('file')) {
+            Log::info('File found. Starting file processing.');
+    
+            $fileData = fopen($file, 'r');
+            $header = fgetcsv($fileData); // Get header row
+    
+            $newUsersCount = 0;
+            $errors = []; // Collect errors here
+            $existingEmails = User::pluck('email')->toArray(); // Get existing emails
+            $existingEmpNumbers = User::pluck('empNumber')->toArray(); // Get existing empNumbers
+            $processedEmails = []; // Keep track of processed emails in the CSV
+            $processedEmpNumbers = []; // Keep track of processed empNumbers in the CSV
+    
+            while ($row = fgetcsv($fileData)) {
+                $newUsersCount++;
+    
+                // Combine header with row data
+                $userData = array_combine($header, $row);
+                Log::info('Processing row ' . $newUsersCount, $userData);
+    
+                // Check if adding this user will exceed the limit
+                if (User::count() >= 100) {
+                    $errors[] = "Row $newUsersCount: User limit reached. Cannot add more users.";
+                    continue;
+                }
+    
+                // Check if required fields are missing or invalid
+                if (empty($userData['fName']) || empty($userData['lName']) || empty($userData['email']) || empty($userData['password'])) {
+                    $errors[] = "Row $newUsersCount: Missing required fields (fName, lName, email, or password).";
+                    continue; // Skip this row
+                }
+    
+                // Validate email format
+                if (!filter_var($userData['email'], FILTER_VALIDATE_EMAIL)) {
+                    $errors[] = "Row $newUsersCount: Invalid email format.";
+                    continue; // Skip this row
+                }
+    
+                // Remove commas from mSalary and validate it
+                $userData['mSalary'] = str_replace(',', '', $userData['mSalary']);
+                if (!is_numeric($userData['mSalary'])) {
+                    $errors[] = "Row $newUsersCount: Salary must be a numeric value without commas.";
+                    continue; // Skip this row
+                }
+    
+                // Check for duplicates in the CSV file
+                if (in_array($userData['email'], $processedEmails)) {
+                    $errors[] = "Row $newUsersCount: Duplicate entry for email '{$userData['email']}' in the CSV file.";
+                    Log::warning("Row $newUsersCount: Duplicate email '{$userData['email']}' found in the CSV file.");
+                    continue; // Skip this row
+                }
+    
+                if (in_array($userData['empNumber'], $processedEmpNumbers)) {
+                    $errors[] = "Row $newUsersCount: Duplicate entry for employee number '{$userData['empNumber']}' in the CSV file.";
+                    Log::warning("Row $newUsersCount: Duplicate employee number '{$userData['empNumber']}' found in the CSV file.");
+                    continue; // Skip this row
+                }
+    
+                // Check for duplicates in the database
+                if (in_array($userData['email'], $existingEmails)) {
+                    $errors[] = "Row $newUsersCount: The email '{$userData['email']}' already exists in the database.";
+                    Log::warning("Row $newUsersCount: Email '{$userData['email']}' already exists in the database.");
+                    continue; // Skip this row
+                }
+    
+                if (in_array($userData['empNumber'], $existingEmpNumbers)) {
+                    $errors[] = "Row $newUsersCount: The employee number '{$userData['empNumber']}' already exists in the database.";
+                    Log::warning("Row $newUsersCount: Employee number '{$userData['empNumber']}' already exists in the database.");
+                    continue; // Skip this row
+                }
+    
+                // Add email and empNumber to processed arrays to track duplicates
+                $processedEmails[] = $userData['email'];
+                $processedEmpNumbers[] = $userData['empNumber'];
+    
+                // Concatenate name fields
+                $userData['name'] = $userData['fName'] . ' ' . ($userData['mName'] ?? '') . ' ' . $userData['lName'];
+    
+                // Hash the password
+                $userData['password'] = Hash::make($userData['password']);
+    
+                try {
+                    // Create the user
+                    User::create($userData);
+                } catch (\Exception $e) {
+                    // Log any unexpected errors
+                    Log::error('Error creating user on row ' . $newUsersCount . ': ' . $e->getMessage());
+                    $errors[] = "Row $newUsersCount: Failed to create user due to a database error.";
+                }
+            }
+    
+            fclose($fileData);
+    
+            // Check if any errors occurred
+            if (!empty($errors)) {
+                Log::error('Bulk upload errors: ', $errors);
+                // Format the errors for the UI
+                return redirect()->back()->with('error', 'There were errors in the bulk upload: ' . implode('<br>', $errors));
+            }
+    
+            return redirect()->back()->with('success', 'Users created successfully.');
+        }
+    
+        return redirect()->back()->with('error', 'No file was uploaded.');
     }
 
 }

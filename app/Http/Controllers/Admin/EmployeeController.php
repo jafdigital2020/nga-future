@@ -20,6 +20,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 
 class EmployeeController extends Controller
@@ -189,7 +190,7 @@ class EmployeeController extends Controller
                 'dateHired' => $request->input('dateHired'),
                 'birthday' => $request->input('birthday'),
                 'completeAddress' => $request->input('completeAddress'),
-                'mSalary' => $request->input('mSalary'),
+                'hourly_rate' => $request->input('hourly_rate'),
                 'position' => $request->input('position'),
                 'role_as' => $request->input('role_as'),
                 'sss' => $request->input('sss'),
@@ -219,9 +220,25 @@ class EmployeeController extends Controller
 
     public function delete_function(Request $request)
     {
-        $data = User::find($request->emp_delete_id);
-        $data->delete();
-        return redirect()->back()->with('success', 'Deleted Successfully!');
+        // Get the employee ID from the request
+        $userId = $request->input('emp_delete_id');
+        
+        // Find the user by ID
+        $data = User::find($userId);
+    
+        // Check if the user exists
+        if ($data) {
+            // Update the user's status to 'inactive'
+            $data->update([
+                'status' => 'inactive', // Assuming you have a 'status' field
+            ]);
+    
+            // Return success message
+            return redirect()->back()->with('success', 'User status updated to inactive successfully!');
+        } else {
+            // Return error if user is not found
+            return redirect()->back()->with('error', 'User not found.');
+        }
     }
 
     public function edit($user_id)
@@ -258,7 +275,7 @@ class EmployeeController extends Controller
             'typeOfContract' => 'required|string',
             'position' => 'required|string',
             'department' => 'required|string',
-            'mSalary' => 'required|string',
+            'hourly_rate' => 'required|string',
             'reporting_to' => [
                 'nullable',
                 'exists:users,id',
@@ -270,7 +287,7 @@ class EmployeeController extends Controller
             'typeOfContract.required' => 'Please select type of contract.',
             'position.required' => 'Position field is required.',
             'department.required' => 'Department field is required.',
-            'mSalary.required' => 'Monthly Salary field is required.',
+            'hourly_rate.required' => 'Hourly rate field is required.',
             'reporting_to.exists' => 'The selected Reporting To is invalid or does not exist.',
             'reporting_to.not_in' => 'You cannot select the same user in reporting to.',
         ]);
@@ -290,8 +307,8 @@ class EmployeeController extends Controller
                 $errorMessage = $errors->first('position');
             } elseif ($errors->has('department')) {
                 $errorMessage = $errors->first('department');
-            } elseif ($errors->has('mSalary')) {
-                $errorMessage = $errors->first('mSalary');
+            } elseif ($errors->has('hourly_rate')) {
+                $errorMessage = $errors->first('hourly_rate');
             } else {
                 $errorMessage = 'Please correct the errors and try again.';
             }
@@ -313,7 +330,7 @@ class EmployeeController extends Controller
         $user->completeAddress = $request->input('completeAddress');
         $user->position = $request->input('position');
         $user->email = $request->input('email');
-        $user->mSalary = $request->input('mSalary');
+        $user->hourly_rate = $request->input('hourly_rate');
         $user->reporting_to = $request->input('reporting_to');
         
         if ($request->filled('password')) {
@@ -571,8 +588,6 @@ class EmployeeController extends Controller
         return redirect()->back()->with('success', 'Memo updated successfully.');
     }
 
-    
-
     public function changePassword(Request $request, $user_id)
     {
         $user = User::findOrFail($user_id);
@@ -641,7 +656,7 @@ class EmployeeController extends Controller
                 'dateHired' => $request->input('dateHired'),
                 'birthday' => $request->input('birthday'),
                 'completeAddress' => $request->input('completeAddress'),
-                'mSalary' => $request->input('mSalary'),
+                'hourly_rate' => $request->input('hourly_rate'),
                 'position' => $request->input('position'),
                 'role_as' => $request->input('role_as'),
                 'sss' => $request->input('sss'),
@@ -674,7 +689,7 @@ class EmployeeController extends Controller
             }
      
             return redirect()->route('admin.employeeindex')->with('success', 'Employee Added Successfully');
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             Alert::error('Validation Error', $e->getMessage())->persistent(true);
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
@@ -731,7 +746,7 @@ class EmployeeController extends Controller
             'typeOfContract' => 'required|string',
             'position' => 'required|string',
             'department' => 'required|string',
-            'mSalary' => 'required|string',
+            'hourly_rate' => 'required|string',
             'reporting_to' => 'required|string',
         ], [
             'reporting_to.required' => 'Please Select "Reporting To".',
@@ -740,7 +755,7 @@ class EmployeeController extends Controller
             'typeOfContract.required' => 'Please select type of contract.',
             'position.required' => 'Position field is required',
             'department.required' => 'Deparment field is required',
-            'mSalary.required' => 'Monthly Salary Field is required',
+            'hourly_rate.required' => 'Hourly Field is required',
         ]);
 
         return response()->json(['success' => true]);
@@ -781,7 +796,6 @@ class EmployeeController extends Controller
         return $validatedData; 
     }
     
-
     public function bulkCreate(Request $request)
     {
         $request->validate([
@@ -838,9 +852,9 @@ class EmployeeController extends Controller
                     continue; // Skip this row
                 }
     
-                // Remove commas from mSalary and validate it
-                $userData['mSalary'] = str_replace(',', '', $userData['mSalary']);
-                if (!is_numeric($userData['mSalary'])) {
+                // Remove commas from hourly_rate and validate it
+                $userData['hourly_rate'] = str_replace(',', '', $userData['hourly_rate']);
+                if (!is_numeric($userData['hourly_rate'])) {
                     $errors[] = "Row $newUsersCount: Salary must be a numeric value without commas.";
                     continue; // Skip this row
                 }
@@ -906,6 +920,22 @@ class EmployeeController extends Controller
         return redirect()->back()->with('error', 'No file was uploaded.');
     }
     
+    public function showInactiveUsers()
+    {
+        // Fetch users with status 'inactive'
+        $inactiveUsers = User::where('status', 'inactive')->get();
+
+        return view('admin.employee.inactive', compact('inactiveUsers'));
+    }
+
+    public function activateUser($id)
+    {
+        $user = User::findOrFail($id);
+        $user->status = 'active';
+        $user->save();
+        return redirect()->back()->with('success', 'User activated successfully!');
+    }
+
     
 
 }

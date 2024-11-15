@@ -152,14 +152,14 @@
                         <tr>
                             <td>
                                 <h2 class="table-avatar">
-                                    <a href="{{ url('manager/profile') }}" class="avatar">
+                                    <a href="{{ url('emp/profile') }}" class="avatar">
                                         @if ($pay->user->image)
                                         <img src="{{ asset('images/' . $pay->user->image) }}" alt="Profile Image" />
                                         @else
                                         <img src="{{ asset('images/default.png') }}" alt="Profile Image" />
                                         @endif
                                     </a>
-                                    <a href="{{ url('manager/profile') }}">
+                                    <a href="{{ url('emp/profile') }}">
                                         @if($pay->user->fName || $pay->user->mName || $pay->user->lName)
                                         {{ $pay->user->fName ?? '' }}
                                         {{ $pay->user->mName ?? '' }}
@@ -177,14 +177,14 @@
                             <td>{{ $pay->end_date }}</td>
                             <td>{{ $pay->month }}</td>
                             <td>{{ $pay->cut_off }}</td>
-                            <td>{{ $pay->totalHours }}</td>
-                            <td>₱{{ number_format($pay->netPayTotal, 2) }}</td>
+                            <td>{{ $pay->total_hours }}</td>
+                            <td>₱{{ number_format($pay->net_pay, 2) }}</td>
                             <td class="text-right">
                                 <div class="dropdown dropdown-action">
                                     <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown"
                                         aria-expanded="false"><i class="material-icons">more_vert</i></a>
                                     <div class="dropdown-menu dropdown-menu-right">
-                                        <a class="dropdown-item" href="{{ url('manager/payslip/view/'.$pay->id) }}">
+                                        <a class="dropdown-item" href="{{ url('emp/payslip/view/'.$pay->id) }}">
                                             <i class="fa fa-eye m-r-5"></i>View
                                         </a>
                                         <a class="dropdown-item edit-attendance" href="#">
@@ -204,4 +204,63 @@
 @endsection
 
 @section('scripts')
+
+<script>
+    function printDiv(divId) {
+        var content = document.getElementById(divId).innerHTML;
+        var originalContent = document.body.innerHTML;
+
+        // Replace the body content with only the printable content
+        document.body.innerHTML = content;
+
+        // Trigger the print dialog
+        window.print();
+
+        // Restore the original page content after printing
+        document.body.innerHTML = originalContent;
+    }
+
+</script>
+
+<script>
+    function downloadPDF() {
+        const {
+            jsPDF
+        } = window.jspdf;
+        const doc = new jsPDF('p', 'pt', 'a4'); // Initialize jsPDF, a4 size (portrait)
+
+        var content = document.getElementById('printable-area');
+
+        html2canvas(content, {
+            scale: 2, // Increase resolution
+            useCORS: true, // Allow cross-origin images
+        }).then(function (canvas) {
+            var imgData = canvas.toDataURL('image/png');
+
+            // Calculate the image height and width
+            var imgWidth = 595.28; // A4 width in points
+            var pageHeight = 841.89; // A4 height in points
+            var imgHeight = canvas.height * imgWidth / canvas.width;
+            var heightLeft = imgHeight;
+
+            var position = 0;
+
+            // Add the image and manage pagination
+            doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+
+            while (heightLeft >= 0) {
+                position = heightLeft - imgHeight;
+                doc.addPage();
+                doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+            }
+
+            // Save the PDF
+            doc.save('payslip.pdf');
+        });
+    }
+
+</script>
+
 @endsection

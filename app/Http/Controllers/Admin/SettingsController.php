@@ -101,15 +101,6 @@ class SettingsController extends Controller
                 $theme->logo = ''; 
             }
 
-            if ($request->hasFile('favicon')) {
-                $file2 = $request->file('favicon'); // Different variable name for favicon
-                $imageName2 = time() . '_favicon.' . $file2->extension(); // Unique name for favicon
-                $destinationPath2 = public_path('images');
-                $file2->move($destinationPath2, $imageName2);
-                $theme->favicon = $imageName2;
-            } else {
-                $theme->favicon = ''; 
-            }
 
             $theme->webName = $request->input('webName');
             $theme->save();
@@ -131,16 +122,6 @@ class SettingsController extends Controller
                 $theme->logo = ''; 
             }
 
-            if ($request->hasFile('favicon')) {
-                $file2 = $request->file('favicon'); 
-                $imageName2 = time() . '_favicon.' . $file2->extension(); 
-                $destinationPath2 = public_path('images');
-                $file2->move($destinationPath2, $imageName2);
-                $theme->favicon = $imageName2;
-            } else {
-                $theme->favicon = ''; 
-            }
-           
             $theme->webName = $request->input('webName');
             $theme->save();
 
@@ -214,10 +195,20 @@ class SettingsController extends Controller
     public function leaveTypeStore(Request $request)
     {
         try {
+
+            // Validate the request data
+            $request->validate([
+                'leaveType' => 'required|string|max:255',
+                'leaveDays' => 'required|integer|min:1',
+                'restriction_days' => 'required|integer|min:1',
+                'is_paid' => 'required|boolean',
+            ]);
+
             $type = new LeaveType();
             $type->leaveType = $request->input('leaveType');
             $type->leaveDays = $request->input('leaveDays');
-            $type->status = $request->input('status');
+            $type->restriction_days = $request->input('restriction_days');
+            $type->status = 'Active';
             $type->is_paid = $request->input('is_paid');
 
             $type->save();

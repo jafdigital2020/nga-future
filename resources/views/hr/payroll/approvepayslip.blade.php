@@ -41,15 +41,12 @@
             <div class="col-sm-6 col-md-2">
                 <div class="form-group form-focus select-focus">
                     <select class="select floating" name="department">
-                        <option value="">--Department--</option>
-                        @foreach($departments as $dept)
-                        <option value="{{ $dept->department }}"
-                            {{ $dept->department == $departments ? 'selected' : '' }}>
-                            {{ $dept->department }}
-                        </option>
+                        <option value="" disabled selected>Select Department</option>
+                        @foreach ($departments as $dept)
+                        <option value="{{ $dept }}">{{ $dept }}</option>
                         @endforeach
                     </select>
-                    <label class="focus-label">Select Department</label>
+                    <label class="focus-label">Department</label>
                 </div>
             </div>
             <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
@@ -172,7 +169,7 @@
                             <th>Cut-Off</th>
                             <th>Total Hours</th>
                             <th>Net Pay</th>
-                            <th>Payslip</th>
+                            <th class="text-center">Payslip</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -211,10 +208,10 @@
                             <td>{{ $pay->end_date }}</td>
                             <td>{{ $pay->month }}</td>
                             <td>{{ $pay->cut_off }}</td>
-                            <td>{{ $pay->totalHours }}</td>
-                            <td>₱{{ number_format($pay->netPayTotal, 2) }}</td>
+                            <td>{{ $pay->total_hours }}</td>
+                            <td>₱{{ number_format($pay->net_pay, 2) }}</td>
                             @php
-                            $netPayTotalSum += $pay->netPayTotal; // Add the current netPayTotal to the sum
+                            $netPayTotalSum += $pay->net_pay; // Add the current netPayTotal to the sum
                             @endphp
                             <td>
                                 <form action="{{ url('hr/approved/payslip/' . $pay->id) }}" method="POST">
@@ -227,10 +224,11 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="8" class="text-right"><strong>Total Net Pay:</strong></td>
+                            <td colspan="7" class="text-right"></td>
+                            <td><strong>Total Net Pay:</strong></td>
                             <td><strong style="color:red;">₱{{ number_format($netPayTotalSum, 2) }}</strong></td>
                             <td></td>
-                            <td></td>
+
                         </tr>
                     </tfoot>
                 </table>
@@ -258,8 +256,8 @@
 
                 foreach ($payslip as $pay) {
                 // Safely convert to float in case values are null or non-numeric
-                $totalHours += floatval($pay->totalHours); // Sum of total hours worked
-                $netPayTotalSum += floatval($pay->netPayTotal); // Sum of net pay
+                $totalHours += floatval($pay->total_hours); // Sum of total hours worked
+                $netPayTotalSum += floatval($pay->net_pay); // Sum of net pay
                 }
                 @endphp
                 <p><strong>Total Employees:</strong> {{ $totalEmployees }}</p>
@@ -306,7 +304,7 @@
         }
 
         // AJAX request to handle bulk action
-        fetch(`/admin/approved/generate-payslip/bulk-action`, {
+        fetch(`/hr/approved/generate-payslip/bulk-action`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -349,9 +347,9 @@
         csv += ',';
         csv += "{{ $pay->cut_off }}";
         csv += ',';
-        csv += "{{ $pay->totalHours }}";
+        csv += "{{ $pay->total_hours }}";
         csv += ',';
-        csv += "{{ $pay->netPayTotal }}"; // Keep Net Pay without encoding issues
+        csv += "{{ $pay->net_pay }}"; // Keep Net Pay without encoding issues
         csv += '\n';
         @endforeach
 

@@ -1,26 +1,5 @@
 @extends('layouts.master') @section('title', 'Employee Record')
-<style>
-    .memo-card {
-        border-radius: 8px;
-        border: 1px solid #e0e0e0;
-        transition: box-shadow 0.3s;
-    }
 
-    .memo-card:hover {
-        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .memo-card .card-title {
-        font-size: 1.1em;
-        font-weight: bold;
-        color: #333;
-    }
-
-    .position-absolute {
-        position: absolute;
-    }
-
-</style>
 
 @section('content')
 @include('sweetalert::alert')
@@ -1098,20 +1077,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="row">
-                        @foreach($leaveTypes as $leaveType)
-                        <div class="col-sm-3">
-                            <div class="form-group">
-                                <label>{{ $leaveType->leaveType }}</label>
-                                <input type="number" class="form-control" name="leave_credits[{{ $leaveType->id }}]"
-                                    id="leave_credits_{{ $leaveType->id }}"
-                                    value="{{ optional($user->leaveCredits->where('leave_type_id', $leaveType->id)->first())->remaining_credits ?? 0 }}"
-                                    required>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
                     <div class="row">
                         <div class="col-md-12">
                             <div class="form-group">
@@ -1143,6 +1108,14 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
+                                <label> Hourly Rate </label>
+                                <input type="text" name="hourly_rate" id="hourly_rate" class="form-control"
+                                    value="{{ $user->hourly_rate }}">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
                                 <label>Role</label>
                                 <select class="form-control" name="role_as" id="role_as">
                                     <option value="1" {{ $user->role_as == '1' ? 'selected' : '' }}>
@@ -1152,11 +1125,7 @@
                                         HR</option>
                                     <option value="3" {{ $user->role_as == '3' ? 'selected' : '' }}>Employee
                                     </option>
-                                    <option value="4" {{ $user->role_as == '4' ? 'selected' : '' }}>Operations Manager
-                                    </option>
-                                    <option value="5" {{ $user->role_as == '5' ? 'selected' : '' }}>IT Manager
-                                    </option>
-                                    <option value="6" {{ $user->role_as == '6' ? 'selected' : '' }}>Marketing Manager
+                                    <option value="4" {{ $user->role_as == '4' ? 'selected' : '' }}> Manager
                                     </option>
                                 </select>
                             </div>

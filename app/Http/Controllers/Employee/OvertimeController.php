@@ -60,132 +60,132 @@ class OvertimeController extends Controller
         return view('emp.overtime.index', compact('overtime', 'pendingCount', 'rejectedCount', 'approvedHours', 'totalRequestsThisMonth', 'otCredits', 'decimalHours'));
     }
 
-
-        public function overtimeRequest(Request $request)
-        {
-            try {
-                Log::info("Starting overtime request submission", [
-                    'user_id' => Auth::id(),
-                    'input_data' => $request->all()
+    public function overtimeRequest(Request $request)
+    {
+        try {
+            Log::info("Starting overtime request submission", [
+                'user_id' => Auth::id(),
+                'input_data' => $request->all()
+            ]);
+    
+            // Validate the request, including file upload
+            $validated = $request->validate([
+                'date' => 'required|date|after_or_equal:today', // Allow for same-day requests
+                'reason' => 'required|string',
+                'start_time' => 'required|date_format:H:i',
+                'end_time' => 'required|date_format:H:i|after:start_time',
+                'total_hours' => 'required|date_format:H:i:s',
+                'attached_file' => 'nullable|file|mimetypes:image/jpeg,image/png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document|max:5120',
+            ]);
+    
+            Log::info("Validation successful");
+    
+            // Convert total_hours to seconds
+            $newRequestHours = Carbon::createFromFormat('H:i:s', $request->total_hours)->secondsSinceMidnight();
+    
+            // Get existing overtime requests for the same date by the user
+            $user = Auth::user();
+            $existingOvertimeRequests = OvertimeRequest::where('users_id', $user->id)
+                ->where('date', $request->date)
+                ->get();
+    
+            // Calculate the total hours already requested for that day
+            $existingHours = $existingOvertimeRequests->reduce(function ($carry, $otRequest) {
+                return $carry + Carbon::createFromFormat('H:i:s', $otRequest->total_hours)->secondsSinceMidnight();
+            }, 0);
+    
+            // Define the 4-hour limit in seconds
+            $fourHours = 4 * 3600;
+    
+            // Check if the total of existing hours and the new request exceeds 4 hours
+            if (($existingHours + $newRequestHours) > $fourHours) {
+                $existingHoursFormatted = gmdate("H:i:s", $existingHours);
+                $newRequestHoursFormatted = gmdate("H:i:s", $newRequestHours);
+                Log::warning("Overtime request exceeds daily 4-hour limit", [
+                    'user_id' => $user->id,
+                    'existing_hours' => $existingHoursFormatted,
+                    'new_request_hours' => $newRequestHoursFormatted,
+                    'total_hours' => gmdate("H:i:s", $existingHours + $newRequestHours)
                 ]);
-    
-                // Validate the request, including file upload
-                $validated = $request->validate([
-                    'date' => 'required|date|after:today',
-                    'reason' => 'required|string',
-                    'start_time' => 'required|date_format:H:i',
-                    'end_time' => 'required|date_format:H:i|after:start_time',
-                    'total_hours' => 'required|date_format:H:i:s',
-                    'attached_file' => 'nullable|file|mimetypes:image/jpeg,image/png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document|max:5120',
-                ]);
-    
-                Log::info("Validation successful");
-    
-                // Convert total_hours to seconds
-                $newRequestHours = Carbon::createFromFormat('H:i:s', $request->total_hours)->secondsSinceMidnight();
-    
-                // Get existing overtime requests for the same date by the user
-                $user = Auth::user();
-                $existingOvertimeRequests = OvertimeRequest::where('users_id', $user->id)
-                    ->where('date', $request->date)
-                    ->get();
-    
-                // Calculate the total hours already requested for that day
-                $existingHours = $existingOvertimeRequests->reduce(function ($carry, $otRequest) {
-                    return $carry + Carbon::createFromFormat('H:i:s', $otRequest->total_hours)->secondsSinceMidnight();
-                }, 0);
-    
-                // Define the 4-hour limit in seconds
-                $fourHours = 4 * 3600;
-    
-                // Check if the total of existing hours and the new request exceeds 4 hours
-                if (($existingHours + $newRequestHours) > $fourHours) {
-                    $existingHoursFormatted = gmdate("H:i:s", $existingHours);
-                    $newRequestHoursFormatted = gmdate("H:i:s", $newRequestHours);
-                    Log::warning("Overtime request exceeds daily 4-hour limit", [
-                        'user_id' => $user->id,
-                        'existing_hours' => $existingHoursFormatted,
-                        'new_request_hours' => $newRequestHoursFormatted,
-                        'total_hours' => gmdate("H:i:s", $existingHours + $newRequestHours)
-                    ]);
-                    return redirect()->back()->with(['error' => 'Overtime request cannot exceed 4 hours per day.']);
-                }
-    
-                // Check for sufficient overtime credits
-                $overtimeCredits = OvertimeCredits::where('users_id', $user->id)->first();
-    
-                if (!$overtimeCredits || $overtimeCredits->otCredits == '00:00:00') {
-                    Log::warning("No overtime credits remaining", ['user_id' => $user->id]);
-                    return redirect()->back()->with(['error' => 'You have no overtime credits remaining.']);
-                }
-    
-                // Calculate and compare overtime hours with available credits
-                $total_hours_seconds = Carbon::createFromFormat('H:i:s', $request->input('total_hours'))->secondsSinceMidnight();
-                $otCredits_seconds = Carbon::createFromFormat('H:i:s', $overtimeCredits->otCredits)->secondsSinceMidnight();
-    
-                if ($otCredits_seconds < $total_hours_seconds) {
-                    Log::warning("Insufficient overtime credits", [
-                        'user_id' => $user->id,
-                        'requested_hours' => $total_hours_seconds,
-                        'available_credits' => $otCredits_seconds,
-                    ]);
-                    return redirect()->back()->with(['error' => 'You do not have enough overtime credits to cover this request.']);
-                }
-    
-                // Save the overtime request
-                $overtime = new OvertimeRequest();
-                $overtime->users_id = $user->id;
-                $overtime->date = $request->input('date');
-                $overtime->start_time = $request->input('start_time');
-                $overtime->end_time = $request->input('end_time');
-                $overtime->total_hours = $request->input('total_hours');
-                $overtime->reason = $request->input('reason');
-    
-                // Handle file upload if it exists
-                if ($request->hasFile('attached_file')) {
-                    $file = $request->file('attached_file');
-                    $filePath = $file->store('overtime_attachments', 'public');
-                    $overtime->attached_file = $filePath;
-                    Log::info("File successfully stored", ['file_path' => $filePath]);
-                }
-    
-                $overtime->save();
-                Log::info("Overtime request saved successfully", ['overtime_id' => $overtime->id]);
-    
-                // Notify supervisors, HR, and Admin users
-                $supervisor = $user->supervisor;
-                $hrUsers = User::where('role_as', User::ROLE_HR)->get();
-                $adminUsers = User::where('role_as', User::ROLE_ADMIN)->get();
-    
-                $notifiableUsers = collect([$supervisor])
-                    ->merge($hrUsers)
-                    ->merge($adminUsers)
-                    ->unique('id')
-                    ->filter();
-    
-                foreach ($notifiableUsers as $notifiableUser) {
-                    $notifiableUser->notify(new OvertimeRequestSubmitted($overtime, $user));
-                }
-    
-                Log::info("Overtime request notifications sent");
-    
-                return redirect()->back()->with('success', 'Overtime request submitted successfully.');
-    
-            } catch (ValidationException $e) {
-                foreach ($e->validator->errors()->all() as $error) {
-                    Alert::error('Validation Error', $error);
-                    Log::error("Validation error in overtime request", ['error' => $error]);
-                }
-                return redirect()->back()->withInput();
-            } catch (\Exception $e) {
-                Log::error("An error occurred while submitting the overtime request", [
-                    'error_message' => $e->getMessage(),
-                    'user_id' => Auth::id(),
-                ]);
-                Alert::error('An error occurred while submitting your overtime request.');
-                return redirect()->back();
+                return redirect()->back()->with(['error' => 'Overtime request cannot exceed 4 hours per day.']);
             }
+    
+            // Check for sufficient overtime credits
+            $overtimeCredits = OvertimeCredits::where('users_id', $user->id)->first();
+    
+            if (!$overtimeCredits || $overtimeCredits->otCredits == '00:00:00') {
+                Log::warning("No overtime credits remaining", ['user_id' => $user->id]);
+                return redirect()->back()->with(['error' => 'You have no overtime credits remaining.']);
+            }
+    
+            // Calculate and compare overtime hours with available credits
+            $total_hours_seconds = Carbon::createFromFormat('H:i:s', $request->input('total_hours'))->secondsSinceMidnight();
+            $otCredits_seconds = Carbon::createFromFormat('H:i:s', $overtimeCredits->otCredits)->secondsSinceMidnight();
+    
+            if ($otCredits_seconds < $total_hours_seconds) {
+                Log::warning("Insufficient overtime credits", [
+                    'user_id' => $user->id,
+                    'requested_hours' => $total_hours_seconds,
+                    'available_credits' => $otCredits_seconds,
+                ]);
+                return redirect()->back()->with(['error' => 'You do not have enough overtime credits to cover this request.']);
+            }
+    
+            // Save the overtime request
+            $overtime = new OvertimeRequest();
+            $overtime->users_id = $user->id;
+            $overtime->date = $request->input('date');
+            $overtime->start_time = $request->input('start_time');
+            $overtime->end_time = $request->input('end_time');
+            $overtime->total_hours = $request->input('total_hours');
+            $overtime->reason = $request->input('reason');
+    
+            // Handle file upload if it exists
+            if ($request->hasFile('attached_file')) {
+                $file = $request->file('attached_file');
+                $filePath = $file->store('overtime_attachments', 'public');
+                $overtime->attached_file = $filePath;
+                Log::info("File successfully stored", ['file_path' => $filePath]);
+            }
+    
+            $overtime->save();
+            Log::info("Overtime request saved successfully", ['overtime_id' => $overtime->id]);
+    
+            // Notify supervisors, HR, and Admin users
+            $supervisor = $user->supervisor;
+            $hrUsers = User::where('role_as', User::ROLE_HR)->get();
+            $adminUsers = User::where('role_as', User::ROLE_ADMIN)->get();
+    
+            $notifiableUsers = collect([$supervisor])
+                ->merge($hrUsers)
+                ->merge($adminUsers)
+                ->unique('id')
+                ->filter();
+    
+            foreach ($notifiableUsers as $notifiableUser) {
+                $notifiableUser->notify(new OvertimeRequestSubmitted($overtime, $user));
+            }
+    
+            Log::info("Overtime request notifications sent");
+    
+            return redirect()->back()->with('success', 'Overtime request submitted successfully.');
+    
+        } catch (ValidationException $e) {
+            foreach ($e->validator->errors()->all() as $error) {
+                Alert::error('Validation Error', $error);
+                Log::error("Validation error in overtime request", ['error' => $error]);
+            }
+            return redirect()->back()->withInput();
+        } catch (\Exception $e) {
+            Log::error("An error occurred while submitting the overtime request", [
+                'error_message' => $e->getMessage(),
+                'user_id' => Auth::id(),
+            ]);
+            Alert::error('An error occurred while submitting your overtime request.');
+            return redirect()->back();
         }
+    }
+    
 
     
         public function updateOT(Request $request, $id)

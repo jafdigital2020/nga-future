@@ -9,7 +9,7 @@
     <div class="page-header">
         <div class="row align-items-center">
             <div class="col">
-                <h3 class="page-title">Generated Payslip</h3>
+                <h3 class="page-title">Payslip</h3>
                 <ul class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url('hr/dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item active">Payslip</li>
@@ -22,24 +22,21 @@
     <!-- Search Filter -->
     <form action="{{ route('hr.payslipView') }}" method="GET">
         <div class="row filter-row">
-            <div class="col-sm-6 col-md-2">
+            <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
                 <div class="form-group form-focus">
-                    <input type="text" class="form-control floating" name="name" value="{{ request('ename') }}">
+                    <input type="text" class="form-control floating" name="name" value="{{ request('name') }}">
                     <label class="focus-label">Employee Name</label>
                 </div>
             </div>
-            <div class="col-sm-6 col-md-2">
+            <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
                 <div class="form-group form-focus select-focus">
                     <select class="select floating" name="department">
-                        <option value="">--Department--</option>
-                        @foreach($departments as $dept)
-                        <option value="{{ $dept->department }}"
-                            {{ $dept->department == $departments ? 'selected' : '' }}>
-                            {{ $dept->department }}
-                        </option>
+                        <option value="" disabled selected>Select Department</option>
+                        @foreach ($departments as $dept)
+                        <option value="{{ $dept }}">{{ $dept }}</option>
                         @endforeach
                     </select>
-                    <label class="focus-label">Select Department</label>
+                    <label class="focus-label">Department</label>
                 </div>
             </div>
             <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
@@ -88,9 +85,9 @@
                             Cut-off</option>
                         <option value="August 2nd Cut-off"
                             {{ $cutoffPeriod == 'August 2nd Cut-off' ? 'selected' : '' }}>August 2nd Cut-off</option>
-                        <option value="August - September 1st Cut-off"
-                            {{ $cutoffPeriod == 'August - September 1st Cut-off' ? 'selected' : '' }}>August -
-                            September 1st Cut-off</option>
+                        <option value="August - September 1st Cut-off "
+                            {{ $cutoffPeriod == 'August - September 1st Cut-off ' ? 'selected' : '' }}>August -
+                            September 1st Cut-off 2024</option>
                         <option value="September 2nd Cut-off"
                             {{ $cutoffPeriod == 'September 2nd Cut-off' ? 'selected' : '' }}>September 2nd Cut-off
                         </option>
@@ -115,8 +112,7 @@
                     <label class="focus-label">Cut-off Period</label>
                 </div>
             </div>
-
-            <div class="col-sm-6 col-md-2">
+            <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
                 <div class="form-group form-focus select-focus">
                     <select class="select floating" name="year">
                         <option value="">--Select Year--</option>
@@ -125,14 +121,13 @@
                     </select>
                     <label class="focus-label">Year</label>
                 </div>
-
             </div>
-            <div class="col-sm-6 col-md-4"><button type="submit" class="btn btn-primary btn-block ml-2">Search</button>
+            <div class="col-sm-6 col-md-4 col-lg-4 col-xl-4 col-12">
+                <button type="submit" class="btn btn-primary btn-block">Search</button>
             </div>
         </div>
     </form>
     <!-- /Search Filter -->
-
 
     <div class="row">
         <div class="col-md-12">
@@ -182,17 +177,17 @@
                             <td>{{ $pay->end_date }}</td>
                             <td>{{ $pay->month }}</td>
                             <td>{{ $pay->cut_off }}</td>
-                            <td>{{ $pay->totalHours }}</td>
-                            <td>₱{{ number_format($pay->netPayTotal, 2) }}</td>
+                            <td>{{ $pay->total_hours }}</td>
+                            <td style="color:red;">₱{{ number_format($pay->net_pay, 2) }}</td>
                             <td class="text-right">
                                 <div class="dropdown dropdown-action">
                                     <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown"
                                         aria-expanded="false"><i class="material-icons">more_vert</i></a>
                                     <div class="dropdown-menu dropdown-menu-right">
-                                        <a class="dropdown-item" href="{{ url('hr/payslip/edit/'.$pay->id) }}"><i
-                                                class="fa fa-pencil m-r-5"></i>Edit</a>
                                         <a class="dropdown-item" href="{{ url('hr/payslip/view/'.$pay->id) }}"><i
                                                 class="fa fa-eye m-r-5"></i>View</a>
+                                        <a class="dropdown-item" href="{{ url('hr/payslip/edit/'.$pay->id) }}"><i
+                                                class="fa fa-pencil m-r-5"></i>Edit</a>
                                     </div>
                                 </div>
                             </td>
@@ -204,9 +199,6 @@
         </div>
     </div>
 </div>
-
-
-
 
 @endsection
 

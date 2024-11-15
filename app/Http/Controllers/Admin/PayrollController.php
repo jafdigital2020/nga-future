@@ -84,7 +84,6 @@ class PayrollController extends Controller
     }
 
     // ** Preview Payroll ** //
-
     public function previewPayroll(Request $request, $id)
     {
         try {
@@ -92,9 +91,13 @@ class PayrollController extends Controller
             $user = $approvedAttendance->user;
  
             // Otherwise, return the preview data
-            $monthlySalary = $user->mSalary;
-            $dailyRate = $monthlySalary / 22;
-            $hourlyRate = $dailyRate / 8;
+            // $monthlySalary = $user->mSalary; // I JUST ADJUST THIS BECAUSE I ADD HOURLY RATE SAME VARIABLE NAME BUT IT COMPUTES HOURLY RATE
+               // $monthlySalary = $user->mSalary;
+               $hourlyRate = $user->hourly_rate; 
+               // $dailyRate = $monthlySalary / 22; 
+               $dailyRate = $hourlyRate * 8;    
+               $monthlySalary = $dailyRate * 22;
+               // $monthlySalary = $user->mSalary;
     
             $formattedDailyRate = number_format($dailyRate, 2, '.', '');
             $formattedHourlyRate = number_format($hourlyRate, 2, '.', '');
@@ -209,7 +212,6 @@ class PayrollController extends Controller
     }
 
     // ** Preview & Edit Processed Payroll ** //
-
     public function processPreview(Request $request, $id)
     {
         try {
@@ -217,10 +219,13 @@ class PayrollController extends Controller
             $user = $approvedAttendance->user;
     
             // Calculate Daily and Hourly Rates
-            $monthlySalary = $user->mSalary;
-            $dailyRate = $monthlySalary / 22; // Assuming 22 working days
-            $hourlyRate = $dailyRate / 8;     // Assuming 8 hours in a workday
-    
+               // $monthlySalary = $user->mSalary;
+               $hourlyRate = $user->hourly_rate; 
+               // $dailyRate = $monthlySalary / 22; 
+               $dailyRate = $hourlyRate * 8;    
+               $monthlySalary = $dailyRate * 22;
+               // $monthlySalary = $user->mSalary;
+               
             // Format daily and hourly rates
             $formattedDailyRate = number_format($dailyRate, 2, '.', '');
             $formattedHourlyRate = number_format($hourlyRate, 2, '.', '');
@@ -339,7 +344,6 @@ class PayrollController extends Controller
     
      
     // ** Seamless Process Payroll ** /
-
     public function processPayroll($approvedAttendanceId)
     {
         try {
@@ -357,10 +361,13 @@ class PayrollController extends Controller
             }
     
             // Calculate Daily and Hourly Rates
-            $monthlySalary = $user->mSalary; // Assume you have this field in the User model
-            $dailyRate = $monthlySalary / 22; // Assuming 22 working days
-            $hourlyRate = $dailyRate / 8; // Assuming 8 hours in a workday
-    
+            // Assume you have this field in the User model
+            $hourlyRate = $user->hourly_rate; 
+            // $dailyRate = $monthlySalary / 22; 
+            $dailyRate = $hourlyRate * 8;    
+            $monthlySalary = $dailyRate * 22;
+            // $monthlySalary = $user->mSalary;
+            
             // Format daily and hourly rates
             $formattedDailyRate = number_format($dailyRate, 2, '.', '');
             $formattedHourlyRate = number_format($hourlyRate, 2, '.', '');
@@ -517,7 +524,6 @@ class PayrollController extends Controller
             return redirect()->back()->with(['error' => 'An error occurred while processing payroll: ' . $e->getMessage()]);
         }
     }
-    
     
     private function calculateCurrentCutoff($date)
     {
@@ -817,7 +823,6 @@ class PayrollController extends Controller
    }
 
    // ** Processed Payroll Index ** //
-
    public function payslipProcess(Request $request)
    {
        $employeeName = $request->input('name');
@@ -859,7 +864,6 @@ class PayrollController extends Controller
    }
 
     //  ** Update Payslip Processed ** //
-
     public function updateSalary(Request $request)
     {
         try {
@@ -917,7 +921,6 @@ class PayrollController extends Controller
     }
 
     // ** Processed Approved ** //
-
     public function processedApproved(Request $request, $id)
     {
         Log::info('Starting approval process for SalaryTable ID: ' . $id);
@@ -1075,7 +1078,7 @@ class PayrollController extends Controller
         return redirect()->back();
     }
     
- 
+    // ** PROCESSED REVISION ** //
     public function processedRevision(Request $request, $id)
     {
         $request->validate([
@@ -1098,7 +1101,7 @@ class PayrollController extends Controller
         return redirect()->back();
     }
     
-
+    // ** PROCESSED DECLINED ** //
    public function processedDeclined(Request $request, $id)
    {
        $edit = SalaryTable::findOrFail($id);
@@ -1118,7 +1121,6 @@ class PayrollController extends Controller
    }
    
     // ** Approved Payslip (From Processed) ** //
-
    public function approvedPayslip(Request $request)
    {
        $employeeName = $request->input('name');
@@ -1156,7 +1158,6 @@ class PayrollController extends Controller
    }
    
     // ** Generate Payslip Action ** //
-
    public function generatePayslip(Request $request, $id)
    {
        $edit = SalaryTable::findOrFail($id);
@@ -1173,7 +1174,6 @@ class PayrollController extends Controller
    }
 
     // ** Generated Payslip View ** // 
-
    public function payslipView(Request $request)
    {
         $employeeName = $request->input('name');
@@ -1211,7 +1211,6 @@ class PayrollController extends Controller
    }
    
     // ** View Payslip ** //
-        
     public function viewPayslip($id)
     {
         $view = SalaryTable::with('user')->findOrFail($id);
@@ -1231,56 +1230,6 @@ class PayrollController extends Controller
         return view('admin.payroll.editpayslip', compact('pay'));
    }
 
-   // Delete
-   public function updatePayslip(Request $request, $id)
-   {
-        $edit = Payroll::findOrFail($id);
-
-        $edit->ename = $request->input('ename');
-        $edit->position = $request->input('position');
-        $edit->department = $request->input('department');
-        $edit->cut_off = $request->input('cut_off');
-        $edit->year = $request->input('year');
-        $edit->transactionDate = $request->input('transactionDate');
-        $edit->start_date = $request->input('start_date');
-        $edit->end_date = $request->input('end_date');
-        $edit->month = $request->input('month');
-        $edit->totalHours = $request->input('totalHours');
-        $edit->totalLate = $request->input('tLate');
-        $edit->sss = $request->input('sss');
-        $edit->pagIbig = $request->input('pagIbig');
-        $edit->philHealth = $request->input('philHealth');
-        $edit->withHolding = $request->input('withHolding');
-        $edit->late = $request->input('late');
-        $edit->loan = $request->input('loan');
-        $edit->advance = $request->input('advance');
-        $edit->others = $request->input('others');
-        $edit->bdayLeave = $request->input('bdayLeave');
-        $edit->vacLeave = $request->input('vacLeave');
-        $edit->sickLeave = $request->input('sickLeave');
-        $edit->regHoliday = $request->input('regHoliday');
-        $edit->otTotal = $request->input('otTotal');
-        $edit->nightDiff = $request->input('nightDiff');
-        $edit->bonus = $request->input('bonus');
-        $edit->totalDeduction = $request->input('totalDeduction');
-        $edit->totalEarning = $request->input('totalEarning');
-        $edit->grossMonthly = $request->input('grossMonthly');
-        $edit->grossBasic = $request->input('grossBasic');
-        $edit->dailyRate = $request->input('dailyRate');
-        $edit->hourlyRate = $request->input('hourlyRate');
-        $edit->netPayTotal = $request->input('netPayTotal');
-        $edit->savings = $request->input('savings');
-        $edit->reimbursement = $request->input('reimbursement');
-        $edit->sssLoan = $request->input('sssLoan');
-        $edit->hmo = $request->input('hmo');
-        $edit->status = 'Revised';
-
-        $edit->save();
-
-        Alert::success('Updated');
-        return redirect()->route('admin.payslipProcess');
-   }
-
    public function processedEdit (Request $request, $id)
    {
         $pay = Payroll::findOrFail($id);
@@ -1289,7 +1238,6 @@ class PayrollController extends Controller
    }
 
     // ** Bulk Action For Processed Payroll ** // 
-
    public function processedBulkAction(Request $request)
    {
        $this->validate($request, [
@@ -1426,7 +1374,6 @@ class PayrollController extends Controller
    }
    
     // ** Bulk Action For Generate Payslip (Approve Payslip) ** //  
-
     public function generatePayslipBulkAction(Request $request)
     {
         $this->validate($request, [
@@ -1505,9 +1452,12 @@ class PayrollController extends Controller
     
                 // --- Calculation Logic ---
                 // Calculate Daily and Hourly Rates
-                $monthlySalary = $user->mSalary;
-                $dailyRate = $monthlySalary / 22; // Assuming 22 working days
-                $hourlyRate = $dailyRate / 8; // Assuming 8 hours in a workday
+               // $monthlySalary = $user->mSalary;
+               $hourlyRate = $user->hourly_rate; 
+               // $dailyRate = $monthlySalary / 22; 
+               $dailyRate = $hourlyRate * 8;    
+               $monthlySalary = $dailyRate * 22;
+               // $monthlySalary = $user->mSalary;
     
                 // Format daily and hourly rates
                 $formattedDailyRate = number_format($dailyRate, 2, '.', '');

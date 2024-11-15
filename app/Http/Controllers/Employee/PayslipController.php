@@ -23,7 +23,7 @@ class PayslipController extends Controller
     {
         $cutoffPeriod = $request->input('cutoff_period');
         $selectedYear = $request->input('year', now()->year);
-    
+
         $data = SalaryTable::query();
     
         // Filter by authenticated user
@@ -148,8 +148,14 @@ class PayslipController extends Controller
     public function viewPayslip($id)
     {
         $view = SalaryTable::findOrFail($id);
+
+         // Decode JSON columns
+        $earnings = json_decode($view->earnings, true);
+        $loans = json_decode($view->loans, true);
+        $deductions = json_decode($view->deductions, true);
+            
  
-        return view('emp.payslip.view', compact('view'));
+        return view('emp.payslip.view', compact('view', 'earnings', 'loans', 'deductions'));
     }
  
     public function download()

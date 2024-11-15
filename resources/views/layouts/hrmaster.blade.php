@@ -385,13 +385,29 @@
                         <li class="menu-title">
                             <span>HR</span>
                         </li>
-
-                        <li class="{{ Request::is('hr/employee-grid') ? 'active':'' }}">
-                            <a href="{{ url('hr/employee-grid') }}"
-                                class="{{ Request::is('hr/employee-grid') ? 'active':'' }}"><i
-                                    class="la la-user-secret"></i>
-                                <span>Employees</span></a>
+                        <li class="submenu">
+                            <a href="#"><i class="la la-user"></i>
+                                <span> Employee </span>
+                                <span class="menu-arrow"></span></a>
+                            <ul style="display: none">
+                                <li class="{{ Request::is('hr/employee/create') ? 'active':'' }}">
+                                    <a href="{{ url('/hr/employee/create') }}">
+                                        Create
+                                    </a>
+                                </li>
+                                <li class="{{ Request::is('hr/employee-grid') ? 'active':'' }}">
+                                    <a href="{{ url('hr/employee-grid') }}">
+                                        Active Employee
+                                    </a>
+                                </li>
+                                <li class="{{ Request::is('hr/employee/inactive') ? 'active':'' }}">
+                                    <a href="{{ url('hr/employee/inactive') }}">
+                                        Inactive Employee
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
+
                         <li class="submenu">
                             <a href="#"><i class="la la-rocket"></i>
                                 <span> Leave </span>
@@ -459,31 +475,99 @@
                                 <span> Payroll </span>
                                 <span class="menu-arrow"></span></a>
                             <ul style="display: none">
-                                <li>
+                                <li class="{{ Request::is('hr/approve') ? 'active':'' }}">
                                     <a href="{{ url('hr/approve') }}">
                                         Approved Timesheet
                                     </a>
                                 </li>
-                                <li>
+                                <li class="{{ Request::is('hr/processed') ? 'active':'' }}">
                                     <a href="{{ url('hr/processed') }}">
                                         Processed Timesheet
                                     </a>
                                 </li>
-                                <li>
+                                <li class="{{ Request::is('hr/approved/payslip') ? 'active':'' }}">
                                     <a href="{{ url('hr/approved/payslip') }}">
                                         Approved Payslip
                                     </a>
                                 </li>
-                                <li>
+                                <li class="{{ Request::is('hr/payslip') ? 'active':'' }}">
                                     <a href="{{ url('hr/payslip') }}">Generated Payslip </a>
                                 </li>
                             </ul>
                         </li>
-                        <li>
-                            <a href="policies.html"><i class="la la-file-pdf-o"></i>
-                                <span>Policies</span></a>
-                        </li>
+                        <li class="submenu">
+                            <a href="#"><i class="la la-minus"></i>
+                                <span> Deductions </span>
+                                <span class="menu-arrow"></span></a>
+                            <ul style="display: none">
+                                <li class="{{ Request::is('hr/deduction') ? 'active':'' }}">
+                                    <a href="{{ url('hr/deduction') }}">
+                                        Create/View Deductions
+                                    </a>
+                                </li>
 
+                                <li class="{{ Request::is('hr/deduction/user') ? 'active':'' }}">
+                                    <a href="{{ url('hr/deduction/user') }}">
+                                        User Deduction
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </li>
+                        <!-- Earnings Table -->
+                        <li class="submenu">
+                            <a href="#"><i class="la la-plus"></i>
+                                <span> Earnings </span>
+                                <span class="menu-arrow"></span></a>
+                            <ul style="display: none">
+                                <li class="{{ Request::is('hr/earning') ? 'active':'' }}">
+                                    <a href="{{ url('hr/earning') }}">
+                                        Create/View Earnings
+                                    </a>
+                                </li>
+
+                                <li class="{{ Request::is('hr/earning/user') ? 'active':'' }}">
+                                    <a href="{{ url('hr/earning/user') }}">
+                                        User Earnings
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </li>
+                        <!-- Loan Table -->
+                        <li class="submenu">
+                            <a href="#"><i class="la la-dollar"></i>
+                                <span> Loan </span>
+                                <span class="menu-arrow"></span></a>
+                            <ul style="display: none">
+                                <li class="{{ Request::is('hr/loan') ? 'active':'' }}">
+                                    <a href="{{ url('hr/loan') }}">
+                                        Create Loan
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="menu-title">
+                            <span>Shift Management</span>
+                        </li>
+                        <li class="submenu">
+                            <a href="#"><i class="la la-clock"></i>
+                                <span> Shift and Schedules </span>
+                                <span class="menu-arrow"></span></a>
+                            <ul style="display: none">
+                                <li class="{{ Request::is('hr/shift/daily') ? 'active':'' }}">
+                                    <a href="{{ url('hr/shift/daily') }}">
+                                        Daily Scheduling
+                                    </a>
+                                </li>
+
+                                <!-- <li class="{{ Request::is('admin/shift/list') ? 'active':'' }}">
+                                    <a href="{{ url('admin/shift/list') }}">
+                                        Add Shift
+                                    </a>
+                                </li> -->
+                            </ul>
+                        </li>
                     </ul>
                 </div>
             </div>

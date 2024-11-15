@@ -1,4 +1,93 @@
-@extends('layouts.managermaster') @section('title', 'Leave') @section('content')
+@extends('layouts.managermaster') @section('title', 'Leave')
+<style>
+    /* Loader Styles */
+    .loader {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5);
+        /* Transparent dark background */
+        z-index: 9999;
+        /* Ensure it's on top of other content */
+    }
+
+    .loading-bar-background {
+        --height: 30px;
+        display: flex;
+        align-items: center;
+        box-sizing: border-box;
+        padding: 5px;
+        width: 200px;
+        height: var(--height);
+        background-color: transparent;
+        /* Make background transparent */
+        box-shadow: #0c0c0c -2px 2px 4px 0px inset;
+        border-radius: calc(var(--height) / 2);
+    }
+
+    .loading-bar {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        --height: 20px;
+        width: 0%;
+        height: var(--height);
+        overflow: hidden;
+        background: rgb(206, 46, 46);
+        background: linear-gradient(0deg,
+                rgba(206, 46, 46, 1) 0%,
+                rgba(249, 199, 79, 1) 100%);
+        border-radius: calc(var(--height) / 2);
+        animation: loading 4s ease-out infinite;
+    }
+
+    .white-bars-container {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .white-bar {
+        background: rgb(255, 255, 255);
+        background: linear-gradient(-45deg,
+                rgba(255, 255, 255, 1) 0%,
+                rgba(255, 255, 255, 0) 70%);
+        width: 10px;
+        height: 45px;
+        opacity: 0.3;
+        rotate: 45deg;
+    }
+
+    @keyframes loading {
+        0% {
+            width: 0;
+        }
+
+        80% {
+            width: 100%;
+        }
+
+        100% {
+            width: 100%;
+        }
+    }
+
+    .loading-text {
+        color: white;
+        font-size: 14pt;
+        font-weight: 600;
+    }
+
+</style>
+@section('content')
 @include('sweetalert::alert')
 
 <!-- Page Content -->
@@ -35,15 +124,15 @@
         </div>
         <div class="col-md-3">
             <div class="stats-info">
-                <h6>Planned Leaves</h6>
-                <h4>{{ $vacationLeaveCountToday + $sickLeaveCountToday + $birthdayLeaveCountToday }} <span>Today</span>
+                <h6>Paid Leaves</h6>
+                <h4>{{ $leaveTypesPaidCountToday }} <span>Today</span>
                 </h4>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stats-info">
                 <h6>Unpaid Leaves</h6>
-                <h4>{{ $unpaidLeaveCountToday }} <span>Today</span></h4>
+                <h4>{{ $leaveTypesUnpaidCountToday }} <span>Today</span></h4>
             </div>
         </div>
         <div class="col-md-3">
@@ -54,6 +143,8 @@
         </div>
     </div>
     <!-- /Leave Statistics -->
+
+
     <!-- Search Filter -->
     <form action="{{ route('leave.searchmanager') }}" method="GET">
         <div class="row filter-row">
@@ -65,19 +156,13 @@
             </div>
             <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
                 <div class="form-group form-focus select-focus">
-                    <select class="select floating" name="type">
-                        <option value=""> -- Select -- </option>
-                        <option value="Vacation Leave" {{ request('type') == 'Vacation Leave' ? 'selected' : '' }}>
-                            Vacation Leave</option>
-                        <option value="Sick Leave" {{ request('type') == 'Sick Leave' ? 'selected' : '' }}>Sick Leave
-                        </option>
-                        <option value="Birthday Leave" {{ request('type') == 'Birthday Leave' ? 'selected' : '' }}>
-                            Birthday Leave</option>
-                        <option value="Unpaid Leave" {{ request('type') == 'Unpaid Leave' ? 'selected' : '' }}>Unpaid
-                            Leave</option>
+                    <select class="select floating" name="department">
+                        <option value="" disabled selected>Select Department</option>
+                        @foreach ($departments as $dept)
+                        <option value="{{ $dept }}">{{ $dept }}</option>
+                        @endforeach
                     </select>
-
-                    <label class="focus-label">Leave Type</label>
+                    <label class="focus-label">Department</label>
                 </div>
             </div>
             <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
@@ -110,7 +195,7 @@
                 </div>
             </div>
             <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
-                <button type="submit" class="btn btn-primary btn-block">Search</button>
+                <button type="submit" class="btn btn-danger btn-block">Search</button>
             </div>
         </div>
     </form>
@@ -119,14 +204,18 @@
     <div class="row">
         <div class="col-md-12">
             <div class="table-responsive">
-                <table class="table table-striped custom-table mb-0 datatable">
-                    <thead>
+                <table class="table table-hover table-nowrap custom-table mb-0 datatable">
+                    <thead class="thead-light">
                         <tr>
                             <th>Employee</th>
                             <th>Leave Type</th>
+                            <th>Credits</th>
                             <th>From</th>
                             <th>To</th>
                             <th>No of Days</th>
+                            <th>Date Requested</th>
+                            <th>Attached File</th>
+                            <th>Approved By</th>
                             <th class="text-center">Status</th>
                             <th class="text-right">Actions</th>
                         </tr>
@@ -136,23 +225,63 @@
                         <tr>
                             <td>
                                 <h2 class="table-avatar">
-                                    <a href="#" class="avatar">
+                                    <a href="{{ url('admin/employee/edit/'.$leave->user->id) }}" class="avatar">
                                         @if ($leave->user->image)
                                         <img src="{{ asset('images/' . $leave->user->image) }}" alt="Profile Image" />
                                         @else
                                         <img src="{{ asset('images/default.png') }}" alt="Profile Image" /></a>
                                     @endif
-                                    <a href="#">@if ($leave->user->fName || $leave->user->lName)
+                                    <a href="{{ url('admin/employee/edit/'.$leave->user->id) }}">
+                                        @if ($leave->user->fName || $leave->user->lName)
                                         {{ $leave->user->fName }} {{ $leave->user->lName }}
                                         @else
                                         {{ $leave->user->name }}
-                                        @endif<span>{{ $leave->user->department }}</span></a>
+                                        @endif
+                                        <span>{{ $leave->user->department }}</span>
+                                    </a>
+
                                 </h2>
                             </td>
-                            <td>{{ $leave->type }}</td>
+                            <td>{{ $leave->leaveType->leaveType }}</td>
+                            <td>
+                                {{ $leave->user->leaveCredits()->where('leave_type_id', $leave->leaveType->id)->first()->remaining_credits ?? 0 }}
+                            </td>
                             <td>{{ $leave->start_date }}</td>
                             <td>{{ $leave->end_date }}</td>
                             <td>{{ $leave->days }}</td>
+                            <td>{{ $leave->created_at->format('Y-m-d') }}</td>
+                            <td>
+                                @if ($leave->attached_file)
+                                <a href="{{ asset('storage/' . $leave->attached_file) }}" target="_blank">
+                                    View Attached File
+                                </a>
+                                @else
+                                No document uploaded
+                                @endif
+                            </td>
+                            <td>
+                                <h2 class="table-avatar">
+                                    <a href="#" class="avatar avatar-xs">
+                                        @if ($leave->approver)
+                                        @if ($leave->approver->image)
+                                        <img src="{{ asset('images/' . $leave->approver->image) }}"
+                                            alt="Profile Image" />
+                                        @else
+                                        <img src="{{ asset('images/default.png') }}" alt="Profile Image" />
+                                        @endif
+                                        @else
+                                        <img src="{{ asset('images/default.png') }}" alt="Profile Image" />
+                                        @endif
+                                    </a>
+                                    {{ $leave->approver 
+                                        ? ($leave->approver->fName || $leave->approver->lName 
+                                            ? $leave->approver->fName . ' ' . $leave->approver->lName 
+                                            : $leave->approver->name) 
+                                        : 'Not Approved Yet' 
+                                    }}
+
+                                </h2>
+                            </td>
                             <td class="text-center">
                                 <div class="dropdown action-label">
                                     <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#"
@@ -183,7 +312,6 @@
                                             </button>
                                         </form>
 
-
                                         <form id="decline-form-{{ $leave->id }}"
                                             action="{{ route('leave.decline', $leave->id) }}" method="POST"
                                             style="display:inline;">
@@ -207,7 +335,8 @@
                                             data-reason="{{ $leave->reason }}" data-status="{{ $leave->status }}">
                                             <i class="fa fa-eye m-r-5"></i> View</a>
                                         <a class="dropdown-item edit-leave" href="#" data-id="{{ $leave->id }}"
-                                            data-type="{{ $leave->type }}" data-start_date="{{ $leave->start_date }}"
+                                            data-type_id="{{ $leave->leaveType->id }}"
+                                            data-start_date="{{ $leave->start_date }}"
                                             data-end_date="{{ $leave->end_date }}" data-days="{{ $leave->days }}"
                                             data-reason="{{ $leave->reason }}" data-status="{{ $leave->status }}">
                                             <i class="fa fa-pencil m-r-5"></i> Edit</a>
@@ -226,65 +355,20 @@
 </div>
 <!-- /Page Content -->
 
-<!-- Add Leave Modal -->
-<div id="add_leave" class="modal custom-modal fade" role="dialog">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Request Leave</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form action="{{ route('mstore.leave') }}" method="POST">
-                    @csrf
-                    <div class="form-group">
-                        <label>Leave Type <span class="text-danger">*</span></label>
-                        <select class="form-control" name="type" id="type">
-                            <option>-- Select Leave Type --</option>
-                            <option>Vacation Leave</option>
-                            <option>Sick Leave</option>
-                            <option>Birthday Leave</option>
-                            <option>Unpaid Leave</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>From <span class="text-danger">*</span></label>
-                        <div class="cal-icon">
-                            <input class="form-control datetimepicker" type="text" name="start_date" id="start_date"
-                                required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>To <span class="text-danger">*</span></label>
-                        <div class="cal-icon">
-                            <input class="form-control datetimepicker" type="text" name="end_date" id="end_date"
-                                required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Number of days <span class="text-danger">*</span></label>
-                        <input class="form-control" name="total_days" id="total_days" readonly type="text">
-                    </div>
-                    <div class="form-group">
-                        <label>Remaining Leaves <span class="text-danger">*</span></label>
-                        <input class="form-control" readonly
-                            value="{{ $user->vacLeave + $user->sickLeave + $user->bdayLeave  }}" type="text">
-                    </div>
-                    <div class="form-group">
-                        <label>Leave Reason <span class="text-danger">*</span></label>
-                        <textarea rows="4" class="form-control" name="reason" id="reason" required></textarea>
-                    </div>
-                    <div class="submit-section">
-                        <button class="btn btn-primary submit-btn">Submit</button>
-                    </div>
-                </form>
+<!-- Loader for all leave requests -->
+<div id="global-loader" class="loader" style="display: none;">
+    <div class="loading-bar-background">
+        <div class="loading-bar">
+            <div class="white-bars-container">
+                <div class="white-bar"></div>
+                <div class="white-bar"></div>
+                <div class="white-bar"></div>
             </div>
         </div>
     </div>
+    <span class="loading-text">Processing...</span>
 </div>
-<!-- /Add Leave Modal -->
+
 
 <!-- Edit Leave Modal -->
 <div id="edit_leave" class="modal custom-modal fade" role="dialog">
@@ -302,12 +386,17 @@
                     <input type="hidden" name="leave_id" id="leave_id">
                     <div class="form-group">
                         <label>Leave Type</label>
-                        <select class="form-control" name="typee" id="typee">
-                            <option value="Vacation Leave">Vacation Leave</option>
-                            <option value="Sick Leave">Sick Leave</option>
-                            <option value="Birthday Leave">Birthday Leave</option>
-                            <option value="Unpaid Leave">Unpaid Leave</option>
+                        <select class="form-control" name="leave_type_id" id="leave_type_id" required>
+                            <option value="">-- Select Leave Type --</option>
+                            @foreach($leaveTypes as $leaveType)
+                            <option value="{{ $leaveType->id }}"
+                                data-credits="{{ $leaveType->leaveCredits->sum('remaining_credits') }}"
+                                @if(isset($leaveTypeId) && $leaveTypeId==$leaveType->id) selected @endif>
+                                {{ $leaveType->leaveType }}
+                            </option>
+                            @endforeach
                         </select>
+
                     </div>
                     <div class="form-group">
                         <label>From <span class="text-danger">*</span></label>
@@ -480,7 +569,8 @@
             var endDate = $(endSelector).data('DateTimePicker').date();
 
             if (startDate && endDate) {
-                var diffDays = endDate.diff(startDate, 'days') + 1; // Calculate difference in days and add 1
+                var diffDays = endDate.diff(startDate, 'days') +
+                    1; // Calculate difference in days and add 1
                 $(outputSelector).val(diffDays);
             } else {
                 $(outputSelector).val('');
@@ -490,20 +580,16 @@
         // Edit leave request
         $('.edit-leave').on('click', function () {
             var leaveId = $(this).data('id');
-            var leaveType = $(this).data('type');
+            var leaveTypeId = $(this).data('type_id'); // Fetch the leave type ID
             var startDate = $(this).data('start_date');
             var endDate = $(this).data('end_date');
             var days = $(this).data('days');
             var reason = $(this).data('reason');
             var status = $(this).data('status');
 
-            if (status === 'Approved') {
-                alert('This request has already been approved and cannot be edited.');
-                return;
-            }
-
+            // Populate the modal fields
             $('#leave_id').val(leaveId);
-            $('#typee').val(leaveType);
+            $('#leave_type_id').val(leaveTypeId); // Set the selected leave type ID
             $('#start_datee').val(startDate);
             $('#end_datee').val(endDate);
             $('#dayse').val(days);
@@ -548,6 +634,40 @@
             $('#delete_leave_id').val(leaveId);
             $('#deleteLeaveForm').attr('action', '/manager/leave/' + leaveId);
             $('#delete_approve').modal('show');
+        });
+    });
+
+</script>
+
+
+<script>
+    function initializeApproveButtons() {
+        const approveButtons = document.querySelectorAll('.approve-button');
+
+        approveButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const leaveId = this.getAttribute('data-leave-id');
+                const form = document.getElementById('approve-form-' + leaveId);
+                const loader = document.getElementById('global-loader'); // Use global loader
+
+                // Show the loader
+                loader.style.display = 'flex';
+
+                // Submit the form after showing the loader
+                form.submit();
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        initializeApproveButtons(); // Initialize on page load
+
+        // If using AJAX for searching
+        document.getElementById('search-button').addEventListener('click', function () {
+            // Perform the search...
+
+            // After updating the DOM with new leave requests, reinitialize the approve buttons
+            initializeApproveButtons();
         });
     });
 

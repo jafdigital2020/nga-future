@@ -17,7 +17,7 @@
                 </ul>
             </div>
             <div class="col-auto float-right ml-auto">
-                <a href="{{ url('admin/shift/list') }}" class="btn add-btn m-r-5">Shifts</a>
+                <!-- <a href="{{ url('admin/shift/list') }}" class="btn add-btn m-r-5">Shifts</a> -->
                 <a href="#" class="btn add-btn m-r-5" data-toggle="modal" data-target="#assign_schedule"> Assign
                     Shifts</a>
             </div>

@@ -387,14 +387,19 @@
                                 <span> Employee </span>
                                 <span class="menu-arrow"></span></a>
                             <ul style="display: none">
-                                <li class="{{ Request::is('admin/employee-grid') ? 'active':'' }}">
-                                    <a href="{{ url('admin/employee-grid') }}">
-                                        View
-                                    </a>
-                                </li>
                                 <li class="{{ Request::is('admin/employee/create') ? 'active':'' }}">
                                     <a href="{{ url('/admin/employee/create') }}">
                                         Create
+                                    </a>
+                                </li>
+                                <li class="{{ Request::is('admin/employee-grid') ? 'active':'' }}">
+                                    <a href="{{ url('admin/employee-grid') }}">
+                                        Active Employee
+                                    </a>
+                                </li>
+                                <li class="{{ Request::is('admin/employee/inactive') ? 'active':'' }}">
+                                    <a href="{{ url('admin/employee/inactive') }}">
+                                        Inactive Employee
                                     </a>
                                 </li>
                             </ul>
@@ -545,11 +550,11 @@
                                     </a>
                                 </li>
 
-                                <li class="{{ Request::is('admin/shift/list') ? 'active':'' }}">
+                                <!-- <li class="{{ Request::is('admin/shift/list') ? 'active':'' }}">
                                     <a href="{{ url('admin/shift/list') }}">
                                         Add Shift
                                     </a>
-                                </li>
+                                </li> -->
                             </ul>
                         </li>
                         <li class="menu-title">

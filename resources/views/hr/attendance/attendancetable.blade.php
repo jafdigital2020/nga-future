@@ -157,6 +157,7 @@
                             <th>Device</th>
                             <th>Total Late</th>
                             <th>Total Hours</th>
+                            <th>Image</th>
                             <th>Edited By</th>
                             <th>Action</th>
                         </tr>
@@ -207,6 +208,14 @@
                             <td>{{ $attendance->device }}</td>
                             <td>{{ $attendance->totalLate }}</td>
                             <td>{{ $attendance->timeTotal }}</td>
+                            <td>
+                                @if ($attendance->image_path)
+                                <a href="{{ asset('storage/' . $attendance->image_path) }}" target="_blank">View
+                                    Photo</a>
+                                @else
+                                No Photo
+                                @endif
+                            </td>
                             <td>
                                 @if($attendance->edited)
                                 {{ $attendance->edited->fName ?? $attendance->edited->name }}

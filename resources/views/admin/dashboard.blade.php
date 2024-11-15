@@ -174,18 +174,22 @@
                     @foreach($leavePending->take(2) as $leave)
                     <div class="leave-info-box">
                         <div class="media align-items-center">
-                            <a href="{{ url('profile/' . $leave->user->id) }}" class="avatar">
-                                <img alt="{{ $leave->user->name }}"
-                                    src="{{ $leave->user->image ? asset('images/' . $leave->user->image) : asset('images/default.png') }}" />
+                            <a href="{{ isset($leave->user) ? url('profile/' . $leave->user->id) : '#' }}"
+                                class="avatar">
+                                <img alt="{{ $leave->user->name ?? 'Unknown' }}"
+                                    src="{{ isset($leave->user->image) ? asset('images/' . $leave->user->image) : asset('images/default.png') }}" />
                             </a>
                             <div class="media-body">
-                                <div class="text-sm my-0">{{ $leave->user->name }}</div>
+                                <div class="text-sm my-0">{{ $leave->user->name ?? 'Unknown User' }}</div>
                             </div>
                         </div>
                         <div class="row align-items-center mt-3">
                             <div class="col-6">
-                                <h6 class="mb-0">{{ \Carbon\Carbon::parse($leave->start_date)->format('d M Y') }} -
-                                    {{ \Carbon\Carbon::parse($leave->end_date)->format('d M Y') }}</h6>
+                                <h6 class="mb-0">
+                                    {{ $leave->start_date ? \Carbon\Carbon::parse($leave->start_date)->format('d M Y') : 'N/A' }}
+                                    -
+                                    {{ $leave->end_date ? \Carbon\Carbon::parse($leave->end_date)->format('d M Y') : 'N/A' }}
+                                </h6>
                                 <span class="text-sm text-muted">{{ $leave->leaveType->leaveType ?? 'N/A' }}</span>
                             </div>
                             <div class="col-6 text-right">
@@ -232,6 +236,7 @@
                         </div>
                     </div>
                     @endforeach
+
 
                     <!-- Load More Button (Optional) -->
                     @if($leavePending->count() > 2)
@@ -441,7 +446,7 @@
                     </div>
                 </div>
                 <div class="card-footer">
-                    <a href="clients.html">View all clients</a>
+                    <a href="{{ url('admin/attendance') }}">View all attendance requests.</a>
                 </div>
             </div>
         </div>
