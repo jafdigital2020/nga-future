@@ -1,6 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Employee;
+
+
+namespace App\Http\Controllers\Employee\api;
+
 
 use Exception;
 use Carbon\Carbon;
@@ -26,7 +29,8 @@ use Illuminate\Support\Facades\Auth;
 use Karmendra\LaravelAgentDetector\AgentDetector;
 use App\Notifications\AttendanceSubmissionNotification;
 
-class DashboardController extends Controller
+
+class AttendanceController extends Controller
 {
     public function index(Request $request)
     {
@@ -154,148 +158,27 @@ class DashboardController extends Controller
 
     // ** Clock In ** //
 
-    // public function store(Request $request)
-    // {
-    //     try {
-    //         $currentDate = Carbon::now('Asia/Manila')->toDateString();
-    //         Log::info("Current Date: $currentDate");
-
-    //         $timeIn = Carbon::now('Asia/Manila');
-
-    //         // Get user's shift schedule
-    //         $shiftSchedule = ShiftSchedule::where('users_id', auth()->user()->id)
-    //             ->where('date', $currentDate)
-    //             ->first();
-
-    //         if (!$shiftSchedule) {
-    //             return response()->json([
-    //                 'status' => 'error',
-    //                 'message' => 'Shift schedule not found for today.'
-    //             ], 404);
-    //         }
-
-    //         // Determine status and total late
-    //         $status = 'On Time';
-    //         $totalLate = '00:00:00';
-    //         $timeEnd = null;
-    //         $shiftOver = null;
-
-    //         if (!$shiftSchedule->isFlexibleTime) {
-    //             $shiftStart = Carbon::parse($shiftSchedule->shiftStart, 'Asia/Manila');
-    //             $lateThreshold = Carbon::parse($shiftSchedule->lateThreshold, 'Asia/Manila');
-    //             $shiftEnd = Carbon::parse($shiftSchedule->shiftEnd, 'Asia/Manila');
-
-    //             if ($timeIn->gt($lateThreshold)) {
-    //                 $status = 'Late';
-    //                 $totalLateInSeconds = $timeIn->diffInSeconds($lateThreshold);
-    //                 $totalLate = gmdate('H:i:s', $totalLateInSeconds);
-    //             }
-
-    //             $allowedHours = Carbon::parse($shiftSchedule->allowedHours)->secondsSinceMidnight();
-    //             $calculatedTimeEnd = $timeIn->copy()->addSeconds($allowedHours)->addHour();
-
-    //             $timeEnd = $calculatedTimeEnd->greaterThan($shiftEnd)
-    //                 ? $shiftEnd->format('h:i:s A')
-    //                 : $calculatedTimeEnd->format('h:i:s A');
-
-    //             $shiftOver = $shiftEnd->format('h:i:s A');
-    //         }
-
-    //         // Check if user has already timed in
-    //         $employeeAttendance = auth()->user()->employeeAttendance()
-    //             ->where('date', $currentDate)
-    //             ->first();
-
-    //         if ($employeeAttendance) {
-    //             return response()->json([
-    //                 'status' => 'error',
-    //                 'message' => 'You have already timed in!'
-    //             ], 400);
-
-    //         }
-
-    //         // Geolocation data
-    //         $latitude = $request->latitude;
-    //         $longitude = $request->longitude;
-
-    //         // Handle low accuracy with photo upload
-    //         if ($request->has('low_accuracy') && $request->low_accuracy) {
-    //             if (!$request->hasFile('image')) {
-    //                 return response()->json([
-    //                     'status' => 'error',
-    //                     'message' => 'Image upload is required for low accuracy check-in.'
-    //                 ], 400);
-    //             }
-
-    //             $imagePath = $request->file('image')->store('checkin_photos', 'public');
-
-    //             auth()->user()->employeeAttendance()->create([
-    //                 'name' => auth()->user()->fName . ' ' . auth()->user()->lName,
-    //                 'date' => $currentDate,
-    //                 'timeIn' => $timeIn->format('h:i:s A'),
-    //                 'status' => 'On Time',
-    //                 'latitude' => $latitude,
-    //                 'longitude' => $longitude,
-    //                 'location' => $request->location,
-    //                 'image_path' => $imagePath,
-    //                 'status_code' => 'Active',
-    //             ]);
-
-    //             return response()->json([
-    //                 'status' => 'success',
-    //                 'message' => 'Checked in successfully with photo!'
-    //             ], 200);
-    //         }
-
-    //         // Save attendance
-    //         auth()->user()->employeeAttendance()->create([
-    //             'name' => auth()->user()->fName . ' ' . auth()->user()->lName,
-    //             'date' => $currentDate,
-    //             'timeIn' => $timeIn->format('h:i:s A'),
-    //             'status' => $status,
-    //             'latitude' => $latitude,
-    //             'longitude' => $longitude,
-    //             'location' => $request->location,
-    //             'totalLate' => $totalLate,
-    //             'timeEnd' => $timeEnd,
-    //             'shiftOver' => $shiftOver,
-    //             'device' => $request->header('User-Agent'),
-    //             'status_code' => 'Active',
-    //         ]);
-
-    //         return response()->json([
-    //             'status' => 'success',
-    //             'message' => 'Checked in successfully!'
-    //         ], 200);
-    //     } catch (Exception $e) {
-    //         Log::error('Check-in Error: ' . $e->getMessage(), ['exception' => $e]);
-    //         return response()->json([
-    //             'status' => 'error',
-    //             'message' => 'An unexpected error occurred. Please try again later.'
-    //         ], 500);
-    //     }
-    // }
-
     public function store(Request $request)
     {
         try {
-
             $currentDate = Carbon::now('Asia/Manila')->toDateString();
             Log::info("Current Date: $currentDate");
 
             $timeIn = Carbon::now('Asia/Manila');
 
-        // Get user's shift schedule
+            // Get user's shift schedule
             $shiftSchedule = ShiftSchedule::where('users_id', auth()->user()->id)
                 ->where('date', $currentDate)
                 ->first();
 
             if (!$shiftSchedule) {
-                return back()->with('error', 'Shift schedule not found for today.');
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Shift schedule not found for today.'
+                ], 404);
             }
 
-
-        // Determine status and total late based on shift times if not flexible
+            // Determine status and total late
             $status = 'On Time';
             $totalLate = '00:00:00';
             $timeEnd = null;
@@ -306,180 +189,101 @@ class DashboardController extends Controller
                 $lateThreshold = Carbon::parse($shiftSchedule->lateThreshold, 'Asia/Manila');
                 $shiftEnd = Carbon::parse($shiftSchedule->shiftEnd, 'Asia/Manila');
 
-                // If the user is late
                 if ($timeIn->gt($lateThreshold)) {
                     $status = 'Late';
                     $totalLateInSeconds = $timeIn->diffInSeconds($lateThreshold);
-                    $hours = floor($totalLateInSeconds / 3600);
-                    $minutes = floor(($totalLateInSeconds % 3600) / 60);
-                    $seconds = $totalLateInSeconds % 60;
-                    $totalLate = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+                    $totalLate = gmdate('H:i:s', $totalLateInSeconds);
                 }
 
-                // Calculate timeEnd based on allowedHours
                 $allowedHours = Carbon::parse($shiftSchedule->allowedHours)->secondsSinceMidnight();
                 $calculatedTimeEnd = $timeIn->copy()->addSeconds($allowedHours)->addHour();
 
-                // If calculated timeEnd exceeds shiftEnd, cap timeEnd to shiftEnd
-                if ($calculatedTimeEnd->greaterThan($shiftEnd)) {
-                    $timeEnd = $shiftEnd->format('h:i:s A');
-                } else {
-                    $timeEnd = $calculatedTimeEnd->format('h:i:s A');
-                }
+                $timeEnd = $calculatedTimeEnd->greaterThan($shiftEnd)
+                    ? $shiftEnd->format('h:i:s A')
+                    : $calculatedTimeEnd->format('h:i:s A');
 
-                // Set shiftOver to shiftEnd
                 $shiftOver = $shiftEnd->format('h:i:s A');
             }
 
-            // Handle device detection
-            $userAgent = $request->header('User-Agent');
-            $agentDetector = new AgentDetector($userAgent);
-            $deviceType = $agentDetector->device();
-            $platform = $agentDetector->platform();
-            $browser = $agentDetector->browser();
-            $deviceInfo = "{$deviceType} ({$platform}, {$browser})";
-
-            // Check if the user has already timed in for the day
+            // Check if user has already timed in
             $employeeAttendance = auth()->user()->employeeAttendance()
                 ->where('date', $currentDate)
                 ->first();
 
             if ($employeeAttendance) {
-                Log::info("Already timed in for today.");
-                return response()->json(['status' => 'error', 'message' => 'You have already timed in!']);
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You have already timed in!'
+                ], 400);
+
             }
 
-            // Get user's shift schedule
-            $shiftSchedule = ShiftSchedule::where('users_id', auth()->user()->id)
-                ->where('date', $currentDate)
-                ->first();
-
-            if (!$shiftSchedule) {
-                Log::info("Shift schedule not found.");
-                return response()->json(['status' => 'error', 'message' => 'Shift schedule not found for today.']);
-            }
-
-            // Geolocation data from request
+            // Geolocation data
             $latitude = $request->latitude;
             $longitude = $request->longitude;
-            Log::info("User location: Latitude = $latitude, Longitude = $longitude");
 
-            // Low accuracy check-in with photo upload
+            // Handle low accuracy with photo upload
             if ($request->has('low_accuracy') && $request->low_accuracy) {
-                // Check if an image was uploaded and store it
-                $imagePath = null;
-                if ($request->hasFile('image')) {
-                    $imagePath = $request->file('image')->store('checkin_photos', 'public');
-                    Log::info("Image path to be saved: " . $imagePath); // Debugging line
-                } else {
-                    return response()->json(['status' => 'error', 'message' => 'Image upload is required for low accuracy check-in.']);
+                if (!$request->hasFile('image')) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Image upload is required for low accuracy check-in.'
+                    ], 400);
                 }
 
-                // Complete check-in and store attendance data
-                $timeIn = Carbon::now('Asia/Manila');
-                $attendance = auth()->user()->employeeAttendance()->create([
+                $imagePath = $request->file('image')->store('checkin_photos', 'public');
+
+                $data = auth()->user()->employeeAttendance()->create([
                     'name' => auth()->user()->fName . ' ' . auth()->user()->lName,
                     'date' => $currentDate,
                     'timeIn' => $timeIn->format('h:i:s A'),
                     'status' => 'On Time',
                     'latitude' => $latitude,
-                    'totalLate' => $totalLate,
-                    'timeEnd' => $timeEnd,  // Ensure null for flexible time
-                    'shiftOver' => $shiftOver,  // Ensure null for flexible time
-                    'device' => $deviceInfo,
                     'longitude' => $longitude,
                     'location' => $request->location,
-                    'image_path' => $imagePath, // Save uploaded image path
-                    'status_code' => 'Active',
-            ]);
-
-            Log::info("Attendance saved with ID: " . $attendance->id); // Confirm save with ID
-
-            return response()->json(['status' => 'success', 'message' => 'Checked in successfully with photo!']);
-        }
-
-            // Retrieve all geofences assigned to the user
-            $userGeofences = UserGeofence::where('user_id', auth()->user()->id)
-                ->with('geofenceSetting')
-                ->get();
-
-            Log::info("Fetched geofences: " . json_encode($userGeofences->toArray()));
-
-            $isWithinGeofence = false;
-            $isWithinTempRadius = false;
-            $tempRadius = 2000; // Temporary threshold in meters
-
-            foreach ($userGeofences as $userGeofence) {
-                if ($userGeofence->geofenceSetting) {
-                    $geofence = $userGeofence->geofenceSetting;
-                    $distance = $this->calculateDistance(
-                        $latitude,
-                        $longitude,
-                        $geofence->latitude,
-                        $geofence->longitude
-                    );
-                    Log::info("Distance to geofence {$geofence->fencing_name}: $distance meters");
-
-                    if ($distance <= $geofence->fencing_radius) {
-                        $isWithinGeofence = true;
-                        break;
-                    }
-
-                    if ($distance <= $tempRadius) {
-                        $isWithinTempRadius = true;
-                    }
-                }
-            }
-
-            if ($isWithinGeofence || $userGeofences->isEmpty()) {
-                Log::info("User is within a geofence or no geofence assigned, proceeding to check-in.");
-                $timeIn = Carbon::now('Asia/Manila');
-                $status = 'On Time';
-                $totalLate = '00:00:00';
-
-                if (!$shiftSchedule->isFlexibleTime) {
-                    $lateThreshold = Carbon::parse($shiftSchedule->lateThreshold, 'Asia/Manila');
-                    if ($timeIn->greaterThan($lateThreshold)) {
-                        $status = 'Late';
-                        $totalLateInSeconds = $timeIn->diffInSeconds($lateThreshold);
-                        $totalLate = gmdate("H:i:s", $totalLateInSeconds);
-                    }
-                }
-
-
-                // Save attendance record
-                auth()->user()->employeeAttendance()->create([
-                    'name' => auth()->user()->fName . ' ' . auth()->user()->lName,
-                    'date' => $currentDate,
-                    'timeIn' => $timeIn->format('h:i:s A'),
-                    'status' => $status,
-                    'totalLate' => $totalLate,
-                    'timeEnd' => $timeEnd,  // Ensure null for flexible time
-                    'shiftOver' => $shiftOver,  // Ensure null for flexible time
-                    'latitude' => $latitude,
-                    'longitude' => $longitude,
-                    'device' => $deviceInfo,
-                    'location' => $request->location,
+                    'image_path' => $imagePath,
                     'status_code' => 'Active',
                 ]);
 
-                Log::info("Check-in successful.");
-                return response()->json(['status' => 'success', 'message' => 'Checked in successfully!']);
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Checked in successfully with photo!',
+                    'data' => $data
+                ], 200);
             }
 
-            if ($isWithinTempRadius && !$isWithinGeofence) {
-                Log::info("User is outside geofence but within temporary radius.");
-                return response()->json(['status' => 'low_accuracy', 'message' => 'Low accuracy, please upload a photo to complete check-in.']);
-            }
+            // Save attendance
+            $data = auth()->user()->employeeAttendance()->create([
+                'name' => auth()->user()->fName . ' ' . auth()->user()->lName,
+                'date' => $currentDate,
+                'timeIn' => $timeIn->format('h:i:s A'),
+                'status' => $status,
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'location' => $request->location,
+                'totalLate' => $totalLate,
+                'timeEnd' => $timeEnd,
+                'shiftOver' => $shiftOver,
+                'device' => $request->header('User-Agent'),
+                'status_code' => 'Active',
+            ]);
 
-            Log::info("User is outside all geofences and temporary radius.");
-            return response()->json(['status' => 'error', 'message' => 'You are outside all assigned geofence areas.']);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Checked in successfully!',
+                'data' => $data
+            ], 200);
 
         } catch (Exception $e) {
             Log::error('Check-in Error: ' . $e->getMessage(), ['exception' => $e]);
-            return response()->json(['status' => 'error', 'message' => 'An unexpected error occurred. Please try again later.']);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An unexpected error occurred. Please try again later.',
+                'error' => $e
+            ], 500);
         }
     }
+
 
 //     public function store(Request $request)
 // {
@@ -1038,5 +842,4 @@ class DashboardController extends Controller
 
         return response()->json($holidays);
     }
-
 }

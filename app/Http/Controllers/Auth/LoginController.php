@@ -60,16 +60,16 @@ class LoginController extends Controller
     //     if ($request->expectsJson()) {
     //         return response()->json(['status' => 'error', 'message' => 'This route is for web logins only.'], 400);
     //     }
-    
+
     //     $credentials = $request->validate([
     //         'email' => 'required|email',
     //         'password' => 'required',
     //     ]);
-    
+
     //     if (Auth::attempt($credentials)) {
     //         return $this->authenticated($request, Auth::user());
     //     }
-    
+
     //     return back()->withErrors([
     //         'email' => 'Invalid credentials.',
     //     ]);
@@ -104,7 +104,7 @@ class LoginController extends Controller
     {
         if (Auth::user()->role_as == '1') { // 1 ADMIN
             return redirect('admin/dashboard')->with('status', 'Welcome to One JAF Admin');
-        } elseif (Auth::user()->role_as == '2') { // 2 HR 
+        } elseif (Auth::user()->role_as == '2') { // 2 HR
             return redirect('hr/dashboard')->with('status', 'Welcome to One JAF HR');
         } elseif (Auth::user()->role_as == '3') { // 3 Employee
             return redirect('emp/dashboard')->with('status', 'Welcome To One JAF');
@@ -114,7 +114,7 @@ class LoginController extends Controller
             return redirect('manager/dashboard')->with('status', 'Welcome To One JAF');
         } elseif (Auth::user()->role_as == '6') { // 6 Marketing Manager
             return redirect('manager/dashboard')->with('status', 'Welcome To One JAF');
-            
+
         } else { // Redirect all other roles to /
             return redirect('/')->with('status', 'Please coordinate with our HR department to access your account. Thank you.');
         }
