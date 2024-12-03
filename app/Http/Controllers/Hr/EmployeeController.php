@@ -180,7 +180,7 @@ class EmployeeController extends Controller
                 'dateHired' => $request->input('dateHired'),
                 'birthday' => $request->input('birthday'),
                 'completeAddress' => $request->input('completeAddress'),
-                'mSalary' => $request->input('mSalary'),
+                'hourly_rate' => $request->input('hourly_rate'),
                 'position' => $request->input('position'),
                 'role_as' => $request->input('role_as'),
                 'sss' => $request->input('sss'),
@@ -251,7 +251,7 @@ class EmployeeController extends Controller
             'typeOfContract' => 'required|string',
             'position' => 'required|string',
             'department' => 'required|string',
-            'mSalary' => 'required|string',
+            'hourly_rate' => 'required|string',
             'reporting_to' => [
                 'nullable',
                 'exists:users,id',
@@ -263,7 +263,7 @@ class EmployeeController extends Controller
             'typeOfContract.required' => 'Please select type of contract.',
             'position.required' => 'Position field is required.',
             'department.required' => 'Department field is required.',
-            'mSalary.required' => 'Monthly Salary field is required.',
+            'hourly_rate.required' => 'Hourly Rate field is required.',
             'reporting_to.exists' => 'The selected Reporting To is invalid or does not exist.',
             'reporting_to.not_in' => 'You cannot select the same user in reporting to.',
         ]);
@@ -283,8 +283,8 @@ class EmployeeController extends Controller
                 $errorMessage = $errors->first('position');
             } elseif ($errors->has('department')) {
                 $errorMessage = $errors->first('department');
-            } elseif ($errors->has('mSalary')) {
-                $errorMessage = $errors->first('mSalary');
+            } elseif ($errors->has('hourly_rate')) {
+                $errorMessage = $errors->first('hourly_rate');
             } else {
                 $errorMessage = 'Please correct the errors and try again.';
             }
@@ -306,7 +306,7 @@ class EmployeeController extends Controller
         $user->completeAddress = $request->input('completeAddress');
         $user->position = $request->input('position');
         $user->email = $request->input('email');
-        $user->mSalary = $request->input('mSalary');
+        $user->hourly_rate = $request->input('hourly_rate');
         $user->reporting_to = $request->input('reporting_to');
         
         if ($request->filled('password')) {
@@ -639,7 +639,7 @@ class EmployeeController extends Controller
                 'dateHired' => $request->input('dateHired'),
                 'birthday' => $request->input('birthday'),
                 'completeAddress' => $request->input('completeAddress'),
-                'mSalary' => $request->input('mSalary'),
+                'hourly_rate' => $request->input('hourly_rate'),
                 'position' => $request->input('position'),
                 'role_as' => $request->input('role_as'),
                 'sss' => $request->input('sss'),
@@ -727,7 +727,7 @@ class EmployeeController extends Controller
             'typeOfContract' => 'required|string',
             'position' => 'required|string',
             'department' => 'required|string',
-            'mSalary' => 'required|string',
+            'hourly_rate' => 'required|string',
             'reporting_to' => 'required|string',
         ], [
             'reporting_to.required' => 'Please Select "Reporting To".',
@@ -736,7 +736,7 @@ class EmployeeController extends Controller
             'typeOfContract.required' => 'Please select type of contract.',
             'position.required' => 'Position field is required',
             'department.required' => 'Deparment field is required',
-            'mSalary.required' => 'Monthly Salary Field is required',
+            'hourly_rate.required' => 'Hourly Rate Field is required',
         ]);
 
         return response()->json(['success' => true]);
@@ -834,9 +834,9 @@ class EmployeeController extends Controller
                     continue; // Skip this row
                 }
     
-                // Remove commas from mSalary and validate it
-                $userData['mSalary'] = str_replace(',', '', $userData['mSalary']);
-                if (!is_numeric($userData['mSalary'])) {
+                // Remove commas from hourly_rate and validate it
+                $userData['hourly_rate'] = str_replace(',', '', $userData['hourly_rate']);
+                if (!is_numeric($userData['hourly_rate'])) {
                     $errors[] = "Row $newUsersCount: Salary must be a numeric value without commas.";
                     continue; // Skip this row
                 }

@@ -88,14 +88,12 @@ class EmployeeController extends Controller
         }
     
         // Execute the query and get results
-        $emp = $data->get();
+        $emp = $data->orderBy('fName')->orderBy('lName')->get();
     
         // Return the view with the search results and departments
         return view('admin.employee.grid', compact('emp', 'departments', 'names'));
     }
     
-
-
     public function search(Request $request)
     {
         $name = trim($request->input('name')); // Trim any whitespace
@@ -218,37 +216,57 @@ class EmployeeController extends Controller
         }
     }
 
+    // public function delete_function(Request $request)
+    // {
+    //     // Get the employee ID from the request
+    //     $userId = $request->input('emp_delete_id');
+        
+    //     // Find the user by ID
+    //     $data = User::find($userId);
+    
+    //     // Check if the user exists
+    //     if ($data) {
+    //         // Update the user's status to 'inactive'
+    //         $data->update([
+    //             'status' => 'inactive', // Assuming you have a 'status' field
+    //         ]);
+    
+    //         // Return success message
+    //         return redirect()->back()->with('success', 'User status updated to inactive successfully!');
+    //     } else {
+    //         // Return error if user is not found
+    //         return redirect()->back()->with('error', 'User not found.');
+    //     }
+    // }
+
     public function delete_function(Request $request)
     {
-        // Get the employee ID from the request
-        $userId = $request->input('emp_delete_id');
-        
-        // Find the user by ID
-        $data = User::find($userId);
-    
-        // Check if the user exists
-        if ($data) {
-            // Update the user's status to 'inactive'
-            $data->update([
-                'status' => 'inactive', // Assuming you have a 'status' field
-            ]);
-    
-            // Return success message
-            return redirect()->back()->with('success', 'User status updated to inactive successfully!');
-        } else {
-            // Return error if user is not found
-            return redirect()->back()->with('error', 'User not found.');
-        }
+        $data = User::find($request->emp_delete_id);
+        $data->delete();
+        return redirect()->back()->with('success', 'User deleted successfully!');
     }
 
     public function edit($user_id)
     {
-        $user = User::with('contactEmergency', 'bankInfo', 'employmentRecord', 'employmentSalary', 'shiftSchedule', 'leaveCredits', 'userAssets.asset', 'memos',)->findOrFail($user_id);
+        $user = User::with(
+            'contactEmergency',
+            'bankInfo',
+            'employmentRecord',
+            'employmentSalary',
+            'shiftSchedule',
+            'leaveCredits',
+            'userAssets.asset',
+            'memos'
+        )->findOrFail($user_id);
+    
         $department = $user->department;
         $supervisor = $user->supervisor;
-        $users = User::all();
+    
+        // Filter users with role_as of 1, 2, or 4
+        $users = User::whereIn('role_as', [1, 2, 4])->get();
+    
         $leaveTypes = LeaveType::all();
-
+    
         switch ($user->role_as) {
             case 1:
                 $user->role_as_text = 'Admin';
@@ -262,8 +280,10 @@ class EmployeeController extends Controller
             default:
                 $user->role_as_text = 'Unknown';
         }
+    
         return view('admin.employee.edit', compact('user', 'supervisor', 'users', 'leaveTypes'));
     }
+    
 
     public function update(Request $request, $user_id)
     {
@@ -634,7 +654,13 @@ class EmployeeController extends Controller
     public function create(Request $request)
     {
         try {
-
+            // Check the current user count
+            $userCount = User::count();
+    
+            if ($userCount >= 52) {
+                return redirect()->back()->with('error', 'User limit reached. You cannot create more users.');
+            }
+    
             // Handle image upload
             $imageName = 'default.png';
             if ($request->hasFile('image')) {
@@ -687,7 +713,7 @@ class EmployeeController extends Controller
                     }
                 }
             }
-     
+    
             return redirect()->route('admin.employeeindex')->with('success', 'Employee Added Successfully');
         } catch (ValidationException $e) {
             Alert::error('Validation Error', $e->getMessage())->persistent(true);
@@ -698,7 +724,6 @@ class EmployeeController extends Controller
             return redirect()->back()->withInput();
         }
     }
-    
     
     
     public function validateStep1(Request $request)
@@ -810,7 +835,7 @@ class EmployeeController extends Controller
         Log::info('Current user count: ' . $userCount);
         
         // If the total user count is already at 11, prevent further creation
-        if ($userCount >= 100) {
+        if ($userCount >= 52) {
             return redirect()->back()->with('error', 'User limit reached. You cannot add more users.');
         }
     
@@ -835,7 +860,7 @@ class EmployeeController extends Controller
                 Log::info('Processing row ' . $newUsersCount, $userData);
     
                 // Check if adding this user will exceed the limit
-                if (User::count() >= 100) {
+                if (User::count() >= 13) {
                     $errors[] = "Row $newUsersCount: User limit reached. Cannot add more users.";
                     continue;
                 }

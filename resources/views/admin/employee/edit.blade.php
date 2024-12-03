@@ -1028,31 +1028,11 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Department</label>
-                                        <select class="form-control" name="department" id="department">
-                                            <option value="Website Development"
-                                                {{ $user->department == 'Website Development' ? 'selected' : '' }}>
-                                                Website Development
-                                            </option>
-                                            <option value="IT" {{ $user->department == 'IT' ? 'selected' : '' }}>
-                                                IT
-                                            </option>
-                                            <option value="SEO" {{ $user->department == 'SEO' ? 'selected' : '' }}>
-                                                SEO
-                                            </option>
-                                            <option value="Content"
-                                                {{ $user->department == 'Content' ? 'selected' : '' }}>
-                                                Content
-                                            </option>
-                                            <option value="Marketing"
-                                                {{ $user->department == 'Marketing' ? 'selected' : '' }}>
-                                                Marketing
-                                            </option>
-                                            <option value="HR" {{ $user->department == 'HR' ? 'selected' : '' }}>
-                                                HR
-                                            </option>
-                                        </select>
+                                        <input type="text" class="form-control" name="department" id="department"
+                                            value="{{ $user->department ? $user->department : '' }}" required>
                                     </div>
                                 </div>
+
                                 <div class="col-md-12">
                                     <div class="form-group">
                                         <label>Type Of Contract</label>
@@ -1097,13 +1077,6 @@
                                 <label> Phone Number </label>
                                 <input type="text" name="phoneNumber" id="phoneNumber" class="form-control"
                                     value="{{ $user->phoneNumber }}">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label> Monthly Salary </label>
-                                <input type="text" name="mSalary" id="mSalary" class="form-control"
-                                    value="{{ $user->mSalary }}">
                             </div>
                         </div>
                         <div class="col-md-6">

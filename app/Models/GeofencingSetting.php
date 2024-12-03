@@ -18,6 +18,8 @@ class GeofencingSetting extends Model
         'latitude',
         'longitude',
         'fencing_radius',
+        'created_by',
+        'edit_by',
      ];
 
      public function users()
@@ -29,5 +31,15 @@ class GeofencingSetting extends Model
      public function userGeofences()
      {
          return $this->hasMany(UserGeofence::class);
+     }
+
+     public function geofenceCreatedBy()
+     {
+        return $this->belongsTo(User::class, 'created_by');
+     }
+
+     public function geofenceEditBy()
+     {
+        return $this->belongsTo(User::class, 'edit_by');
      }
 }

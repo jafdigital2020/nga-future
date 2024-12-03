@@ -31,6 +31,75 @@ class LoginController extends Controller
      * @param  \Illuminate\Foundation\Auth\User  $user
      * @return \Illuminate\Http\Response
      */
+
+    //  public function login(Request $request)
+    // {
+    //     $credentials = $request->validate([
+    //         'email' => 'required|email',
+    //         'password' => 'required',
+    //     ]);
+
+    //     if (Auth::attempt($credentials)) {
+    //         $user = Auth::user();
+
+    //         // Generate a Sanctum personal access token
+    //         $token = $user->createToken('OneJAFApp')->plainTextToken;
+
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'token' => $token,
+    //             'user' => $user,
+    //         ]);
+    //     }
+
+    //     return response()->json(['status' => 'error', 'message' => 'Invalid credentials'], 401);
+    // }
+
+    // public function webLogin(Request $request)
+    // {
+    //     if ($request->expectsJson()) {
+    //         return response()->json(['status' => 'error', 'message' => 'This route is for web logins only.'], 400);
+    //     }
+    
+    //     $credentials = $request->validate([
+    //         'email' => 'required|email',
+    //         'password' => 'required',
+    //     ]);
+    
+    //     if (Auth::attempt($credentials)) {
+    //         return $this->authenticated($request, Auth::user());
+    //     }
+    
+    //     return back()->withErrors([
+    //         'email' => 'Invalid credentials.',
+    //     ]);
+    // }
+
+    public function apiLogin(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        if (Auth::attempt($credentials)) {
+            $user = Auth::user();
+            $token = $user->createToken('OneJAFApp')->plainTextToken;
+
+            return response()->json([
+                'status' => 'success',
+                'token' => $token,
+                'user' => $user,
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Invalid credentials',
+        ], 401);
+    }
+
+
     protected function authenticated(Request $request, $user)
     {
         if (Auth::user()->role_as == '1') { // 1 ADMIN

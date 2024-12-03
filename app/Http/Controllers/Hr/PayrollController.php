@@ -83,10 +83,13 @@ class PayrollController extends Controller
             $approvedAttendance = ApprovedAttendance::findOrFail($id);
             $user = $approvedAttendance->user;
  
-            // Otherwise, return the preview data
-            $monthlySalary = $user->mSalary;
-            $dailyRate = $monthlySalary / 22;
-            $hourlyRate = $dailyRate / 8;
+            // Calculate Daily and Hourly Rates
+            // Assume you have this field in the User model
+            $hourlyRate = $user->hourly_rate; 
+            // $dailyRate = $monthlySalary / 22; 
+            $dailyRate = $hourlyRate * 8;    
+            $monthlySalary = $dailyRate * 22;
+            // $monthlySalary = $user->mSalary;
     
             $formattedDailyRate = number_format($dailyRate, 2, '.', '');
             $formattedHourlyRate = number_format($hourlyRate, 2, '.', '');
@@ -208,9 +211,12 @@ class PayrollController extends Controller
             $user = $approvedAttendance->user;
     
             // Calculate Daily and Hourly Rates
-            $monthlySalary = $user->mSalary;
-            $dailyRate = $monthlySalary / 22; // Assuming 22 working days
-            $hourlyRate = $dailyRate / 8;     // Assuming 8 hours in a workday
+            // Assume you have this field in the User model
+            $hourlyRate = $user->hourly_rate; 
+            // $dailyRate = $monthlySalary / 22; 
+            $dailyRate = $hourlyRate * 8;    
+            $monthlySalary = $dailyRate * 22;
+            // $monthlySalary = $user->mSalary;
     
             // Format daily and hourly rates
             $formattedDailyRate = number_format($dailyRate, 2, '.', '');
@@ -346,9 +352,12 @@ class PayrollController extends Controller
             }
     
             // Calculate Daily and Hourly Rates
-            $monthlySalary = $user->mSalary; // Assume you have this field in the User model
-            $dailyRate = $monthlySalary / 22; // Assuming 22 working days
-            $hourlyRate = $dailyRate / 8; // Assuming 8 hours in a workday
+            // Assume you have this field in the User model
+            $hourlyRate = $user->hourly_rate; 
+            // $dailyRate = $monthlySalary / 22; 
+            $dailyRate = $hourlyRate * 8;    
+            $monthlySalary = $dailyRate * 22;
+            // $monthlySalary = $user->mSalary;
     
             // Format daily and hourly rates
             $formattedDailyRate = number_format($dailyRate, 2, '.', '');
@@ -1335,11 +1344,13 @@ class PayrollController extends Controller
                     continue; // Skip if payroll already processed
                 }
     
-                // --- Calculation Logic ---
                 // Calculate Daily and Hourly Rates
-                $monthlySalary = $user->mSalary;
-                $dailyRate = $monthlySalary / 22; // Assuming 22 working days
-                $hourlyRate = $dailyRate / 8; // Assuming 8 hours in a workday
+                // Assume you have this field in the User model
+                $hourlyRate = $user->hourly_rate; 
+                // $dailyRate = $monthlySalary / 22; 
+                $dailyRate = $hourlyRate * 8;    
+                $monthlySalary = $dailyRate * 22;
+                // $monthlySalary = $user->mSalary;
     
                 // Format daily and hourly rates
                 $formattedDailyRate = number_format($dailyRate, 2, '.', '');

@@ -10280,7 +10280,7 @@ ul.comment-list li ul.children {
     font-weight: bold;
     text-align: center;
     font-size: 14px;
-    padding-top: 20px;
+    padding-bottom: 10px;
 }
 
 /* Responsive styles for tablets */
@@ -11838,3 +11838,5 @@ ul.comment-list li ul.children {
         transform: scale(1.2);
     }
 }
+
+

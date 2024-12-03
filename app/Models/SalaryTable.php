@@ -36,6 +36,8 @@ class SalaryTable extends Model
         'approved_attendance_id',
         'notes',
         'basic_pay',
+        'regular_holiday_pay',
+        'special_holiday_pay',
     ];
 
     protected $casts = [

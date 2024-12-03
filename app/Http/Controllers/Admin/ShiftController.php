@@ -22,7 +22,9 @@ class ShiftController extends Controller
         $startDate = $request->input('startDate') ? Carbon::parse($request->input('startDate')) : Carbon::now()->startOfWeek();
         $endDate = $request->input('endDate') ? Carbon::parse($request->input('endDate')) : $startDate->copy()->endOfWeek(); // Show 1 week default
         $department = $request->input('department');
+        $departments = User::distinct()->pluck('department');
         $name = trim($request->input('name'));
+        $user = User::all();  
         
         // Generate an array of Carbon date instances based on the selected range
         $dates = collect([]);
@@ -71,9 +73,33 @@ class ShiftController extends Controller
         // Execute the query and get the users
         $users = $data->get(); // Ensure this is called after all where conditions
     
-        return view('admin.shiftschedule.daily', compact('dates', 'users', 'startDate', 'endDate', 'departments'));
+        return view('admin.shiftschedule.daily', compact('dates', 'users', 'startDate', 'endDate', 'departments', 'user'));
+    }
+
+
+    public function getEmployeesByDepartmentShift(Request $request)
+    {
+        // Validate department input
+        $department = $request->input('department');
+    
+        // If department is not selected, return an error response
+        if ($department === null) {
+            return response()->json([], 400); 
+        }
+    
+        // Check if the selected department is "all"
+        if ($department === 'all') {
+            // Get all employees
+            $employees = User::all(['id', 'name']);
+        } else {
+            // Get employees for the specific department
+            $employees = User::where('department', $department)->get(['id', 'name']);
+        }
+    
+        return response()->json($employees);
     }
     
+
     public function shiftList()
     {
       $shiftlist = Shift::all();
@@ -404,5 +430,47 @@ class ShiftController extends Controller
             return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage());
         }
     }
+
+    public function shiftDelete($id)
+    {
+        try {
+            // Find the schedule by its ID
+            $schedule = ShiftSchedule::findOrFail($id);
+
+            // Delete the schedule
+            $schedule->delete();
+
+            // Return a success response
+            return redirect()->back()->with('success', 'Schedule deleted successfully.');
+        } catch (\Exception $e) {
+            // Log the error and return an error response
+            \Log::error('Error deleting schedule: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['error' => 'Failed to delete schedule.']);
+        }
+    }
+
+    public function deleteRow(Request $request)
+    {
+        // Validate the input
+        $request->validate([
+            'user_id' => 'required|exists:users,id', // Ensure the user ID exists in the users table
+        ]);
+    
+        // Retrieve the user ID from the request
+        $userId = $request->input('user_id');
+    
+        try {
+            // Delete all schedules associated with the user
+            $deletedRows = ShiftSchedule::where('users_id', $userId)->delete();
+    
+            // Redirect back with success message
+            return redirect()->back()->with('success', "Successfully deleted $deletedRows schedules for the user.");
+        } catch (\Exception $e) {
+            // Log the error and redirect back with an error message
+            \Log::error("Error deleting schedules for user ID $userId: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to delete schedules. Please try again.');
+        }
+    }
+
     
 }

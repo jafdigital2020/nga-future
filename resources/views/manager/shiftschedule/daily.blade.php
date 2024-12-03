@@ -1,6 +1,44 @@
 @extends('layouts.managermaster') @section('title', 'Daily Scheduling')
 <meta name="csrf-token" content="{{ csrf_token() }}">
+<style>
+    .btn-delete-row {
+        background-color: #ff4d4d;
+        /* Red color */
+        color: white;
+        border: none;
+        border-radius: 25px;
+        /* Rounded button */
+        padding: 10px 20px;
+        /* Padding for a better appearance */
+        font-size: 14px;
+        /* Font size */
+        font-weight: bold;
+        display: inline-flex;
+        align-items: center;
+        cursor: pointer;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        /* Subtle shadow */
+        transition: all 0.3s ease;
+        /* Smooth hover effect */
+    }
 
+    .btn-delete-row i {
+        margin-right: 8px;
+        /* Space between icon and text */
+        font-size: 15px;
+        /* Adjust icon size */
+    }
+
+    .btn-delete-row:hover {
+        background-color: #d93636;
+        /* Darker red on hover */
+        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+        /* Enhanced shadow */
+        transform: scale(1.05);
+        /* Slight zoom effect */
+    }
+
+</style>
 @section('content')
 
 <div class="content container-fluid">
@@ -63,6 +101,7 @@
                 <table class="table table-striped custom-table datatable">
                     <thead>
                         <tr>
+                            <th>Action</th>
                             <th>Scheduled Shift</th>
                             @foreach($dates as $date)
                             <th>{{ $date->format('M d D') }}</th>
@@ -73,12 +112,20 @@
                         @foreach($users as $user)
                         <tr>
                             <td>
+                                <!-- Delete Row Button -->
+                                <button class="btn-delete-row" data-toggle="modal" data-target="#deleteRowModal"
+                                    data-user-id="{{ $user->id }}"
+                                    data-user-name="{{ $user->fName }} {{ $user->lName }}">
+                                    <i class="fa fa-trash"></i> Delete
+                                </button>
+                            </td>
+                            <td>
                                 <h2 class="table-avatar">
                                     <a href="{{ url('manager/department-record/'. $user->id) }}" class="avatar"><img
                                             alt="" src="{{ asset('images/' . $user->image) }}"></a>
                                     <a href="{{ url('manager/department-record/'. $user->id) }}">{{ $user->fName }}
                                         {{ $user->lName }}
-                                        <span>{{ $user->role }}</span></a>
+                                        <span>{{ $user->position }}</span></a>
                                 </h2>
                             </td>
                             @foreach($dates as $date)
@@ -114,14 +161,15 @@
                                                 {{ $user->position }} </span>
                                         </a>
                                         <!-- Delete Button placed after the user role info -->
-                                        <!-- <form action="" method="POST" class="d-inline" style="margin-left: 10px;">
+                                        <form action="{{ route('manager.shiftDelete', $schedule->id) }}" method="POST"
+                                            class="d-inline" style="margin-left: 10px;">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger btn-sm"
                                                 onclick="return confirm('Are you sure you want to delete this schedule?')">
                                                 <i class="fa fa-trash"></i>
                                             </button>
-                                        </form> -->
+                                        </form>
                                     </h2>
                                 </div>
 
@@ -234,7 +282,6 @@
                                         class="custom-control-input" id="flexibleTime" name="flexibleTime" value="1">
                                     <label class="custom-control-label" for="flexibleTime"></label>
                                 </div>
-
                             </div>
                         </div>
                     </div>
@@ -262,14 +309,14 @@
                 <form action="{{ route('manager.assignschedule') }}" method="POST">
                     @csrf
                     <div class="row">
-                        <div class="col-sm-6">
+                        <!-- <div class="col-sm-6">
                             <div class="form-group">
                                 <label class="col-form-label">Department <span class="text-danger">*</span></label>
                                 <input class="form-control" type="text" name="department" id="department">
 
                             </div>
-                        </div>
-                        <div class="col-sm-6">
+                        </div> -->
+                        <div class="col-sm-12">
                             <div class="form-group">
                                 <label class="col-form-label">Employee Name <span class="text-danger">*</span></label>
                                 <select class="form-control selectpicker" name="users_id[]" id="users_id" multiple
@@ -302,24 +349,26 @@
                             <div class="form-group">
                                 <label class="col-form-label">Start Time <span class="text-danger">*</span></label>
                                 <div class="input-group time timepicker">
-                                    <input class="form-control" type="time" name="shiftStart" id="shiftStart"><span
-                                        class="input-group-append input-group-addon">
+                                    <input class="form-control" type="time" name="shiftStart" id="shiftStarteee">
+                                    <span class="input-group-append input-group-addon"></span>
                                 </div>
                             </div>
                         </div>
+                        <!-- Late Threshold -->
                         <div class="col-sm-4">
                             <div class="form-group">
-                                <label class="col-form-label">Late Threshold<span class="text-danger">*</span></label>
+                                <label class="col-form-label">Late Threshold <span class="text-danger">*</span></label>
                                 <div class="input-group time timepicker">
-                                    <input class="form-control" type="time" name="lateThreshold" id="lateThreshold">
+                                    <input class="form-control" type="time" name="lateThreshold" id="lateThresholdeee">
                                 </div>
                             </div>
                         </div>
+                        <!-- End Time -->
                         <div class="col-sm-4">
                             <div class="form-group">
-                                <label class="col-form-label">End Time<span class="text-danger">*</span></label>
+                                <label class="col-form-label">End Time <span class="text-danger">*</span></label>
                                 <div class="input-group time timepicker">
-                                    <input class="form-control" type="time" name="shiftEnd" id="shiftEnd">
+                                    <input class="form-control" type="time" name="shiftEnd" id="shiftEndeee">
                                 </div>
                             </div>
                         </div>
@@ -341,23 +390,23 @@
                                 @endforeach
                             </div>
                         </div>
+                        <!-- Flexible Time -->
                         <div class="col-sm-12">
                             <div class="form-group">
                                 <label class="col-form-label">Flexible Time</label>
                                 <div class="custom-control custom-switch">
-                                    <input type="checkbox" onchange="toggleShiftFields(this, 'add')"
-                                        class="custom-control-input" id="flexibleTime" name="flexibleTime" value="1">
-                                    <label class="custom-control-label" for="flexibleTime"></label>
+                                    <input type="checkbox" onchange="toggleAssignFields(this)"
+                                        class="custom-control-input" id="flexibleTimeee" name="flexibleTime" value="1">
+                                    <label class="custom-control-label" for="flexibleTimeee">Flexible Time</label>
                                 </div>
-
                             </div>
                         </div>
-                        <div class="col-sm-12">
+                        <!-- <div class="col-sm-12">
                             <div class="custom-control custom-checkbox">
                                 <input type="checkbox" class="custom-control-input" id="customCheck1" name="recurring">
                                 <label class="custom-control-label" for="customCheck1">Recurring Shift</label>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
                     <div class="submit-section">
                         <button class="btn btn-primary submit-btn">Submit</button>
@@ -470,6 +519,34 @@
 </div>
 <!-- /Edit Schedule Modal -->
 
+<!-- Delete Row Modal -->
+<div class="modal fade" id="deleteRowModal" tabindex="-1" role="dialog" aria-labelledby="deleteRowModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('manager.deleteRow') }}">
+                @csrf
+                @method('DELETE')
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteRowModalLabel">Delete Entire Row</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete all schedules for <strong id="rowUserName"></strong>?</p>
+                    <input type="hidden" name="user_id" id="rowUserId">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
 @endsection
 
 @section('scripts')
@@ -538,7 +615,7 @@
             shiftStart = $('#shiftStarte');
             lateThreshold = $('#lateThresholde');
             shiftEnd = $('#shiftEnde');
-        } else {
+        } else if (modalType === 'add') {
             // For the add modal
             shiftStart = $('#shiftStart');
             lateThreshold = $('#lateThreshold');
@@ -561,6 +638,41 @@
 
 </script>
 
+<script>
+    function toggleAssignFields(checkbox) {
+        // Select the input fields for the "assign" modal
+        const shiftStart = $('#shiftStarteee');
+        const lateThreshold = $('#lateThresholdeee');
+        const shiftEnd = $('#shiftEndeee');
+
+        // Check if the checkbox is checked
+        const isDisabled = $(checkbox).is(':checked');
+
+        // Log for debugging
+        console.log('Assign checkbox state (isDisabled):', isDisabled);
+
+        // Disable or enable the fields
+        shiftStart.prop('disabled', isDisabled);
+        lateThreshold.prop('disabled', isDisabled);
+        shiftEnd.prop('disabled', isDisabled);
+
+        // Clear values if fields are disabled
+        if (isDisabled) {
+            shiftStart.val('');
+            lateThreshold.val('');
+            shiftEnd.val('');
+        }
+    }
+
+    // Bind the event handler for the assign modal when the page is ready
+    $(document).ready(function () {
+        // Bind the assign modal toggle
+        $('#flexibleTimeee').on('change', function () {
+            toggleAssignFields(this);
+        });
+    });
+
+</script>
 
 <!-- Daily Schedule Edit -->
 
@@ -613,7 +725,6 @@
 
 </script>
 
-
 <script>
     document.getElementById('allowedHours').addEventListener('input', function (e) {
         let input = e.target.value;
@@ -644,6 +755,24 @@
                 return instance.formatDate(date, 'Y-m-d');
             }).join(',');
         }
+    });
+
+</script>
+
+<!-- Delete Row -->
+<script>
+    $(document).ready(function () {
+        $('#deleteRowModal').on('show.bs.modal', function (event) {
+            // Get the button that triggered the modal
+            var button = $(event.relatedTarget);
+            var userId = button.data('user-id'); // Extract user ID
+            var userName = button.data('user-name'); // Extract user name
+
+            // Update the modal's content with the user data
+            var modal = $(this);
+            modal.find('#rowUserName').text(userName);
+            modal.find('#rowUserId').val(userId);
+        });
     });
 
 </script>

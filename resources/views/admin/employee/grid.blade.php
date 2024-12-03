@@ -93,10 +93,9 @@
                             <a class="dropdown-item" href="{{ url('admin/employee/edit/'.$user->id) }}">
                                 <i class="fa fa-pencil m-r-5"></i> Edit
                             </a>
-                            <a class="dropdown-item" href="#" data-toggle="modal"
-                                data-target="#delete_employee_{{ $user->id }}">
-                                <i class="fa fa-trash-o m-r-5"></i> Delete
-                            </a>
+                            <button type="button" data-toggle="modal" data-target="#delete_user"
+                                class="dropdown-item deleteBtn" value="{{ $user->id }}"><i
+                                    class="fa fa-trash-o m-r-5"></i>Delete</button>
                         </div>
                     </div>
                     <h4 class="user-name m-t-10 mb-0 text-ellipsis">
@@ -110,4 +109,49 @@
         </div>
     </div>
 
+
+    <!-- Inactive User Modal -->
+    <div class="modal custom-modal fade" id="delete_user" role="dialog">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form action="{{ url('admin/employee/delete') }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="form-header">
+                            <h3>Deactivate User</h3>
+                            <p>Are you sure you want to delete this user?</p>
+                        </div>
+                        <div class="modal-btn delete-action">
+                            <div class="row">
+                                <div class="col-5">
+                                    <input type="hidden" name="emp_delete_id" id="emp_id">
+                                    <button class="btn add-btn" type="submit">Delete</button>
+                                </div>
+                                <div class="col-6">
+                                    <a href="javascript:void(0);" data-dismiss="modal" class="btn add-btn">Cancel</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- /Inactive User Modal -->
+
+    @endsection
+
+    @section('scripts')
+    <script>
+        $(document).ready(function () {
+            $('.deleteBtn').click(function (e) {
+                e.preventDefault(); // Prevent default action
+
+                var emp_id = $(this).val(); // Get the employee ID from the button's value
+                $('#emp_id').val(emp_id); // Set the employee ID in the hidden input field
+                $('#delete_user').modal('show'); // Corrected method to show the modal
+            });
+        });
+
+    </script>
     @endsection

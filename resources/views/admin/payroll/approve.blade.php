@@ -185,6 +185,8 @@
                             <th>Cut-Off</th>
                             <th>Total Late</th>
                             <th>Total Hours</th>
+                            <th>Regular Holiday</th>
+                            <th>Special Holiday</th>
                             <th>Approved By</th>
                             <th class="text-center">Status</th>
                             <th class="text-right">Actions</th>
@@ -223,6 +225,8 @@
                             <td>{{ $app->cut_off }}</td>
                             <td>{{ $app->totalLate }}</td>
                             <td>{{ $app->totalHours }}</td>
+                            <td>{{ $app->regular_holiday_hours }}</td>
+                            <td>{{ $app->special_holiday_hours }}</td>
                             <td>
                                 @if($app->approved && $app->approved->fName && $app->approved->lName)
                                 {{ $app->approved->fName }} {{ $app->approved->lName }}
@@ -511,6 +515,7 @@
                                     value="">
                             </div>
                         </div>
+
                     </div>
                     <div class="row">
                         <!-- Earnings Section -->
@@ -524,6 +529,14 @@
                                 <label>Paid Leave Amount</label>
                                 <input class="form-control" type="text" id="paidLeaveAmount" name="paidLeaveAmount"
                                     value="">
+                            </div>
+                            <div class="form-group">
+                                <label>Regular Holiday Amount</label>
+                                <input type="text" class="form-control" id="regularHolidayPay" name="regularHolidayPay">
+                            </div>
+                            <div class="form-group">
+                                <label>Special Holiday Amount</label>
+                                <input type="text" class="form-control" id="specialHolidayPay" name="specialHolidayPay">
                             </div>
                             <div id="earningsContainer">
                                 <!-- Earnings will be dynamically populated here -->
@@ -546,6 +559,7 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="submit-section">
                         <!-- Submit button -->
                         <button type="submit" class="btn btn-primary submit-btn">Process Payroll</button>
@@ -683,6 +697,8 @@
                 $('#totalDeductionse').val(removeCommas(data.totalDeductions));
                 $('#overtimePay').val(removeCommas(data.overtimePay));
                 $('#paidLeaveAmount').val(removeCommas(data.paidLeaveAmount));
+                $('#regularHolidayPay').val(removeCommas(data.regularHolidayPay));
+                $('#specialHolidayPay').val(removeCommas(data.specialHolidayPay));
 
                 // Clear and populate earnings, deductions, loans
                 $('#earningsContainer').empty();
@@ -741,7 +757,7 @@
         updateEarningsAndNetPay();
     });
 
-    $(document).on('input', '#overtimePay, #paidLeaveAmount', function () {
+    $(document).on('input', '#overtimePay, #paidLeaveAmount, #regularHolidayPay, #specialHolidayPay', function () {
         updateEarningsAndNetPay();
     });
 
@@ -769,7 +785,10 @@
 
         const overtimePay = parseFloat(removeCommas($('#overtimePay').val())) || 0;
         const paidLeaveAmount = parseFloat(removeCommas($('#paidLeaveAmount').val())) || 0;
-        totalEarnings += overtimePay + paidLeaveAmount;
+        const regularHolidayPay = parseFloat(removeCommas($('#regularHolidayPay').val())) || 0;
+        const specialHolidayPay = parseFloat(removeCommas($('#specialHolidayPay').val())) || 0;
+
+        totalEarnings += overtimePay + paidLeaveAmount + regularHolidayPay + specialHolidayPay;
 
         $('#totalEarningse').val(totalEarnings.toFixed(2));
 
@@ -841,6 +860,12 @@
             return val.replace(/,/g, ''); // Remove commas
         });
         $('#payrollForm input[name="paidLeaveAmount"]').val(function (i, val) {
+            return val.replace(/,/g, ''); // Remove commas
+        });
+        $('#payrollForm input[name="regularHolidayPay"]').val(function (i, val) {
+            return val.replace(/,/g, ''); // Remove commas
+        });
+        $('#payrollForm input[name="specialHolidayPay"]').val(function (i, val) {
             return val.replace(/,/g, ''); // Remove commas
         });
 

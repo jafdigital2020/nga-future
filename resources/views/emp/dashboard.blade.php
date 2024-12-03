@@ -159,6 +159,43 @@
                                     </button>
                                 </div>
 
+                                <!--Clock Out Modal 1 -->
+                                <!-- <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
+                                    aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="exampleModalLabel">
+                                                    Warning!
+                                                </h5>
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                    aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                Are you sure you want to time out?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <form id="clockOutForm" action="{{ url('emp/dashboard/clockout') }}"
+                                                    method="POST" enctype="multipart/form-data">
+                                                    @csrf
+                                                    <input type="hidden" name="latitude" id="outLatitude">
+                                                    <input type="hidden" name="longitude" id="outLongitude">
+                                                    <input type="hidden" name="location" id="outLocation">
+                                                    <button type="button" class="btn btn-outline-warning"
+                                                        id="clockOutButton">Clock Out</button>
+                                                </form>
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                    No
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> -->
+                                <!-- Clock Out Modal 1 -->
+
+
                                 <!--Clock Out Modal -->
                                 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
                                     aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -191,6 +228,49 @@
                                     </div>
                                 </div>
                                 <!-- Clock Out Modal -->
+
+                                <!-- Clock Out Image Modal -->
+                                <div id="clockOutImageModal" class="modal fade" tabindex="-1" role="dialog"
+                                    aria-labelledby="clockOutImageModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="clockOutImageModalLabel">Capture a Photo
+                                                </h5>
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                    aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form id="clockOutImageUploadForm">
+                                                    <div class="form-group">
+                                                        <label>Your location accuracy is low. Please capture a photo to
+                                                            complete clock-out.</label>
+                                                        <!-- Video element for camera feed -->
+                                                        <video id="outVideo" autoplay style="width: 100%;"></video>
+                                                        <!-- Canvas element for capturing photo -->
+                                                        <canvas id="outCanvas" style="display: none;"></canvas>
+                                                        <!-- Capture Button -->
+                                                        <button type="button" class="btn btn-primary mt-2"
+                                                            id="outCaptureButton">Capture Photo</button>
+                                                        <!-- Preview captured image -->
+                                                        <img id="outCapturedImage"
+                                                            style="display: none; width: 100%; margin-top: 10px;" />
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-primary"
+                                                    id="outSubmitImage">Submit</button>
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-dismiss="modal">Cancel</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- CLOCK-OUT IMAGE -->
                             </div>
                             <div class="clock-in-list mt-4">
                                 <ul class="nav">
@@ -798,6 +878,8 @@
 
 </script> -->
 
+<!-- CLOCKED IN SCRIPT -->
+
 <script>
     let videoStream;
 
@@ -1013,7 +1095,198 @@
 
 </script>
 
+<!-- CLOCKED OUT SCRIPT -->
 
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("clockOutButton").addEventListener("click", getOutLocation);
+
+        let lowAccuracyClockOut = false;
+        let clockOutVideoStream;
+
+        function getOutLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showOutPosition, showOutError, {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0,
+                });
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function showOutPosition(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            document.getElementById("outLatitude").value = latitude;
+            document.getElementById("outLongitude").value = longitude;
+
+            // Fetch address from latitude and longitude
+            getOutAddressFromLatLng(latitude, longitude);
+        }
+
+        function showOutError(error) {
+            console.error("Geolocation error:", error);
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("Location permission was denied. Please enable location access and try again.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Location information is unavailable. Please check your device settings.");
+                    break;
+                case error.TIMEOUT:
+                    alert("The request to get your location timed out. Please try again.");
+                    break;
+                default:
+                    alert("An unknown error occurred. Please try again.");
+            }
+        }
+
+        function getOutAddressFromLatLng(latitude, longitude) {
+            const apiKey = 'AIzaSyCoZSVkyGR645u4B_OOFmepLzrRBB8Hgmc';
+            const geocodeUrl =
+                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`;
+
+            fetch(geocodeUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === "OK") {
+                        const address = data.results[0].formatted_address;
+                        document.getElementById("outLocation").value = address;
+                        submitClockOutForm();
+                    } else {
+                        throw new Error(`Geocoding failed: ${data.status}`);
+                    }
+                })
+                .catch(error => {
+                    alert(`Error fetching address: ${error.message}`);
+                    console.error("Geocoding error:", error);
+                });
+        }
+
+        function submitClockOutForm() {
+            const formData = new FormData(document.getElementById("clockOutForm"));
+
+            fetch("{{ url('emp/dashboard/clockout') }}", {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                })
+                .then(response => {
+                    console.log("Raw response:", response); // Log raw response
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Clock-Out response:", data);
+                    if (data.status === 'success') {
+                        alert(data.message);
+                        window.location.reload();
+                    } else if (data.status === 'low_accuracy') {
+                        alert(data.message);
+                        lowAccuracyClockOut = true;
+                        console.log("Attempting to show Clock-Out modal...");
+                        $('#clockOutImageModal').modal('show');
+                        startOutCamera();
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error("Clock-out submission error:", error);
+                    alert("Error submitting clock-out. Please try again.");
+                });
+
+        }
+
+        function startOutCamera() {
+            const video = document.getElementById('outVideo');
+            navigator.mediaDevices.getUserMedia({
+                    video: true
+                })
+                .then(stream => {
+                    clockOutVideoStream = stream;
+                    video.srcObject = stream;
+                })
+                .catch(error => console.error("Camera access error:", error));
+        }
+
+        document.getElementById("outCaptureButton").addEventListener("click", function () {
+            const canvas = document.getElementById("outCanvas");
+            const video = document.getElementById("outVideo");
+            const capturedImage = document.getElementById("outCapturedImage");
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            capturedImage.src = canvas.toDataURL('image/png');
+            capturedImage.style.display = "block";
+        });
+
+        function stopOutCamera() {
+            if (clockOutVideoStream) {
+                clockOutVideoStream.getTracks().forEach(track => track.stop());
+            }
+        }
+
+        document.getElementById("outSubmitImage").addEventListener("click", function () {
+            const capturedImage = document.getElementById("outCapturedImage").src;
+
+            if (!capturedImage || capturedImage === '') {
+                alert("Please capture an image before submitting.");
+                return;
+            }
+
+            fetch(capturedImage)
+                .then(res => res.blob())
+                .then(blob => {
+                    const formData = new FormData(document.getElementById("clockOutForm"));
+                    formData.append('image', blob, 'clockout_photo.png');
+                    formData.append('low_accuracy', lowAccuracyClockOut);
+
+                    fetch("{{ url('emp/dashboard/clockout') }}", {
+                            method: "POST",
+                            body: formData,
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector(
+                                    'meta[name="csrf-token"]').content
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                stopOutCamera();
+                                $('#clockOutImageModal').modal('hide');
+                                alert('Clock-out completed with photo!');
+                                window.location.reload();
+                            } else {
+                                alert(data.message ||
+                                    "Error submitting clock-out. Please try again.");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error uploading image:", error);
+                            alert("Error submitting clock-out. Please try again.");
+                        });
+                });
+        });
+
+        $('#clockOutImageModal').on('hidden.bs.modal', function () {
+            stopOutCamera();
+        });
+    });
+
+</script>
 
 <!-- CAROUSEL -->
 <script>
@@ -1076,6 +1349,7 @@
 </script>
 
 <!-- CALENDAR -->
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const calendar = document.getElementById('calendar');
@@ -1114,6 +1388,8 @@
             let totalOvertimeSeconds = 0; // Counter for total overtime
             let paidLeaveCount = 0; // Counter for paid leaves
             let unpaidLeaveCount = 0; // Counter for unpaid leaves
+            let totalRegularHolidaySeconds = 0;
+            let totalSpecialHolidaySeconds = 0;
 
             let currentDate = new Date(startDate);
             while (currentDate <= endDate) {
@@ -1156,15 +1432,27 @@
                     totalLate.innerText = "Total Late: " + (dayData.totalLate || 'N/A');
                     dayDiv.appendChild(totalLate);
 
-                    if (dayData.timeTotal) {
-                        const timeParts = dayData.timeTotal.split(':').map(Number);
-                        totalWorkedSeconds += timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2];
-                    }
-
                     if (dayData.totalLate) {
                         const lateParts = dayData.totalLate.split(':').map(Number);
                         totalLateSeconds += lateParts[0] * 3600 + lateParts[1] * 60 + lateParts[2];
                     }
+
+                    if (dayData.timeTotal) {
+                        const timeParts = dayData.timeTotal.split(':').map(Number);
+                        const workedSeconds = timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2];
+                        totalWorkedSeconds += workedSeconds;
+
+                        // Allocate holiday hours if applicable
+                        const holiday = checkHoliday(currentDate, holidays);
+                        if (holiday) {
+                            if (holiday.type === 'Regular') {
+                                totalRegularHolidaySeconds += workedSeconds;
+                            } else if (holiday.type === 'Special') {
+                                totalSpecialHolidaySeconds += workedSeconds;
+                            }
+                        }
+                    }
+
                 }
 
                 // Check for approved leave on this day
@@ -1219,7 +1507,13 @@
                     const holidayDiv = document.createElement('div');
                     holidayDiv.className = 'holiday-button';
                     holidayDiv.innerText = holiday.title;
-                    holidayDiv.style.backgroundColor = 'green';
+
+                    if (holiday.type === 'Regular') {
+                        holidayDiv.style.backgroundColor = 'red';
+                    } else if (holiday.type === 'Special') {
+                        holidayDiv.style.backgroundColor = 'green';
+                    }
+
                     holidayDiv.style.color = 'white';
                     holidayDiv.style.padding = '5px';
                     holidayDiv.style.marginTop = '5px';
@@ -1252,12 +1546,18 @@
             // Display total stats at the bottom
             const totalBox = document.createElement('div');
             totalBox.className = 'day total-box';
-            totalBox.innerText =
-                `Total Worked Hours: ${totalWorkedFormatted}\nTotal Late: ${totalLateFormatted}\nApproved Overtime: ${totalOvertimeFormatted}\nPaid Leaves: ${paidLeaveCount}\nUnpaid Leaves: ${unpaidLeaveCount}\nStatus: ${status}`;
+            totalBox.innerText = `
+            Total Worked Hours: ${formatTime(totalWorkedSeconds)}
+            Total Late: ${formatTime(totalLateSeconds)}
+            Approved Overtime: ${formatTime(totalOvertimeSeconds)}
+            Regular Holiday Hours: ${formatTime(totalRegularHolidaySeconds)}
+            Special Holiday Hours: ${formatTime(totalSpecialHolidaySeconds)}
+            Paid Leaves: ${paidLeaveCount}
+            Unpaid Leaves: ${unpaidLeaveCount}
+            Status: ${status || 'new'}
+        `;
             calendar.appendChild(totalBox);
         }
-
-
 
         function checkHoliday(date, holidays) {
             const formattedDate =
@@ -1309,109 +1609,109 @@
             let startDate, endDate;
 
             switch (monthIndex) {
-                case 0:
-                    startDate = new Date(Date.UTC(year - 1, 11, 26));
-                    endDate = new Date(Date.UTC(year, 0, 10));
+                case 0: // December 25 (previous year) to January 9
+                    startDate = new Date(Date.UTC(year - 1, 11, 25));
+                    endDate = new Date(Date.UTC(year, 0, 9));
                     break;
-                case 1:
-                    startDate = new Date(Date.UTC(year, 0, 11));
-                    endDate = new Date(Date.UTC(year, 0, 25));
+                case 1: // January 10 to January 24
+                    startDate = new Date(Date.UTC(year, 0, 10));
+                    endDate = new Date(Date.UTC(year, 0, 24));
                     break;
-                case 2:
-                    startDate = new Date(Date.UTC(year, 0, 26));
-                    endDate = new Date(Date.UTC(year, 1, 10));
+                case 2: // January 25 to February 9
+                    startDate = new Date(Date.UTC(year, 0, 25));
+                    endDate = new Date(Date.UTC(year, 1, 9));
                     break;
-                case 3:
-                    startDate = new Date(Date.UTC(year, 1, 11));
-                    endDate = new Date(Date.UTC(year, 1, 25));
+                case 3: // February 10 to February 24
+                    startDate = new Date(Date.UTC(year, 1, 10));
+                    endDate = new Date(Date.UTC(year, 1, 24));
                     break;
-                case 4:
-                    startDate = new Date(Date.UTC(year, 1, 26));
-                    endDate = new Date(Date.UTC(year, 2, 10));
+                case 4: // February 25 to March 9
+                    startDate = new Date(Date.UTC(year, 1, 25));
+                    endDate = new Date(Date.UTC(year, 2, 9));
                     break;
-                case 5:
-                    startDate = new Date(Date.UTC(year, 2, 11));
-                    endDate = new Date(Date.UTC(year, 2, 25));
+                case 5: // March 10 to March 24
+                    startDate = new Date(Date.UTC(year, 2, 10));
+                    endDate = new Date(Date.UTC(year, 2, 24));
                     break;
-                case 6:
-                    startDate = new Date(Date.UTC(year, 2, 26));
-                    endDate = new Date(Date.UTC(year, 3, 10));
+                case 6: // March 25 to April 9
+                    startDate = new Date(Date.UTC(year, 2, 25));
+                    endDate = new Date(Date.UTC(year, 3, 9));
                     break;
-                case 7:
-                    startDate = new Date(Date.UTC(year, 3, 11));
-                    endDate = new Date(Date.UTC(year, 3, 25));
+                case 7: // April 10 to April 24
+                    startDate = new Date(Date.UTC(year, 3, 10));
+                    endDate = new Date(Date.UTC(year, 3, 24));
                     break;
-                case 8:
-                    startDate = new Date(Date.UTC(year, 3, 26));
-                    endDate = new Date(Date.UTC(year, 4, 10));
+                case 8: // April 25 to May 9
+                    startDate = new Date(Date.UTC(year, 3, 25));
+                    endDate = new Date(Date.UTC(year, 4, 9));
                     break;
-                case 9:
-                    startDate = new Date(Date.UTC(year, 4, 11));
-                    endDate = new Date(Date.UTC(year, 4, 25));
+                case 9: // May 10 to May 24
+                    startDate = new Date(Date.UTC(year, 4, 10));
+                    endDate = new Date(Date.UTC(year, 4, 24));
                     break;
-                case 10:
-                    startDate = new Date(Date.UTC(year, 4, 26));
-                    endDate = new Date(Date.UTC(year, 5, 10));
+                case 10: // May 25 to June 9
+                    startDate = new Date(Date.UTC(year, 4, 25));
+                    endDate = new Date(Date.UTC(year, 5, 9));
                     break;
-                case 11:
-                    startDate = new Date(Date.UTC(year, 5, 11));
-                    endDate = new Date(Date.UTC(year, 5, 25));
+                case 11: // June 10 to June 24
+                    startDate = new Date(Date.UTC(year, 5, 10));
+                    endDate = new Date(Date.UTC(year, 5, 24));
                     break;
-                case 12:
-                    startDate = new Date(Date.UTC(year, 5, 26));
-                    endDate = new Date(Date.UTC(year, 6, 10));
+                case 12: // June 25 to July 9
+                    startDate = new Date(Date.UTC(year, 5, 25));
+                    endDate = new Date(Date.UTC(year, 6, 9));
                     break;
-                case 13:
-                    startDate = new Date(Date.UTC(year, 6, 11));
-                    endDate = new Date(Date.UTC(year, 6, 25));
+                case 13: // July 10 to July 24
+                    startDate = new Date(Date.UTC(year, 6, 10));
+                    endDate = new Date(Date.UTC(year, 6, 24));
                     break;
-                case 14:
-                    startDate = new Date(Date.UTC(year, 6, 26));
-                    endDate = new Date(Date.UTC(year, 7, 10));
+                case 14: // July 25 to August 9
+                    startDate = new Date(Date.UTC(year, 6, 25));
+                    endDate = new Date(Date.UTC(year, 7, 9));
                     break;
-                case 15:
-                    startDate = new Date(Date.UTC(year, 7, 11));
-                    endDate = new Date(Date.UTC(year, 7, 25));
+                case 15: // August 10 to August 24
+                    startDate = new Date(Date.UTC(year, 7, 10));
+                    endDate = new Date(Date.UTC(year, 7, 24));
                     break;
-                case 16:
-                    startDate = new Date(Date.UTC(year, 7, 26));
-                    endDate = new Date(Date.UTC(year, 8, 10));
+                case 16: // August 25 to September 9
+                    startDate = new Date(Date.UTC(year, 7, 25));
+                    endDate = new Date(Date.UTC(year, 8, 9));
                     break;
-                case 17:
-                    startDate = new Date(Date.UTC(year, 8, 11));
-                    endDate = new Date(Date.UTC(year, 8, 25));
+                case 17: // September 10 to September 24
+                    startDate = new Date(Date.UTC(year, 8, 10));
+                    endDate = new Date(Date.UTC(year, 8, 24));
                     break;
-                case 18:
-                    startDate = new Date(Date.UTC(year, 8, 26));
-                    endDate = new Date(Date.UTC(year, 9, 10));
+                case 18: // September 25 to October 9
+                    startDate = new Date(Date.UTC(year, 8, 25));
+                    endDate = new Date(Date.UTC(year, 9, 9));
                     break;
-                case 19:
-                    startDate = new Date(Date.UTC(year, 9, 11));
-                    endDate = new Date(Date.UTC(year, 9, 25));
+                case 19: // October 10 to October 24
+                    startDate = new Date(Date.UTC(year, 9, 10));
+                    endDate = new Date(Date.UTC(year, 9, 24));
                     break;
-                case 20:
-                    startDate = new Date(Date.UTC(year, 9, 26));
-                    endDate = new Date(Date.UTC(year, 10, 10));
+                case 20: // October 25 to November 9
+                    startDate = new Date(Date.UTC(year, 9, 25));
+                    endDate = new Date(Date.UTC(year, 10, 9));
                     break;
-                case 21:
-                    startDate = new Date(Date.UTC(year, 10, 11));
-                    endDate = new Date(Date.UTC(year, 10, 25));
+                case 21: // November 10 to November 24
+                    startDate = new Date(Date.UTC(year, 10, 10));
+                    endDate = new Date(Date.UTC(year, 10, 24));
                     break;
-                case 22:
-                    startDate = new Date(Date.UTC(year, 10, 26));
-                    endDate = new Date(Date.UTC(year, 11, 10));
+                case 22: // November 25 to December 9
+                    startDate = new Date(Date.UTC(year, 10, 25));
+                    endDate = new Date(Date.UTC(year, 11, 9));
                     break;
-                case 23:
-                    startDate = new Date(Date.UTC(year, 11, 11));
-                    endDate = new Date(Date.UTC(year, 11, 25));
+                case 23: // December 10 to December 24
+                    startDate = new Date(Date.UTC(year, 11, 10));
+                    endDate = new Date(Date.UTC(year, 11, 24));
                     break;
             }
-
             return {
                 startDate,
                 endDate
             };
         }
+
 
         function searchCalendar() {
             const monthIndex = parseInt(monthSelect.value);
@@ -1445,26 +1745,28 @@
 
             const totalBox = document.querySelector('.total-box');
 
-            // Extract total worked hours, late hours, overtime, and leave counts
-            const totalWorked = totalBox.innerText.match(/Total Worked Hours: (\d{2}:\d{2}:\d{2})/)[1];
+            // Extract stats from the Total Box
+            const totalWorked = totalBox.innerText.match(/Total Worked Hours: (\d+:\d{2}:\d{2})/)[1];
             const totalLate = totalBox.innerText.match(/Total Late: (\d{2}:\d{2}:\d{2})/)[1];
-            const unpaidLeaveCount = totalBox.innerText.match(/Unpaid Leaves: (\d+)/)[
-                1]; // Updated to match unpaid leaves
-            const paidLeaveCount = totalBox.innerText.match(/Paid Leaves: (\d+)/)[
-                1]; // Updated to match paid leaves
-            const approvedOvertime = totalBox.innerText.match(/Approved Overtime: (\d{2}:\d{2}:\d{2})/)[
-                1]; // Updated to match approved overtime
+            const unpaidLeaveCount = totalBox.innerText.match(/Unpaid Leaves: (\d+)/)[1];
+            const paidLeaveCount = totalBox.innerText.match(/Paid Leaves: (\d+)/)[1];
+            const approvedOvertime = totalBox.innerText.match(/Approved Overtime: (\d{2}:\d{2}:\d{2})/)[1];
+            const regularHolidayHours = totalBox.innerText.match(/Regular Holiday Hours: (\d{2}:\d{2}:\d{2})/)[
+                1];
+            const specialHolidayHours = totalBox.innerText.match(/Special Holiday Hours: (\d{2}:\d{2}:\d{2})/)[
+                1];
 
-            // Create the data object to be sent to the server
             const data = {
                 total_worked: totalWorked,
                 total_late: totalLate,
                 cutoff: cutoff,
                 start_date: startDate.toISOString().split('T')[0],
                 end_date: endDate.toISOString().split('T')[0],
-                unpaid_leave: unpaidLeaveCount, // New unpaid leave count
-                paid_leave: paidLeaveCount, // New paid leave count
-                approved_overtime: approvedOvertime, // New approved overtime value
+                unpaid_leave: unpaidLeaveCount,
+                paid_leave: paidLeaveCount,
+                approved_overtime: approvedOvertime,
+                regular_holiday_hours: regularHolidayHours,
+                special_holiday_hours: specialHolidayHours,
                 year: year,
                 status: 'pending'
             };
@@ -1544,7 +1846,8 @@
         }
 
         searchButton.addEventListener('click', searchCalendar);
-        saveButton.addEventListener('click', saveAttendance);
+        saveButton.addEventListener('click',
+            saveAttendance);
 
         // Initial search when the page loads
         const currentDate = new Date();
@@ -1553,7 +1856,7 @@
 
         if (currentDay <= 10) {
             initialMonthIndex = currentDate.getMonth() * 2;
-        } else if (currentDay <= 25) {
+        } else if (currentDay <= 24) {
             initialMonthIndex = currentDate.getMonth() * 2 + 1;
         } else {
             initialMonthIndex = currentDate.getMonth() * 2 + 2;
@@ -1566,6 +1869,8 @@
     });
 
 </script>
+
+
 
 <!-- TIMER COUNTDOWN -->
 <script>
@@ -1648,9 +1953,6 @@
     updateCountdown();
 
 </script>
-
-
-
 
 <!-- PAGE REFRESH -->
 <script>

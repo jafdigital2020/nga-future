@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Models\AttendanceEditHistory;
 use RealRashid\SweetAlert\Facades\Alert;
 use App\Notifications\AttendanceApprovedNotification;
 
@@ -78,7 +79,7 @@ class AttendanceReportController extends Controller
             $usersQuery->where('department', $department);
         }
     
-        $users = $usersQuery->get();
+        $users = $usersQuery->orderBy('fName')->orderBy('lName')->get();
     
         // Fetch distinct departments for the dropdown filter
         $departments = User::select('department')->distinct()->get();
@@ -95,8 +96,10 @@ class AttendanceReportController extends Controller
 
     public function tableview()
     {
-        $users = EmployeeAttendance::all();
-        return view('hr.attendance.table', compact('users'));
+        $users = EmployeeAttendance::orderBy('fName', 'ASC')
+                                    ->orderBy('lName', 'ASC')
+                                    ->get();
+        return view('admin.attendance.table', compact('users'));
     }
 
     public function updateTable(Request $request)
@@ -395,7 +398,7 @@ class AttendanceReportController extends Controller
         $month = $request->get('month', date('m'));
         $year = $request->get('year', date('Y'));
         $department = $request->get('department');
-        $date = $request->get('date'); // Keep single date search
+        $date = $request->get('date', date('Y-m-d')); 
         $startDate = $request->get('start_date'); 
         $endDate = $request->get('end_date'); 
     
@@ -450,37 +453,7 @@ class AttendanceReportController extends Controller
     
         $users = $usersQuery->get();
     
-        // Calculate totals for filtered data
-        $totalLateSeconds = 0;
-        $totalSeconds = 0;
-    
-        foreach ($users as $user) {
-            foreach ($user->employeeAttendance as $attendance) {
-                $timeTotal = explode(':', $attendance->timeTotal);
-                if (count($timeTotal) === 3 && is_numeric($timeTotal[0]) && is_numeric($timeTotal[1]) && is_numeric($timeTotal[2])) {
-                    $seconds = ($timeTotal[0] * 3600) + ($timeTotal[1] * 60) + $timeTotal[2];
-                    $totalSeconds += $seconds;
-                }
-    
-                $totalLate = explode(':', $attendance->totalLate);
-                if (count($totalLate) === 3 && is_numeric($totalLate[0]) && is_numeric($totalLate[1]) && is_numeric($totalLate[2])) {
-                    $seconds = ($totalLate[0] * 3600) + ($totalLate[1] * 60) + $totalLate[2];
-                    $totalLateSeconds += $seconds;
-                }
-            }
-        }
-    
-        // Convert total seconds to hours:minutes:seconds format
-        $totalHours = floor($totalSeconds / 3600);
-        $totalMinutes = floor(($totalSeconds % 3600) / 60);
-        $totalSeconds = $totalSeconds % 60;
-        $totalTime = sprintf("%02d:%02d:%02d", $totalHours, $totalMinutes, $totalSeconds);
-    
-        $totalLateHours = floor($totalLateSeconds / 3600);
-        $totalLateMinutes = floor(($totalLateSeconds % 3600) / 60);
-        $totalLateSeconds = $totalLateSeconds % 60;
-        $totalLate = sprintf("%02d:%02d:%02d", $totalLateHours, $totalLateMinutes, $totalLateSeconds);
-    
+
         // Fetch distinct departments for the dropdown filter
         $departments = User::select('department')->distinct()->get();
     
@@ -491,8 +464,7 @@ class AttendanceReportController extends Controller
             'departments' => $departments,
             'selectedEmployeeName' => $employeeName,
             'selectedDepartment' => $department,
-            'totalLate' => $totalLate,
-            'total' => $totalTime,
+
             'selectedDate' => $date, 
             'selectedStartDate' => $startDate, 
             'selectedEndDate' => $endDate, 
@@ -502,7 +474,22 @@ class AttendanceReportController extends Controller
     public function updateTableAttendance(Request $request, $id)
     {
         $attupdate = EmployeeAttendance::findOrFail($id);
-
+    
+        // Log changes
+        $original = $attupdate->toArray();
+        $changes = array_diff_assoc($request->only([
+            'timeIn', 'breakIn', 'breakOut', 'timeOut', 'totalLate', 'totalHours'
+        ]), $original);
+    
+        if (!empty($changes)) {
+            AttendanceEditHistory::create([
+                'attendance_id' => $id,
+                'changes' => json_encode($changes),
+                'edited_by' => Auth::id(),
+            ]);
+        }
+    
+        // Update the record
         $attupdate->timeIn = $request->input('timeIn');
         $attupdate->breakIn = $request->input('breakIn');
         $attupdate->breakOut = $request->input('breakOut');
@@ -510,12 +497,31 @@ class AttendanceReportController extends Controller
         $attupdate->totalLate = $request->input('totalLate');
         $attupdate->timeTotal = $request->input('totalHours');
         $attupdate->status = 'Edited';
-        $attupdate->edited_by = Auth::user()->id;
+        $attupdate->edited_by = Auth::id();
         $attupdate->save();
-
+    
         Alert::success('Attendance Updated');
         return redirect()->back();
     }
+
+    public function getEditHistory($id)
+    {
+        $history = AttendanceEditHistory::where('attendance_id', $id)
+            ->with('editor') // Assuming 'editor' is the relationship to User
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'field' => implode(', ', array_keys(json_decode($item->changes, true))),
+                    'old_value' => implode(', ', array_values(json_decode($item->changes, true))),
+                    'new_value' => $item->created_at->diffForHumans(),
+                    'edited_by' => $item->editor->name,
+                    'date' => $item->created_at->format('Y-m-d H:i:s'),
+                ];
+            });
+
+        return response()->json(['history' => $history]);
+    }
+    
 
     public function destroyTableAttendance($id)
     {

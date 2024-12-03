@@ -159,7 +159,7 @@
                             <th>Total Late</th>
                             <th>Total Hours</th>
                             <th>Edited By</th>
-                            <th>Action</th>
+                            <!-- <th>Action</th> -->
                         </tr>
                     </thead>
                     <tbody>
@@ -217,7 +217,7 @@
                                 @endif
                             </td>
 
-                            <td class="text-right">
+                            <!-- <td class="text-right">
                                 <div class="dropdown dropdown-action">
                                     <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown"
                                         aria-expanded="false"><i class="material-icons">more_vert</i></a>
@@ -237,7 +237,7 @@
                                             <i class="fa fa-trash-o m-r-5"></i> Delete</a>
                                     </div>
                                 </div>
-                            </td>
+                            </td> -->
                         </tr>
                         @endforeach
                         @endforeach
@@ -279,7 +279,7 @@
 
 
 <!-- Edit attendance Modal -->
-<div id="edit_attendance" class="modal custom-modal fade" role="dialog">
+<!-- <div id="edit_attendance" class="modal custom-modal fade" role="dialog">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -344,7 +344,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> -->
 <!-- /Edit attendance Modal -->
 
 <!-- Delete Leave Modal -->

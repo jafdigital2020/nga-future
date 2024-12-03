@@ -7,6 +7,7 @@ use App\Models\Salary;
 use Carbon\CarbonInterval;
 use App\Models\EmployeeSalary;
 use Illuminate\Support\Facades\Log;
+use App\Models\AttendanceEditHistory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -58,6 +59,12 @@ class EmployeeAttendance extends Model
     {
         return $this->belongsTo(User::class, 'approved_by');
     }
+
+    public function editHistory()
+    {
+        return $this->hasMany(AttendanceEditHistory::class, 'attendance_id');
+    }
+
 
     public $manualTimeTotal = null;
 

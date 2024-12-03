@@ -113,7 +113,7 @@
                 <div class="form-group form-focus">
                     <div class="cal-icon">
                         <input type="text" class="datetimepicker form-control floating" name="date"
-                            value="{{ request('date') }}">
+                            value="{{ $selectedDate ?? date('Y-m-d') }}">
                     </div>
                     <label class="focus-label">Date</label>
                 </div>
@@ -160,6 +160,7 @@
                             <th>Total Hours</th>
                             <th>Image</th>
                             <th>Edited By</th>
+                            <th>Edit History</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -225,6 +226,19 @@
                                 Not Edited
                                 @endif
                             </td>
+                            <td>
+                                @if($attendance->editHistory->count() > 0)
+                                <a href="#" class="bg-danger view-history" data-id="{{ $attendance->id }}" style="
+                                        padding: 8px 12px;
+                                        border-radius: 5px;
+                                        font-size: 12px;
+                                        font-weight: bold;
+                                        color: white;
+                                    "><i class="las la-history"></i>View History</a>
+                                @else
+                                No History
+                                @endif
+                            </td>
 
                             <td class="text-right">
                                 <div class="dropdown dropdown-action">
@@ -252,19 +266,51 @@
                         @endforeach
 
                     </tbody>
-                    <tfoot>
-                        <tr>
-                            <th colspan="7">Total</th>
 
-                            <th>{{ $totalLate }}</th>
-                            <th id="total_hours">{{ $total }}</th>
-                        </tr>
-                    </tfoot>
                 </table>
             </div>
         </div>
     </div>
 </div>
+
+<!-- EDIT HISTORY MODAL -->
+<div class="modal fade" id="historyModal" tabindex="-1" role="dialog" aria-labelledby="historyModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <!-- Use `modal-xl` for a wider modal -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="historyModalLabel">Edit History</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <!-- Add responsive table wrapper -->
+                    <table class="table table-bordered table-hover">
+                        <!-- Add bordered and hover styles -->
+                        <thead class="thead-light">
+                            <!-- Add a light background to the header -->
+                            <tr>
+                                <th style="width: 20%;">Field</th>
+                                <th style="width: 25%;">Old Value</th>
+                                <th style="width: 25%;">New Value</th>
+                                <th style="width: 15%;">Edited By</th>
+                                <th style="width: 15%;">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyContent">
+                            <!-- Dynamic content will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 <!-- Modal for viewing location -->
 <div id="locationModal" class="modal" tabindex="-1" role="dialog">
@@ -483,6 +529,61 @@
         format: 'yyyy-mm-dd', // Match this format to how your database stores dates
         autoclose: true,
         todayHighlight: true
+    });
+
+</script>
+
+<!-- Attendance Edit History -->
+<script>
+    $(document).on('click', '.view-history', function () {
+        let attendanceId = $(this).data('id');
+
+        // Define user-friendly labels for each field
+        const fieldLabels = {
+            "timeIn": "Time In",
+            "timeOut": "Time Out",
+            "breakIn": "Start Break",
+            "breakOut": "End Break",
+            "totalLate": "Total Late",
+            "totalHours": "Total Hours",
+            // Add more fields as necessary
+        };
+
+        $.ajax({
+            url: `/admin/attendance/history/${attendanceId}`,
+            type: 'GET',
+            success: function (response) {
+                let historyContent = '';
+
+                // Iterate over the response history
+                response.history.forEach(item => {
+                    // If item.field contains multiple fields, split them
+                    let fields = item.field.split(','); // Split the string by commas
+                    let fieldLabelsDisplay = fields.map(field => fieldLabels[field
+                        .trim()] || field.trim()); // Map each field to its label
+
+                    // Combine the labels into a single string to display in the table
+                    let fieldLabel = fieldLabelsDisplay.join(', ');
+
+                    // Construct the table row with user-friendly labels and values
+                    historyContent += `
+                        <tr>
+                            <td>${fieldLabel}</td>
+                            <td>${item.old_value || 'N/A'}</td>
+                            <td>${item.new_value || 'N/A'}</td>
+                            <td>${item.edited_by}</td>
+                            <td>${item.date}</td>
+                        </tr>
+                    `;
+                });
+
+                // Populate the modal with the history content
+                $('#historyContent').html(historyContent);
+
+                // Show the modal with the history
+                $('#historyModal').modal('show');
+            }
+        });
     });
 
 </script>

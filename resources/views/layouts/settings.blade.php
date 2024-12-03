@@ -233,6 +233,21 @@
                             <a href="{{ url('admin/settings') }}"><i class="la la-building"></i> <span>Company
                                     Settings</span></a>
                         </li>
+                        <li class="submenu">
+                            <a href="#" onclick="toggleDropdown(event)">
+                                <i class="las la-map-marker"></i>
+                                <span> Location </span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <ul style="display: none;">
+                                <li class="{{ Request::is('admin/settings/location') ? 'active':'' }}">
+                                    <a href="{{ url('admin/settings/location') }}">Create/View Location</a>
+                                </li>
+                                <li class="{{ Request::is('admin/settings/location/assign') ? 'active':'' }}">
+                                    <a href="{{ url('admin/settings/location/assign') }}">Assign Location</a>
+                                </li>
+                            </ul>
+                        </li>
                         <li class="{{ Request::is('admin/settings/theme') ? 'active':'' }}">
                             <a href="{{ url('admin/settings/theme') }}"><i class="la la-photo"></i> <span>Theme
                                     Settings</span></a>

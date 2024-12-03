@@ -65,6 +65,8 @@
                             <th>Geofence Name </th>
                             <th>Address</th>
                             <th>Radius(meters)</th>
+                            <th>Created By</th>
+                            <th>Edit By</th>
                             <th class="text-right">Action</th>
                         </tr>
                     </thead>
@@ -74,6 +76,24 @@
                             <td>{{ $geo->fencing_name }}</td>
                             <td>{{ $geo->fencing_address }}</td>
                             <td>{{ $geo->fencing_radius }}</td>
+                            <td>
+                                @if ($geo->geofenceCreatedBy)
+                                @if ($geo->geofenceCreatedBy->fName || $geo->geofenceCreatedBy->lName)
+                                {{ $geo->geofenceCreatedBy->fName }} {{ $geo->geofenceCreatedBy->lName }}
+                                @else
+                                {{ $geo->geofenceCreatedBy->name }}
+                                @endif
+                                @else
+                                N/A
+                                @endif
+                            </td>
+
+                            <td> @if($geo->geofenceEditBy)
+                                {{ $geo->geofenceEditBy->fName }} {{ $geo->geofenceEditBy->lName }}
+                                @else
+                                -
+                                @endif
+                            </td>
                             <td class="text-right">
                                 <a href="#" class="btn btn-success btn-sm btn-edit" data-id="{{ $geo->id }}"
                                     data-name="{{ $geo->fencing_name }}" data-address="{{ $geo->fencing_address }}"

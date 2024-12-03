@@ -397,11 +397,11 @@
                                         Active Employee
                                     </a>
                                 </li>
-                                <li class="{{ Request::is('admin/employee/inactive') ? 'active':'' }}">
+                                <!-- <li class="{{ Request::is('admin/employee/inactive') ? 'active':'' }}">
                                     <a href="{{ url('admin/employee/inactive') }}">
                                         Inactive Employee
                                     </a>
-                                </li>
+                                </li> -->
                             </ul>
                         </li>
 

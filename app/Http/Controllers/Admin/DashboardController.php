@@ -8,6 +8,7 @@ use App\Models\Policy;
 use App\Models\Announcement;
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
+use App\Models\ShiftSchedule;
 use App\Models\OvertimeRequest;
 use App\Models\SettingsHoliday;
 use App\Models\EmploymentRecord;
@@ -27,6 +28,30 @@ class DashboardController extends Controller
         $authUserId = auth()->user()->id;
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
+        $date = $request->input('date', now()->format('Y-m-d'));
+
+        // Fetch users who have a shift schedule on the specified date
+        $usersWithSchedules = ShiftSchedule::whereDate('date', $date)
+        ->pluck('users_id')
+        ->unique();
+
+        // Fetch users who have clocked in on the specified date
+        $usersWithAttendance = EmployeeAttendance::whereDate('date', $date)
+            ->pluck('users_id')
+            ->unique();
+
+        // Determine users who have not clocked in
+        $usersNotClockedIn = $usersWithSchedules->diff($usersWithAttendance);
+
+        // Fetch user details of those not clocked in
+        $notClockedInUsers = User::whereIn('id', $usersNotClockedIn)
+            ->orderBy('fName')
+            ->orderBy('lName')
+            ->get();
+
+        // Count of users not clocked in
+        $notClockedInCount = $usersNotClockedIn->count();
+
     
         $record = EmploymentRecord::whereHas('user', function ($query) {
             $query->where('role_as', '!=', '1');
@@ -79,56 +104,12 @@ class DashboardController extends Controller
          $attendanceQuery->whereDate('date', today());
  
          $todayLoginCount = $attendanceQuery->distinct('users_id')->count('users_id');
- 
-         // Leave Counts
-         $vacationLeaveCountToday = LeaveRequest::where('type', 'Vacation Leave')
-                                    ->where('status', 'Approved')
-                                    ->where(function($query) {
-                                         $query->whereDate('start_date', today())
-                                               ->orWhereDate('end_date', today())
-                                               ->orWhere(function($query) {
-                                                   $query->where('start_date', '<=', today())
-                                                         ->where('end_date', '>=', today());
-                                               });
-                                     })
-                                     ->count();
- 
-         $sickLeaveCountToday = LeaveRequest::where('type', 'Sick Leave')
-                                    ->where('status', 'Approved')
-                                    ->where(function($query) {
-                                         $query->whereDate('start_date', today())
-                                               ->orWhereDate('end_date', today())
-                                               ->orWhere(function($query) {
-                                                   $query->where('start_date', '<=', today())
-                                                         ->where('end_date', '>=', today());
-                                               });
-                                     })
-                                     ->count();
- 
-         $birthdayLeaveCountToday = LeaveRequest::where('type', 'Birthday Leave')
-                                    ->where('status', 'Approved')
-                                    ->where(function($query) {
-                                         $query->whereDate('start_date', today())
-                                               ->orWhereDate('end_date', today())
-                                               ->orWhere(function($query) {
-                                                   $query->where('start_date', '<=', today())
-                                                         ->where('end_date', '>=', today());
-                                               });
-                                     })
-                                     ->count();
- 
-         $unpaidLeaveCountToday = LeaveRequest::where('type', 'Unpaid Leave')
-                                    ->where('status', 'Approved')
-                                    ->where(function($query) {
-                                         $query->whereDate('start_date', today())
-                                               ->orWhereDate('end_date', today())
-                                               ->orWhere(function($query) {
-                                                   $query->where('start_date', '<=', today())
-                                                         ->where('end_date', '>=', today());
-                                               });
-                                     })
-                                     ->count();
 
+         $usersLoggedInToday = User::whereIn('id', $attendanceQuery->pluck('users_id'))
+         ->orderBy('fName')
+         ->orderBy('lName')
+         ->get();
+ 
         $department = $request->get('department');
         $year = $request->get('year', date('Y'));
         $month = $request->get('month', date('m'));
@@ -169,6 +150,14 @@ class DashboardController extends Controller
         $totalLateToday = EmployeeAttendance::whereDate('date', today())
         ->where('status', 'Late') // Assuming the column is named `status` and holds the value 'Late'
         ->count();
+
+        $lateUsers = EmployeeAttendance::whereDate('date', today())
+            ->where('status', 'Late') // Assuming the column is named `status` and holds the value 'Late'
+            ->pluck('users_id') // Get user IDs
+            ->unique(); // Avoid duplicate user IDs
+
+        // Fetch details of users who are late
+        $lateUserDetails = User::whereIn('id', $lateUsers)->get();
     
         // Get the nearest holiday after or equal to today
         $nearestHoliday = SettingsHoliday::where('holidayDate', '>=', $todayH)
@@ -205,10 +194,6 @@ class DashboardController extends Controller
         'record', 
         'salrecord', 
         'todayLoginCount',  
-        'vacationLeaveCountToday', 
-        'sickLeaveCountToday', 
-        'birthdayLeaveCountToday', 
-        'unpaidLeaveCountToday', 
         'totalUsers',
         'users',
         'year',
@@ -222,6 +207,11 @@ class DashboardController extends Controller
         'totalLateToday',
         'latestAnnouncement',
         'policies',
+        'usersNotClockedIn',
+        'notClockedInCount',
+        'notClockedInUsers',
+        'lateUserDetails',
+        'usersLoggedInToday',
         ));
     }
 

@@ -199,8 +199,10 @@
 
 <script>
     $(document).ready(function () {
-        $('.delete-geofence').on('click', function () {
+        // Use event delegation for dynamically rendered rows
+        $(document).on('click', '.delete-geofence', function () {
             var geoId = $(this).data('id');
+
             if (confirm('Are you sure you want to delete this geofence for this user?')) {
                 $.ajax({
                     url: '/admin/settings/geofencing/assign/delete/' + geoId,
@@ -210,16 +212,15 @@
                     },
                     success: function (response) {
                         if (response.success) {
-                            // Optionally, remove the row from the table
-                            $('button[data-id="' + geoId + '"]').closest('tr')
-                                .remove();
+                            // Remove the row from the table
+                            $('button[data-id="' + geoId + '"]').closest('tr').remove();
                             alert(response.message); // Show success message
                         } else {
-                            alert('Error deleting earning: ' + response.message);
+                            alert('Error deleting geofence: ' + response.message);
                         }
                     },
                     error: function (xhr) {
-                        alert('Error deleting earning: ' + xhr.responseText);
+                        alert('Error deleting geofence: ' + xhr.responseText);
                     }
                 });
             }
@@ -227,6 +228,7 @@
     });
 
 </script>
+
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {

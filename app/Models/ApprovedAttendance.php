@@ -24,6 +24,8 @@ class ApprovedAttendance extends Model
         'unpaidLeave', 
         'status', 
         'approved_by',
+        'regular_holiday_hours',
+        'special_holiday_hours',
     ];
 
     public function user()

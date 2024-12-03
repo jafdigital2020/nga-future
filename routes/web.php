@@ -4,11 +4,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 
-
 Route::get('/', function () {
     return view('auth.login');
 });
 
+Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'webLogin'])->name('web.login');
 
 Auth::routes(['register' => false]);
 
@@ -64,6 +64,7 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::post('attendance/tableview/update', [App\Http\Controllers\Admin\AttendanceReportController::class, 'updateTable'])->name('admin.table');
     Route::post('/attendance/edit/{id}', [App\Http\Controllers\Admin\AttendanceReportController::class, 'updateTableAttendance'])->name('admin.updateTable');
     Route::delete('/attendance/delete/{id}', [App\Http\Controllers\Admin\AttendanceReportController::class, 'destroyTableAttendance'])->name('admin.destroyTable');
+    Route::get('/attendance/history/{id}', [App\Http\Controllers\Admin\AttendanceReportController::class, 'getEditHistory'])->name('admin.getEditHistory');
 
     // Profile
     Route::get('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'index']);
@@ -125,6 +126,10 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::post('settings/changepass', [App\Http\Controllers\Admin\SettingsController::class, 'changePassword'])->name('settings.changepass');
     Route::get('settings/holiday', [App\Http\Controllers\Admin\SettingsController::class, 'holiday'])->name('settings.holiday');
     Route::post('settings/holiday/add', [App\Http\Controllers\Admin\SettingsController::class, 'holidayStore'])->name('settings.holidayStore');
+    Route::get('settings/holiday/filter-employees', [App\Http\Controllers\Admin\SettingsController::class, 'filterEmployees'])->name('settings.HolidayfilterEmployees');
+    Route::put('settings/holiday/update', [App\Http\Controllers\Admin\SettingsController::class, 'updateHoliday'])->name('settings.updateHoliday');
+    Route::post('settings/holiday/{holiday}/add-user', [App\Http\Controllers\Admin\SettingsController::class, 'addUserToHoliday'])->name('settings.addUserToHoliday');
+    Route::delete('settings/holiday/{holiday}/remove-user/{user}', [App\Http\Controllers\Admin\SettingsController::class, 'removeUserFromHoliday'])->name('settings.removeUserFromHoliday');
     Route::get('settings/leavetype',  [App\Http\Controllers\Admin\SettingsController::class, 'leaveType'])->name('settings.leaveType');
     Route::post('settings/leavetype/add', [App\Http\Controllers\Admin\SettingsController::class, 'leaveTypeStore'])->name('settings.leaveTypeStore');
     Route::post('settings/leavetype/edit/{id}', [App\Http\Controllers\Admin\SettingsController::class, 'leaveTypeEdit'])->name('settings.leaveTypeEdit');
@@ -137,6 +142,12 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::get('settings/geofencing/assign/get-users', [App\Http\Controllers\Admin\SettingsController::class, 'getEmployeesByDepartmentGeofence'])->name('settings.getEmployeesByDepartmentGeofence');
     Route::post('settings/geofencing/assign/store', [App\Http\Controllers\Admin\SettingsController::class, 'storeUserGeofence'])->name('settings.storeUserGeofence');
     Route::delete('settings/geofencing/assign/delete/{id}', [App\Http\Controllers\Admin\SettingsController::class, 'deleteUserGeofence'])->name('settings.deleteUserGeofence');
+    Route::get('settings/location', [App\Http\Controllers\Admin\SettingsController::class, 'location'])->name('settings.location');
+    Route::post('settings/location/create', [App\Http\Controllers\Admin\SettingsController::class, 'locationCreate'])->name('settings.locationCreate');
+    Route::post('settings/location/edit/{id}', [App\Http\Controllers\Admin\SettingsController::class, 'locationEdit'])->name('settings.locationEdit');
+    Route::delete('settings/location/delete/{id}', [App\Http\Controllers\Admin\SettingsController::class, 'locationDelete'])->name('settings.locationDelete');
+    Route::get('settings/location/assign', [App\Http\Controllers\Admin\SettingsController::class, 'locationAssign'])->name('settings.locationAssign');
+    Route::post('settings/location/add', [App\Http\Controllers\Admin\SettingsController::class, 'storeUserLocation'])->name('settings.storeUserLocation');
 
     // Training
     Route::get('training', [App\Http\Controllers\Admin\TrainingController::class, 'training'])->name('admin.training');
@@ -184,6 +195,10 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::post('shift/assign', [App\Http\Controllers\Admin\ShiftController::class, 'assignSchedule'])->name('admin.assignschedule');
     Route::get('shift/list/employee-search', [App\Http\Controllers\Admin\ShiftController::class, 'getEmployeesByDepartment'])->name('getEmployeesByDepartment');
     Route::post('shift/list/assign', [App\Http\Controllers\Admin\ShiftController::class, 'assignScheduleList'])->name('admin.assignShiftList');
+    Route::delete('shift/daily/delete/{id}/', [App\Http\Controllers\Admin\ShiftController::class, 'shiftDelete'])->name('admin.shiftDelete');
+    Route::delete('shift/daily/deleterow/', [App\Http\Controllers\Admin\ShiftController::class, 'deleteRow'])->name('admin.deleteRow');
+    Route::get('shift/daily/assign/filter-employees', [App\Http\Controllers\Admin\ShiftController::class, 'filterEmployees'])->name('admin.filterEmployees');
+    Route::get('shift/daily/assign/employee-search', [App\Http\Controllers\Admin\ShiftController::class, 'getEmployeesByDepartmentShift'])->name('admin.getEmployeesByDepartmentShift');
 
     // Attendance Request
     Route::get('request/attendance', [App\Http\Controllers\Admin\RequestController::class, 'attendance'])->name('admin.requestAttendance');
@@ -265,7 +280,7 @@ Route::prefix('emp')->middleware(['auth','isEmployee', 'sessionTimeout'])->group
     Route::get('/dashboard', [App\Http\Controllers\Employee\DashboardController::class, 'index'])->name('main.emp');
     Route::get('/dashboard/get-data', [\App\Http\Controllers\Employee\DashboardController::class, 'getUserAttendance'])->name('attendance.get');
     Route::post('dashboard', [App\Http\Controllers\Employee\DashboardController::class, 'store']);
-    Route::put('dashboard', [App\Http\Controllers\Employee\DashboardController::class, 'update']);
+    Route::put('dashboard/', [App\Http\Controllers\Employee\DashboardController::class, 'update']);
     Route::put('dashboard/breakin', [App\Http\Controllers\Employee\DashboardController::class, 'breakIn']);
     Route::put('dashboard/breakout', [App\Http\Controllers\Employee\DashboardController::class, 'breakOut']);
     Route::post('dashboard/startbreak', [App\Http\Controllers\Employee\DashboardController::class, 'startBreak'])->name('emp.startBreak');
@@ -563,6 +578,18 @@ Route::prefix('manager')->middleware(['auth', 'isManager', 'sessionTimeout'])->g
     Route::post('shift/assign', [App\Http\Controllers\Manager\ShiftController::class, 'assignSchedule'])->name('manager.assignschedule');
     Route::get('shift/list/employee-search', [App\Http\Controllers\Manager\ShiftController::class, 'getEmployeesByDepartment'])->name('manager.getEmployeesByDepartment');
     Route::post('shift/list/assign', [App\Http\Controllers\Manager\ShiftController::class, 'assignScheduleList'])->name('manager.assignShiftList');
+    Route::delete('shift/daily/delete/{id}/', [App\Http\Controllers\Manager\ShiftController::class, 'shiftDelete'])->name('manager.shiftDelete');
+    Route::delete('shift/daily/deleterow/', [App\Http\Controllers\Manager\ShiftController::class, 'deleteRow'])->name('manager.deleteRow');
+    // Geofencing
+    Route::get('geofencing', [App\Http\Controllers\Manager\GeofencingController::class, 'geofencing'])->name('manager.geofencing');
+    Route::post('geofencing/add', [App\Http\Controllers\Manager\GeofencingController::class, 'createGeofence'])->name('manager.createGeofence');
+    Route::post('geofencing/update/{id}', [App\Http\Controllers\Manager\GeofencingController::class, 'updateGeofence'])->name('manager.updateGeofence');
+    Route::delete('geofencing/delete/{id}', [App\Http\Controllers\Manager\GeofencingController::class, 'destroyGeofence'])->name('manager.destroyGeofence');
+    Route::get('geofencing/assign', [App\Http\Controllers\Manager\GeofencingController::class, 'geofenceAssign'])->name('manager.geofenceAssign');
+    Route::get('geofencing/assign/get-users', [App\Http\Controllers\Manager\GeofencingController::class, 'getEmployeesByDepartmentGeofence'])->name('manager.getEmployeesByDepartmentGeofence');
+    Route::post('geofencing/assign/store', [App\Http\Controllers\Manager\GeofencingController::class, 'storeUserGeofence'])->name('manager.storeUserGeofence');
+    Route::delete('geofencing/assign/delete/{id}', [App\Http\Controllers\Manager\GeofencingController::class, 'deleteUserGeofence'])->name('manager.deleteUserGeofence');
+
     // Notification
     Route::get('/notifications/clear', function () {
         auth()->user()->notifications()->delete();

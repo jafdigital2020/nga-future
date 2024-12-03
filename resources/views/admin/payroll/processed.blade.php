@@ -182,6 +182,8 @@
                             <th>Total Earnings</th>
                             <th>Overtime Pay</th>
                             <th>Paid Leave</th>
+                            <th>Regular Holiday</th>
+                            <th>Special Holiday</th>
                             <th>Net Pay</th>
                             <th class="text-center">Status</th>
                             @if ($hasNotes)
@@ -231,6 +233,8 @@
                             <td>{{ $pay->total_earnings }}</td>
                             <td>{{ $pay->overtimeHours }}</td>
                             <td>{{ $pay->paidLeave }}</td>
+                            <td>{{ $pay->regular_holiday_pay }}</td>
+                            <td>{{ $pay->special_holiday_pay }}</td>
                             <td>₱{{ number_format($pay->net_pay, 2) }}</td>
                             @php
                             $netPayTotalSum += $pay->net_pay; // Add the current netPayTotal to the sum
@@ -318,7 +322,9 @@
                                             data-total_earnings="{{ $pay->total_earnings }}"
                                             data-net_pay="{{ $pay->net_pay }}" data-fName="{{ $pay->user->fName }}"
                                             data-lName="{{ $pay->user->lName }}"
-                                            data-department="{{ $pay->user->department }}">
+                                            data-department="{{ $pay->user->department }}"
+                                            data-regular_holiday="{{ $pay->regular_holiday_pay }}"
+                                            data-special_holiday="{{ $pay->special_holiday_pay }}">
                                             <i class="fa fa-pencil m-r-5"></i>View & Edit
                                         </a>
 
@@ -454,6 +460,10 @@
                             <input type="text" class="form-control" id="overtimeHours" name="overtimeHours">
                             <label class="text-primary">Paid Leave</label>
                             <input type="text" class="form-control" id="paidLeave" name="paidLeave">
+                            <label class="text-primary">Regular Holiday Amount</label>
+                            <input type="text" class="form-control" id="regularHolidayPay" name="regularHolidayPay">
+                            <label class="text-primary">Special Holiday Amount</label>
+                            <input type="text" class="form-control" id="specialHolidayPay" name="specialHolidayPay">
                         </div>
 
                         <!-- Loans -->
@@ -493,7 +503,7 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">₱</span>
                                 </div>
-                                <input type="text" class="form-control" id="basic_pay" readonly>
+                                <input type="text" class="form-control" id="basic_pay" id="basic_pay" readonly>
                             </div>
                         </div>
                         <div class="col-md-2 mb-3">
@@ -502,7 +512,7 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">₱</span>
                                 </div>
-                                <input type="text" class="form-control" id="gross_pay" readonly>
+                                <input type="text" class="form-control" id="gross_pay" name="gross_pay" readonly>
                             </div>
                         </div>
                         <div class="col-md-2 mb-3">
@@ -755,6 +765,8 @@
         const netPay = parseFloat($(this).data('net_pay')) || 0;
         const overtimeHours = $(this).data('overtime_hour');
         const paidLeave = $(this).data('paid_leave');
+        const regularHolidayPay = $(this).data('regular_holiday');
+        const specialHolidayPay = $(this).data('special_holiday');
         const salaryId = $(this).data('pay-id');
 
         $('#deductionsForm').data('pay-id', salaryId);
@@ -777,6 +789,8 @@
         $('#net_pay').val(netPay.toFixed(2));
         $('#overtimeHours').val(overtimeHours);
         $('#paidLeave').val(paidLeave);
+        $('#regularHolidayPay').val(regularHolidayPay);
+        $('#specialHolidayPay').val(specialHolidayPay);
 
         $('#deductionsContainer').empty();
         $('#earningsContainer').empty();
@@ -817,7 +831,8 @@
     $(document).on('input', '.deduction-input', updateDeductionsAndNetPay);
     $(document).on('input', '.earning-input', updateEarningsAndNetPay);
     $(document).on('input', '.loan-input', updateLoansAndNetPay);
-    $(document).on('input', '#overtimeHours, #paidLeave', updateEarningsAndNetPay);
+    $(document).on('input', '#overtimeHours, #paidLeave, #regularHolidayPay, #specialHolidayPay',
+        updateEarningsAndNetPay);
 
     function updateDeductionsAndNetPay() {
         let totalDeductions = 0;
@@ -838,9 +853,11 @@
         // Get the overtime hours and paid leave values
         const overtimeHours = parseFloat($('#overtimeHours').val()) || 0;
         const paidLeave = parseFloat($('#paidLeave').val()) || 0;
+        const regularHolidayPay = parseFloat($('#regularHolidayPay').val()) || 0;
+        const specialHolidayPay = parseFloat($('#specialHolidayPay').val()) || 0;
 
         // Add overtime and paid leave to total earnings
-        totalEarnings += overtimeHours + paidLeave;
+        totalEarnings += overtimeHours + paidLeave + regularHolidayPay + specialHolidayPay;
 
         $('#total_earnings').val(totalEarnings.toFixed(2));
 

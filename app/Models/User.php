@@ -10,6 +10,7 @@ use App\Models\Memo;
 use App\Models\Policy;
 use App\Models\Salary;
 use App\Models\Payroll;
+use App\Models\Location;
 use App\Models\UserAsset;
 use Carbon\CarbonInterval;
 use App\Models\LeaveCredit;
@@ -19,6 +20,7 @@ use App\Scopes\ActiveScope;
 use App\Models\Announcement;
 use App\Models\LeaveRequest;
 use App\Models\UserGeofence;
+use App\Models\UserLocation;
 use Illuminate\Http\Request;
 use App\Models\ShiftSchedule;
 use App\Models\UserDeduction;
@@ -26,6 +28,7 @@ use App\Models\EmployeeSalary;
 use App\Models\BankInformation;
 use App\Models\OvertimeCredits;
 use App\Models\OvertimeRequest;
+use App\Models\SettingsHoliday;
 use App\Models\AttendanceCredit;
 use App\Models\EmploymentRecord;
 use App\Models\EmployementSalary;
@@ -36,6 +39,7 @@ use App\Models\EmployeeAttendance;
 use Illuminate\Support\Facades\DB;
 use App\Models\PersonalInformation;
 use Illuminate\Support\Facades\Auth;
+use App\Models\AttendanceEditHistory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use RealRashid\SweetAlert\Facades\Alert;
@@ -54,9 +58,7 @@ class User extends Authenticatable
     const ROLE_ADMIN = 1;
     const ROLE_HR = 2;
     const ROLE_EMPLOYEE = 3;
-    const ROLE_OPERATIONS_MANAGER = 4;
-    const ROLE_IT_MANAGER = 5;
-    const ROLE_MARKETING_MANAGER = 6;
+    const ROLE_MANAGER = 4;
 
     public $timestamps = true;
 
@@ -69,12 +71,8 @@ class User extends Authenticatable
                 return 'HR';
             case self::ROLE_EMPLOYEE:
                 return 'Employee';
-            case self::ROLE_OPERATIONS_MANAGER:
-                return 'Operations Manager';
-            case self::ROLE_IT_MANAGER:
-                return 'IT Manager';
-            case self::ROLE_MARKETING_MANAGER:
-                return 'Marketing Manager';
+            case self::ROLE_MANAGER:
+                return 'Manager';
             default:
                 return 'Unknown';
         }
@@ -109,15 +107,13 @@ class User extends Authenticatable
         'reporting_to',
         'image',
         'status',
-        'hourlyRate',
+        'hourly_rate',
     ];
 
     public function isSupervisor()
     {
         return in_array($this->role_as, [
-            self::ROLE_OPERATIONS_MANAGER,
-            self::ROLE_IT_MANAGER,
-            self::ROLE_MARKETING_MANAGER
+            self::ROLE_MANAGER,
         ]);
     }
 
@@ -138,11 +134,7 @@ class User extends Authenticatable
         }
         
         $supervisorRoles = [
-            'IT' => self::ROLE_IT_MANAGER,
-            'Website Development' => self::ROLE_IT_MANAGER,
-            'Marketing' => self::ROLE_MARKETING_MANAGER,
-            'SEO' => self::ROLE_OPERATIONS_MANAGER,
-            'Content' => self::ROLE_OPERATIONS_MANAGER,
+            'IT' => self::ROLE_MANAGER,
         ];
 
         $supervisorRole = $supervisorRoles[$department] ?? null;
@@ -157,9 +149,7 @@ class User extends Authenticatable
     public static function getUsersByDepartments(array $departments)
     {
         $supervisorRoles = [
-            self::ROLE_OPERATIONS_MANAGER,
-            self::ROLE_IT_MANAGER,
-            self::ROLE_MARKETING_MANAGER,
+            self::ROLE_MANAGER,
         ];
 
         return self::whereIn('department', $departments)
@@ -189,12 +179,12 @@ class User extends Authenticatable
 
     protected static function booted()
     {
-        // static::addGlobalScope('active', function ($query) {
-        //     // Apply the 'active' scope by default, excluding inactive users
-        //     if (!request()->is('admin/employee/inactive*')) {
-        //         $query->where('status', 'active');
-        //     }
-        // });
+        static::addGlobalScope('active', function ($query) {
+            // Apply the 'active' scope by default, excluding inactive users
+            if (!request()->is('admin/employee/inactive*')) {
+                $query->where('status', 'active');
+            }
+        });
     
         // Automatically create overtime credits for new users
         static::created(function ($user) {
@@ -366,11 +356,52 @@ class User extends Authenticatable
         return $this->hasMany(UserGeofence::class);
     }
 
+    public function createdGeofencingSettings()
+    {
+        return $this->hasMany(GeofencingSetting::class, 'created_by');
+    }
+
+    public function editedGeofencingSettings()
+    {
+        return $this->hasMany(GeofencingSetting::class, 'edit_by');
+    }
+
     public function memos()
     {
         return $this->hasMany(Memo::class, 'users_id' , 'id');
     }
 
+    public function createdLocationSetting()
+    {
+        return $this->hasMany(Location::class, 'created_by');
+    }
+
+    public function editedLocationSetting()
+    {
+        return $this->hasMany(Location::class, 'edit_by');
+    }
+
+    public function userLocation()
+    {
+        return $this->hasMany(UserLocation::class);
+    }
+
+    public function location()
+    {
+        return $this->belongsTo(Location::class, 'location_id');
+    }
+
+    public function holidays()
+    {
+        return $this->belongsToMany(SettingsHoliday::class, 'holiday_user', 'user_id', 'holiday_id');
+    }
+
+    public function attendanceEditHistories()
+    {
+        return $this->hasMany(AttendanceEditHistory::class, 'edited_by');
+    }
+
+    
     public function checkIn(Request $request)
     {
         try {

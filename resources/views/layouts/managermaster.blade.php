@@ -25,6 +25,8 @@
     <link href="{{ asset('assets/css/line-awesome.min.css') }}" rel="stylesheet" />
     <!-- Chart CSS -->
     <link href="{{ asset('assets/plugins/morris/morris.css') }}" rel="stylesheet" />
+        <!-- flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
     <!----FAVICON---->
     <link rel="icon" href="{{ url('assets/img/jaffavicon.png') }}" />
@@ -62,9 +64,9 @@
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <!-- Google MAP API -->
-    <script async defer
+    <!-- <script async defer
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCoZSVkyGR645u4B_OOFmepLzrRBB8Hgmc&callback=initMap">
-    </script>
+    </script> -->
 
 </head>
 
@@ -353,6 +355,22 @@
                             </ul>
                         </li>
                         <li class="menu-title">
+                            <span>Geofencing Management</span>
+                        </li>
+                        <li class="submenu">
+                            <a href="#"><i class="las la-map-marked"></i>
+                                <span> Geofencing</span>
+                                <span class="menu-arrow"></span></a>
+                            <ul style="display: none">
+                                <li class="{{ Request::is('manager/geofencing') ? 'active':'' }}">
+                                    <a href="{{ url('manager/geofencing') }}">Create Geofence</a>
+                                </li>
+                                <li class="{{ Request::is('manager/geofencing/assign') ? 'active':'' }}">
+                                    <a href="{{ url('manager/geofencing/assign') }}">Assign Geofence</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="menu-title">
                             <span>Payroll</span>
                         </li>
                         <li>
@@ -425,6 +443,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <!-- Carousel Policy -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     @yield('scripts')
     <script>
         $(".datetimepicker").datetimepicker({

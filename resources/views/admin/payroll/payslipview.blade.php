@@ -110,12 +110,22 @@
                                             @endif
                                             <tr>
                                                 <td><strong>Paid Leave</strong> <span
-                                                        class="float-right">₱{{ $view->paidLeave ?? 0 }}</span>
+                                                        class="float-right">₱{{ number_format($view->paidLeave, 2) }}</span>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td><strong>Overtime</strong> <span
-                                                        class="float-right">₱{{ $view->overtimeHours ?? 0 }}</span>
+                                                        class="float-right">₱{{ number_format($view->overtiemHours, 2) }}</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Regular Holiday Pay</strong> <span
+                                                        class="float-right">₱{{ number_format($view->regular_holiday_pay, 2) }}</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Special Holiday Pay</strong> <span
+                                                        class="float-right">₱{{ number_format($view->special_holiday_pay, 2) }}</span>
                                                 </td>
                                             </tr>
                                             <tr>

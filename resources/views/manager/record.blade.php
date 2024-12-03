@@ -99,8 +99,8 @@
                     </li> -->
                     <li class="nav-item"><a href="#emp_record" data-toggle="tab" class="nav-link">Employee Record
                             <small class="text-danger">(Admin/Manager Only)</small></a></li>
-                    <li class="nav-item"><a href="#emp_salary" data-toggle="tab" class="nav-link">Employee Salary Record
-                            <small class="text-danger">(Admin/Manager Only)</small></a></li>
+                    <!--<li class="nav-item"><a href="#emp_salary" data-toggle="tab" class="nav-link">Employee Salary Record-->
+                    <!--        <small class="text-danger">(Admin/Manager Only)</small></a></li>-->
                 </ul>
             </div>
         </div>

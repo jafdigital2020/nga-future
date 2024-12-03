@@ -205,6 +205,8 @@
                             <th>OT Hours</th>
                             <th>Paid Leave</th>
                             <th>Unpaid Leave</th>
+                            <th>Regular Holiday</th>
+                            <th>Special Holiday</th>
                             <th>Date Submitted</th>
                             <th class="text-center">Status</th>
                             <th class="text-right">Actions</th>
@@ -234,6 +236,8 @@
                             <td>{{ $att->approvedOvertime }}</td>
                             <td>{{ $att->paidLeave }}</td>
                             <td>{{ $att->unpaidLeave }}</td>
+                            <td>{{ $att->regular_holiday_hours }}</td>
+                            <td>{{ $att->special_holiday_hours }}</td>
                             <td>{{ $att->created_at->format('Y-m-d') }}</td>
                             <td class="text-center">
                                 <div class="dropdown action-label">

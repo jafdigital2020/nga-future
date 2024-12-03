@@ -1100,18 +1100,15 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label> Monthly Salary </label>
-                                <input type="text" name="mSalary" id="mSalary" class="form-control"
-                                    value="{{ $user->mSalary }}">
+                                <label>Hourly Rate</label>
+                                <input type="text" name="hourly_rate" id="hourly_rate" class="form-control"
+                                    value="{{ $user->hourly_rate }}">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Role</label>
                                 <select class="form-control" name="role_as" id="role_as">
-                                    <option value="1" {{ $user->role_as == '1' ? 'selected' : '' }}>
-                                        Admin
-                                    </option>
                                     <option value="2" {{ $user->role_as == '2' ? 'selected' : '' }}>
                                         HR</option>
                                     <option value="3" {{ $user->role_as == '3' ? 'selected' : '' }}>Employee

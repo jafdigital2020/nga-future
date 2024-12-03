@@ -83,7 +83,134 @@ class PayrollController extends Controller
         return view('admin.payroll.approve', compact('approved', 'departments', 'statuses', 'cutoffPeriod', 'status', 'selectedYear'));
     }
 
-    // ** Preview Payroll ** //
+   // ** Preview Payroll ** //
+    // public function previewPayroll(Request $request, $id)
+    // {
+    //     try {
+    //         $approvedAttendance = ApprovedAttendance::findOrFail($id);
+    //         $user = $approvedAttendance->user;
+ 
+    //         // Otherwise, return the preview data
+    //         // $monthlySalary = $user->mSalary; // I JUST ADJUST THIS BECAUSE I ADD HOURLY RATE SAME VARIABLE NAME BUT IT COMPUTES HOURLY RATE
+    //            // $monthlySalary = $user->mSalary;
+    //            $hourlyRate = $user->hourly_rate; 
+    //            // $dailyRate = $monthlySalary / 22; 
+    //            $dailyRate = $hourlyRate * 8;    
+    //            $monthlySalary = $dailyRate * 22;
+    //            // $monthlySalary = $user->mSalary;
+    
+    //         $formattedDailyRate = number_format($dailyRate, 2, '.', '');
+    //         $formattedHourlyRate = number_format($hourlyRate, 2, '.', '');
+    
+    //         $totalHours = $approvedAttendance->totalHours;
+    //         list($hours, $minutes, $seconds) = explode(':', $totalHours);
+    //         $totalHoursDecimal = $hours + ($minutes / 60) + ($seconds / 3600);
+    
+    //         $overtimeHours = $approvedAttendance->approvedOvertime ?? '00:00:00';
+    //         list($otHours, $otMinutes, $otSeconds) = explode(':', $overtimeHours);
+    //         $overtimeHoursDecimal = $otHours + ($otMinutes / 60) + ($otSeconds / 3600);
+    
+    //         $overtimeRate = $hourlyRate * 1.25;
+    //         $overtimePay = $overtimeRate * $overtimeHoursDecimal;
+    
+    //         // Fetch Deductions
+    //         $userDeductions = UserDeduction::where('users_id', $user->id)
+    //         ->where('active', 1) 
+    //         ->with('deductionList')
+    //         ->get();
+    //         $deductions = [];
+    //         $totalDeductions = 0;
+    
+    //         foreach ($userDeductions as $userDeduction) {
+    //             $deductionName = $userDeduction->deductionList->name;
+    //             $deductionValue = $userDeduction->deductionList->amount;
+    //             $deductionType = $userDeduction->deductionList->type;
+    //             $deductionId = $userDeduction->deductionList->id; 
+    
+    //             $deductionAmount = ($deductionType === 'percentage') ? ($deductionValue / 100) * $monthlySalary : $deductionValue;
+    
+    //             $deductions[] = [
+    //                 'deduction_id' => $deductionId,
+    //                 'name' => $deductionName,
+    //                 'amount' => number_format($deductionAmount, 2),
+    //             ];
+    
+    //             $totalDeductions += $deductionAmount;
+    //         }
+    
+    //         // Fetch Loans
+    //         $loans = Loan::where('users_id', $user->id)
+    //         ->where('status', 'Active')
+    //         ->get();
+    //         $totalLoans = 0;
+    //         $loanDetails = [];
+    
+    //         foreach ($loans as $loan) {
+    //             $totalLoans += $loan->payable_amount_per_cutoff;
+    //             $loanDetails[] = [
+    //                 'loan_id' => $loan->id,
+    //                 'loan_name' => $loan->loan_name,
+    //                 'amount' => number_format($loan->payable_amount_per_cutoff, 2),
+    //             ];
+    //         }
+    
+    //         // Fetch Earnings
+    //         $userEarnings = UserEarning::where('users_id', $user->id)
+    //         ->where('active', 1) 
+    //         ->with('earningList')
+    //         ->get();
+    //         $earnings = [];
+    //         $totalEarnings = 0;
+    
+    //         foreach ($userEarnings as $userEarning) {
+    //             $earningName = $userEarning->earningList->name;
+    //             $earningAmount = $userEarning->earningList->amount;
+    //             $earningId = $userEarning->earningList->id;
+    
+    //             $earnings[] = [
+    //                 'earning_id' => $earningId,
+    //                 'name' => $earningName,
+    //                 'amount' => number_format($earningAmount, 2),
+    //             ];
+    
+    //             $totalEarnings += $earningAmount;
+    //         }
+    
+    //         $totalEarnings += $overtimePay;
+    
+    //         $paidLeaveDays = $approvedAttendance->paidLeave ?? 0;
+    //         $paidLeaveAmount = $paidLeaveDays * $dailyRate;
+    //         $totalEarnings += $paidLeaveAmount;
+
+    //         // Basic Pay
+    //         $basicPay = $formattedHourlyRate * $totalHoursDecimal;
+
+    //         // Gross Pay
+    //         $grossPay = ($formattedHourlyRate * $totalHoursDecimal) + $totalEarnings;
+
+    //         // Calculate net pay
+    //         $netPay = $basicPay + $totalEarnings - $totalDeductions - $totalLoans;
+    
+    //         // Return the preview data
+    //         return response()->json([
+    //             'basicPay' => number_format($basicPay, 2),
+    //             'grossPay' => number_format($grossPay, 2),
+    //             'totalEarnings' => number_format($totalEarnings, 2),
+    //             'totalDeductions' => number_format($totalDeductions, 2),
+    //             'totalLoans' => number_format($totalLoans, 2),
+    //             'netPay' => number_format($netPay, 2),
+    //             'deductions' => $deductions,
+    //             'earnings' => $earnings,
+    //             'loans' => $loanDetails,
+    //             'overtimePay' => number_format($overtimePay, 2),
+    //             'paidLeaveAmount' => number_format($paidLeaveAmount, 2),
+    //         ]);
+    
+    //     } catch (\Exception $e) {
+    //         return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
+    //     }
+    // }
+
     public function previewPayroll(Request $request, $id)
     {
         try {
@@ -112,6 +239,43 @@ class PayrollController extends Controller
     
             $overtimeRate = $hourlyRate * 1.25;
             $overtimePay = $overtimeRate * $overtimeHoursDecimal;
+
+            // Fetch Holiday
+            $regularHolidayHours = floatval($approvedAttendance->regular_holiday_hours ?? 0);
+            $specialHolidayHours = floatval($approvedAttendance->special_holiday_hours ?? 0);
+
+            // Holiday Computation
+            $regularHolidayDays = $user->holidays()->where('type', 'regular')->get();
+            $regularHolidayPay = 0.0;
+
+            foreach ($regularHolidayDays as $holiday) {
+                if (
+                    $holiday->holidayDate >= $approvedAttendance->start_date &&
+                    $holiday->holidayDate <= $approvedAttendance->end_date
+                ) {
+                    if ($regularHolidayHours > 0) {
+                        if ($user->holidays->contains($holiday)) {
+                            // User is included in holiday_user: Daily pay + worked hours
+                            $regularHolidayPay += $dailyRate + ($regularHolidayHours * $hourlyRate);
+                        } else {
+                            // User is not included in holiday_user: Double pay for worked hours only
+                            $regularHolidayPay += ($regularHolidayHours * $hourlyRate * 2);
+                        }
+                    } else {
+                        if ($user->holidays->contains($holiday)) {
+                            // User is included in holiday_user and did not work: 100% daily rate
+                            $regularHolidayPay += $dailyRate;
+                        }
+                    }
+                }
+            }
+    
+            // Holiday Pay Computation for Special Holidays
+            $specialHolidayPay = $specialHolidayHours * $hourlyRate * 1.3; // 130% pay for hours worked
+    
+            // Deduct holiday hours from total hours to compute regular hours
+            $regularHours = $totalHoursDecimal - ($regularHolidayHours + $specialHolidayHours);
+            $regularPay = $regularHours * $hourlyRate;
     
             // Fetch Deductions
             $userDeductions = UserDeduction::where('users_id', $user->id)
@@ -176,24 +340,21 @@ class PayrollController extends Controller
                 $totalEarnings += $earningAmount;
             }
     
-            $totalEarnings += $overtimePay;
+            $totalEarnings += $overtimePay + $regularHolidayPay + $specialHolidayPay;
     
             $paidLeaveDays = $approvedAttendance->paidLeave ?? 0;
             $paidLeaveAmount = $paidLeaveDays * $dailyRate;
             $totalEarnings += $paidLeaveAmount;
 
-            // Basic Pay
-            $basicPay = $formattedHourlyRate * $totalHoursDecimal;
-
             // Gross Pay
-            $grossPay = ($formattedHourlyRate * $totalHoursDecimal) + $totalEarnings;
+            $grossPay = $regularPay + $totalEarnings;
 
             // Calculate net pay
-            $netPay = $basicPay + $totalEarnings - $totalDeductions - $totalLoans;
+            $netPay = $grossPay - $totalDeductions - $totalLoans;
     
             // Return the preview data
             return response()->json([
-                'basicPay' => number_format($basicPay, 2),
+                'basicPay' => number_format($regularPay, 2),
                 'grossPay' => number_format($grossPay, 2),
                 'totalEarnings' => number_format($totalEarnings, 2),
                 'totalDeductions' => number_format($totalDeductions, 2),
@@ -204,6 +365,8 @@ class PayrollController extends Controller
                 'loans' => $loanDetails,
                 'overtimePay' => number_format($overtimePay, 2),
                 'paidLeaveAmount' => number_format($paidLeaveAmount, 2),
+                'regularHolidayPay' => number_format($regularHolidayPay, 2),
+                'specialHolidayPay' => number_format($specialHolidayPay, 2),
             ]);
     
         } catch (\Exception $e) {
@@ -245,6 +408,8 @@ class PayrollController extends Controller
                 'earning_names.*' => 'required|string',   // Validate earnings names
                 'loan_names.*' => 'required|string', 
                 'loans.*' => 'nullable|numeric',
+                'regularHolidayPay' => 'nullable|numeric',
+                'specialHolidayPay' => 'nullable|numeric',
             ]);
     
             // Check if payroll already exists
@@ -328,6 +493,8 @@ class PayrollController extends Controller
                 'deductions' => json_encode($deductions),
                 'earnings' => json_encode($earnings),
                 'loans' => json_encode($loans),
+                'regular_holiday_pay' => $request->input('regularHolidayPay'),
+                'special_holiday_pay' => $request->input('specialHolidayPay'),
                 'status' => 'Processed',
             ]);
     
@@ -341,8 +508,7 @@ class PayrollController extends Controller
             return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
         }
     }
-    
-     
+  
     // ** Seamless Process Payroll ** /
     public function processPayroll($approvedAttendanceId)
     {
@@ -361,48 +527,86 @@ class PayrollController extends Controller
             }
     
             // Calculate Daily and Hourly Rates
-            // Assume you have this field in the User model
-            $hourlyRate = $user->hourly_rate; 
-            // $dailyRate = $monthlySalary / 22; 
-            $dailyRate = $hourlyRate * 8;    
-            $monthlySalary = $dailyRate * 22;
-            // $monthlySalary = $user->mSalary;
-            
+            $hourlyRate = floatval($user->hourly_rate);
+            $dailyRate = $hourlyRate * 8; // Assuming 8 hours per day
+            $monthlySalary = $dailyRate * 22; // Assuming 22 workdays in a month
+    
             // Format daily and hourly rates
             $formattedDailyRate = number_format($dailyRate, 2, '.', '');
             $formattedHourlyRate = number_format($hourlyRate, 2, '.', '');
     
             // Convert total hours to decimal format
-            $totalHours = $approvedAttendance->totalHours; // This should be in H:i:s format
-            list($hours, $minutes, $seconds) = explode(':', $totalHours);
-            $totalHoursDecimal = $hours + ($minutes / 60) + ($seconds / 3600);
+            $totalHours = $approvedAttendance->totalHours;
+            if ($totalHours) {
+                list($hours, $minutes, $seconds) = explode(':', $totalHours);
+                $totalHoursDecimal = floatval($hours) + (floatval($minutes) / 60) + (floatval($seconds) / 3600);
+            } else {
+                $totalHoursDecimal = 0.0; // Default to 0 if null or invalid
+            }
     
             // Convert overtime hours to decimal format
             $overtimeHours = $approvedAttendance->approvedOvertime ?? '00:00:00';
-            list($otHours, $otMinutes, $otSeconds) = explode(':', $overtimeHours);
-            $overtimeHoursDecimal = $otHours + ($otMinutes / 60) + ($otSeconds / 3600);
+            if ($overtimeHours) {
+                list($otHours, $otMinutes, $otSeconds) = explode(':', $overtimeHours);
+                $overtimeHoursDecimal = floatval($otHours) + (floatval($otMinutes) / 60) + (floatval($otSeconds) / 3600);
+            } else {
+                $overtimeHoursDecimal = 0.0; // Default to 0 if null or invalid
+            }
     
-            // Calculate gross pay (for regular working hours)
-            $basicPay = $formattedHourlyRate * $totalHoursDecimal;
+            // Fetch holiday hours
+            $regularHolidayHours = floatval($approvedAttendance->regular_holiday_hours ?? 0);
+            $specialHolidayHours = floatval($approvedAttendance->special_holiday_hours ?? 0);
     
-            // Calculate overtime pay (1.25x the regular hourly rate)
+            // Holiday Pay Computation for Regular Holidays
+            $regularHolidayDays = $user->holidays()->where('type', 'regular')->get();
+            $regularHolidayPay = 0.0;
+    
+            foreach ($regularHolidayDays as $holiday) {
+                if (
+                    $holiday->holidayDate >= $approvedAttendance->start_date &&
+                    $holiday->holidayDate <= $approvedAttendance->end_date
+                ) {
+                    if ($regularHolidayHours > 0) {
+                        if ($user->holidays->contains($holiday)) {
+                            // User is included in holiday_user: Daily pay + worked hours
+                            $regularHolidayPay += $dailyRate + ($regularHolidayHours * $hourlyRate);
+                        } else {
+                            // User is not included in holiday_user: Double pay for worked hours only
+                            $regularHolidayPay += ($regularHolidayHours * $hourlyRate * 2);
+                        }
+                    } else {
+                        if ($user->holidays->contains($holiday)) {
+                            // User is included in holiday_user and did not work: 100% daily rate
+                            $regularHolidayPay += $dailyRate;
+                        }
+                    }
+                }
+            }
+    
+            // Holiday Pay Computation for Special Holidays
+            $specialHolidayPay = $specialHolidayHours * $hourlyRate * 1.3; // 130% pay for hours worked
+    
+            // Deduct holiday hours from total hours to compute regular hours
+            $regularHours = $totalHoursDecimal - ($regularHolidayHours + $specialHolidayHours);
+            $regularPay = $regularHours * $hourlyRate;
+    
+            // Compute Overtime Pay (1.25x the hourly rate)
             $overtimeRate = $hourlyRate * 1.25;
             $overtimePay = $overtimeRate * $overtimeHoursDecimal;
     
             // Fetch Deductions
             $userDeductions = UserDeduction::where('users_id', $user->id)
-            ->where('active', 1) 
-            ->with('deductionList')
-            ->get();
+                ->where('active', 1)
+                ->with('deductionList')
+                ->get();
             $deductions = [];
-            $totalDeductions = 0;
+            $totalDeductions = 0.0;
     
             foreach ($userDeductions as $userDeduction) {
                 $deductionName = $userDeduction->deductionList->name;
-                $deductionValue = $userDeduction->deductionList->amount;
+                $deductionValue = floatval($userDeduction->deductionList->amount);
                 $deductionType = $userDeduction->deductionList->type;
     
-                // Calculate deduction amount based on type
                 if ($deductionType === 'percentage') {
                     $deductionAmount = ($deductionValue / 100) * $monthlySalary;
                 } else {
@@ -420,31 +624,32 @@ class PayrollController extends Controller
     
             // Fetch Loans
             $loans = Loan::where('users_id', $user->id)
-            ->where('status', 'Active')
-            ->get();
-            $totalLoans = 0;
+                ->where('status', 'Active')
+                ->get();
+            $totalLoans = 0.0;
             $loanDetails = [];
     
             foreach ($loans as $loan) {
-                $totalLoans += $loan->payable_amount_per_cutoff;
+                $loanAmount = floatval($loan->payable_amount_per_cutoff);
+                $totalLoans += $loanAmount;
                 $loanDetails[] = [
                     'loan_id' => $loan->id,
                     'loan_name' => $loan->loan_name,
-                    'amount' => $loan->payable_amount_per_cutoff,
+                    'amount' => $loanAmount,
                 ];
             }
     
             // Fetch Dynamic Earnings
             $userEarnings = UserEarning::where('users_id', $user->id)
-            ->where('active', 1) 
-            ->with('earningList')
-            ->get();
+                ->where('active', 1)
+                ->with('earningList')
+                ->get();
             $earnings = [];
-            $totalEarnings = 0;
+            $totalEarnings = 0.0;
     
             foreach ($userEarnings as $userEarning) {
                 $earningName = $userEarning->earningList->name;
-                $earningAmount = $userEarning->earningList->amount;
+                $earningAmount = floatval($userEarning->earningList->amount);
     
                 $earnings[] = [
                     'earning_id' => $userEarning->earning_id,
@@ -455,25 +660,19 @@ class PayrollController extends Controller
                 $totalEarnings += $earningAmount;
             }
     
-            // Add overtime pay to total earnings
-            $totalEarnings += $overtimePay;
-    
+            // Add overtime and holiday pay to total earnings
+            $totalEarnings += $overtimePay + $regularHolidayPay + $specialHolidayPay;
+
             // Calculate paid leave (assuming 'paidLeave' is available in the attendance)
-            $paidLeaveDays = $approvedAttendance->paidLeave ?? 0; // Assuming 'paidLeave' is a field in attendance
+            $paidLeaveDays = $approvedAttendance->paidLeave ?? 0; 
             $paidLeaveAmount = $paidLeaveDays * $dailyRate;
     
-            // Add paid leave amount to total earnings
-            $totalEarnings += $paidLeaveAmount;
- 
-            // Basic Pay
-            $basicPay = $formattedHourlyRate * $totalHoursDecimal;
-
-            // Gross Pay
-            $grossPay = ($formattedHourlyRate * $totalHoursDecimal) + $totalEarnings;
-
-            // Calculate net pay
-            $netPay = $basicPay + $totalEarnings - $totalDeductions - $totalLoans;
-
+            // Calculate Gross Pay
+            $grossPay = $regularPay + $totalEarnings;
+    
+            // Calculate Net Pay
+            $netPay = $grossPay - $totalDeductions - $totalLoans;
+    
             // Save to SalaryTable
             $newSalary = SalaryTable::create([
                 'users_id' => $user->id,
@@ -485,9 +684,9 @@ class PayrollController extends Controller
                 'end_date' => $approvedAttendance->end_date,
                 'monthly_salary' => $monthlySalary,
                 'total_hours' => $approvedAttendance->totalHours,
-                'daily_rate' => $formattedDailyRate, 
-                'hourly_rate' => $formattedHourlyRate, 
-                'basic_pay' => $basicPay,
+                'daily_rate' => $formattedDailyRate,
+                'hourly_rate' => $formattedHourlyRate,
+                'basic_pay' => $regularPay,
                 'gross_pay' => $grossPay,
                 'total_earnings' => $totalEarnings,
                 'total_deductions' => $totalDeductions,
@@ -496,35 +695,26 @@ class PayrollController extends Controller
                 'deductions' => json_encode($deductions),
                 'earnings' => json_encode($earnings),
                 'loans' => json_encode($loanDetails),
-                'overtimeHours' => number_format($overtimePay, 2),
+                'overtimeHours' => number_format($overtimeHoursDecimal, 2),
                 'paidLeave' => number_format($paidLeaveAmount, 2),
+                'regular_holiday_pay' => number_format($regularHolidayPay, 2),
+                'special_holiday_pay' => number_format($specialHolidayPay, 2),
                 'status' => 'Processed',
             ]);
-
+    
             $approvedAttendance->status = 'Processed';
             $approvedAttendance->save();
     
-            $summaryData = [
-                'grossPay' => number_format($grossPay, 2),
-                'totalEarnings' => number_format($totalEarnings, 2),
-                'totalDeductions' => number_format($totalDeductions, 2),
-                'totalLoans' => number_format($totalLoans, 2),
-                'netPay' => number_format($netPay, 2),
-                'overtimePay' => number_format($overtimePay, 2),
-                'paidLeaveAmount' => number_format($paidLeaveAmount, 2),
-                'deductions' => $deductions,
-                'earnings' => $earnings,
-                'loans' => $loanDetails,
-            ];
-    
-            return redirect()->back()->with(['success' => 'Payroll processed successfully!', 'summaryData' => $summaryData]);
-    
+            return redirect()->back()->with(['success' => 'Payroll processed successfully!']);
         } catch (\Exception $e) {
-            // Catch any errors and return an error message
+            // Log the error to laravel.log
+            Log::error('Error in processPayroll: ', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+    
             return redirect()->back()->with(['error' => 'An error occurred while processing payroll: ' . $e->getMessage()]);
         }
     }
     
+
     private function calculateCurrentCutoff($date)
     {
         $day = $date->day;
@@ -873,6 +1063,10 @@ class PayrollController extends Controller
             // Update basic salary fields
             $salary->overtimeHours = $request->input('overtimeHours');
             $salary->paidLeave = $request->input('paidLeave');
+            $salary->regular_holiday_pay = $request->input('regularHolidayPay');
+            $salary->special_holiday_pay = $request->input('specialHolidayPay');
+            $salary->gross_pay = $request->input('gross_pay');
+            $salary->basic_pay = $request->input('basic_pay');
             $salary->total_deductions = $request->input('total_deductions');
             $salary->total_earnings = $request->input('total_earnings');
             $salary->net_pay = $request->input('net_pay');

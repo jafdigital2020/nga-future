@@ -105,7 +105,8 @@
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="attendance-details">
-                                            <h4 class="text-primary">
+                                            <h4 class="text-primary" data-toggle="modal"
+                                                data-target="#usersLoggedInToday" style="cursor:pointer">
                                                 {{ $todayLoginCount }}
                                             </h4>
                                             <p>Present Today</p>
@@ -113,15 +114,19 @@
                                     </div>
                                     <div class="col-md-4">
                                         <div class="attendance-details">
-                                            <h4 class="text-pink">
-                                                {{ $vacationLeaveCountToday + $sickLeaveCountToday + $birthdayLeaveCountToday + $unpaidLeaveCountToday }}
+                                            <h4 class="text-pink" data-toggle="modal" data-target="#notClockedInModal"
+                                                style="cursor: pointer;">
+                                                {{ $notClockedInCount }}
                                             </h4>
-                                            <p>Leave Today</p>
+                                            <p>No Clock-in Today</p>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="attendance-details">
-                                            <h4 class="text-success">{{ $totalLateToday }}</h4>
+                                            <h4 class="text-danger" data-toggle="modal" data-target="#lateUsersModal"
+                                                style="cursor: pointer;">
+                                                {{ $totalLateToday }}
+                                            </h4>
                                             <p>Late<br>Today</p>
                                         </div>
                                     </div>
@@ -135,6 +140,99 @@
                             </div>
                         </div>
                     </div>
+
+
+                    <!-- MODAL FOR NO CLOCK IN -->
+                    <div class="modal fade" id="notClockedInModal" tabindex="-1"
+                        aria-labelledby="notClockedInModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="notClockedInModalLabel">Users Not Clocked In Today</h5>
+                                    <button type="button" class="btn-close" data-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <ul class="list-group">
+                                        @forelse ($notClockedInUsers as $user)
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            {{ $user->fName  }} {{ $user->lName  }}
+                                            <span
+                                                class="badge bg-danger">{{ $user->department ?? 'No Department' }}</span>
+                                        </li>
+                                        @empty
+                                        <li class="list-group-item text-center">No users found.</li>
+                                        @endforelse
+                                    </ul>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Late Users Modal -->
+                    <div class="modal fade" id="lateUsersModal" tabindex="-1" aria-labelledby="lateUsersModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="lateUsersModalLabel">Users Marked as Late Today</h5>
+                                    <button type="button" class="btn-close" data-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <ul class="list-group">
+                                        @forelse ($lateUserDetails as $user)
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            {{ $user->fName }} {{ $user->lName }}
+                                            <span
+                                                class="badge bg-warning">{{ $user->department ?? 'No Department' }}</span>
+                                        </li>
+                                        @empty
+                                        <li class="list-group-item text-center">No late users found today.</li>
+                                        @endforelse
+                                    </ul>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MODAL FOR CLOCK IN -->
+                    <div class="modal fade" id="usersLoggedInToday" tabindex="-1" aria-labelledby="usersLoggedInToday"
+                        aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="usersLoggedInToday">Users Clocked In Today</h5>
+                                    <button type="button" class="btn-close" data-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <ul class="list-group">
+                                        @forelse ($usersLoggedInToday as $user)
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            {{ $user->fName  }} {{ $user->lName  }}
+                                            <span
+                                                class="badge bg-danger">{{ $user->department ?? 'No Department' }}</span>
+                                        </li>
+                                        @empty
+                                        <li class="list-group-item text-center">No users found.</li>
+                                        @endforelse
+                                    </ul>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
                     <div class="card info-card flex-fill" style="margin-top:-15px;">
                         <div class="card-body">
                             <h4 class="holiday-title">Upcoming Holidays</h4>

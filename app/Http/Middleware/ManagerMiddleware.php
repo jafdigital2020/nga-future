@@ -18,7 +18,7 @@ class ManagerMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        if (Auth::check() && (Auth::user()->role_as == User::ROLE_OPERATIONS_MANAGER || Auth::user()->role_as == User::ROLE_IT_MANAGER || Auth::user()->role_as == User::ROLE_MARKETING_MANAGER)) {
+        if (Auth::check() && (Auth::user()->role_as == User::ROLE_MANAGER)) {
             return $next($request);
         } else {
             return redirect('/')->with('status', 'Welcome To One JAF');

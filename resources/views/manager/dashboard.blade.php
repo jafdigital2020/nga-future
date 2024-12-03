@@ -194,45 +194,44 @@
                             </div>
                             <div class="clock-in-list mt-4">
                                 <ul class="nav">
-                                    <!-- Start Break Button -->
-                                    <form action="{{ url('manager/dashboard/breakin/') }}" method="POST">
-                                        @csrf @method('PUT')
-                                        <div class="clock-in-btn">
-                                            <button type="submit" class="btn btn-danger btn-sm" id="startButton">Start
-                                                Break</button>
-                                        </div>
-                                    </form>
-
-                                    <!-- End Break Button -->
-                                    <form action="{{ url('manager/dashboard/breakout/') }}" method="POST">
-                                        @csrf @method('PUT')
-                                        <div class="clock-in-btn">
-                                            <button type="submit" class="btn btn-outline-danger btn-sm"
-                                                id="resetButton">End Break</button>
-                                        </div>
-                                    </form>
-
                                     <!-- Break Options Dropdown for 1st and 2nd 15 Minutes Break -->
-
                                     <div class="dropdown mx-2">
                                         <button class="btn btn-danger btn-sm dropdown-toggle" type="button"
                                             id="breakDropdown" data-toggle="dropdown" aria-haspopup="true"
-                                            aria-expanded="false">
-                                            15mins
+                                            aria-expanded="false" style="width: 200px;">
+                                            Select Break
                                         </button>
                                         <div class="dropdown-menu" aria-labelledby="breakDropdown">
+                                            <!-- Start 1 Hour Break -->
+                                            <form action="{{ url('manager/dashboard/breakin/') }}" method="POST">
+                                                @csrf @method('PUT')
+                                                <button type="submit" class="dropdown-item" id="start1HourBreak">Start 1
+                                                    Hour Break</button>
+                                            </form>
+                                            <!-- End 1 Hour Break -->
+                                            <form action="{{ url('manager/dashboard/breakout/') }}" method="POST">
+                                                @csrf @method('PUT')
+                                                <button type="submit" class="dropdown-item" id="end1HourBreak">End 1
+                                                    Hour Break</button>
+                                            </form>
+                                            <!-- Start 15 Minutes Break -->
                                             <form action="{{ route('manager.startBreak') }}" method="POST">
                                                 @csrf
-                                                <button type="submit" class="dropdown-item">Start 15mins
-                                                    Break</button>
+                                                <button type="submit" class="dropdown-item" id="start15MinBreak">Start
+                                                    15 Minutes Break</button>
                                             </form>
+                                            <!-- End 15 Minutes Break -->
                                             <form action="{{ route('manager.endBreak') }}" method="POST">
                                                 @csrf
-                                                <button type="submit" class="dropdown-item">End 15mins
-                                                    Break</button>
+                                                <button type="submit" class="dropdown-item" id="end15MinBreak">End 15
+                                                    Minutes Break</button>
                                             </form>
                                         </div>
                                     </div>
+                                    <li>
+                                        <p>Break Timer</p>
+                                        <h6 id="countdown">00:00:00</h6>
+                                    </li>
                                 </ul>
                             </div>
 
@@ -574,7 +573,7 @@
 @section('scripts')
 
 <!-- GOOGLE MAP API -->
-<script>
+<!-- <script>
     let videoStream;
 
     document.getElementById("checkInButton").addEventListener("click", getLocation);
@@ -599,7 +598,7 @@
         document.getElementById("latitude").value = latitude;
         document.getElementById("longitude").value = longitude;
 
-        fetch("{{ url('manager/dashboard') }}", {
+        fetch("{{ url('emp/dashboard') }}", {
                 method: "POST",
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -715,7 +714,7 @@
     function submitForm() {
         const formData = new FormData(document.getElementById("clockInForm"));
 
-        fetch("{{ url('manager/dashboard') }}", {
+        fetch("{{ url('emp/dashboard') }}", {
                 method: "POST",
                 body: formData,
                 headers: {
@@ -768,6 +767,221 @@
                 formData.append('image', blob, 'checkin_photo.png');
                 formData.append('low_accuracy', lowAccuracyCheckIn);
 
+                fetch("{{ url('emp/dashboard') }}", {
+                        method: "POST",
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Image upload response:", data);
+                        if (data.status === 'success') {
+                            stopCamera();
+                            $('#imageUploadModal').modal('hide');
+                            alert('Check-in completed with photo!');
+                            window.location.reload();
+                        } else {
+                            alert(data.message || "Error submitting clock-in. Please try again.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error uploading image:", error);
+                        alert("Error submitting clock-in. Please try again.");
+                    });
+            });
+    });
+
+    // Stop the camera feed when modal is closed
+    $('#imageUploadModal').on('hidden.bs.modal', stopCamera);
+
+</script> -->
+
+<script>
+    let videoStream;
+
+    document.getElementById("checkInButton").addEventListener("click", getLocation);
+    let lowAccuracyCheckIn = false;
+    let geofences = [];
+
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition, showError, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0,
+            });
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+    }
+
+    function showPosition(position) {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        document.getElementById("latitude").value = latitude;
+        document.getElementById("longitude").value = longitude;
+
+        fetch("{{ url('manager/dashboard') }}", {
+                method: "POST",
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    latitude,
+                    longitude
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    window.location.reload();
+                } else if (data.status === 'low_accuracy') {
+                    alert(data.message);
+                    lowAccuracyCheckIn = true;
+                    $('#imageUploadModal').modal('show');
+                    startCamera();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Check-in error:', error);
+                alert("Error submitting check-in. Please try again.");
+            });
+    }
+
+    // Start the camera feed
+    function startCamera() {
+        const video = document.getElementById('video');
+        navigator.mediaDevices.getUserMedia({
+                video: true
+            })
+            .then(stream => {
+                videoStream = stream;
+                video.srcObject = stream;
+            })
+            .catch(error => console.error("Camera access error:", error));
+    }
+
+    // Capture the image from the video feed
+    document.getElementById("captureButton").addEventListener("click", function () {
+        const canvas = document.getElementById("canvas");
+        const video = document.getElementById("video");
+        const capturedImage = document.getElementById("capturedImage");
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        capturedImage.src = canvas.toDataURL('image/png');
+        capturedImage.style.display = "block";
+        canvas.style.display = "none";
+    });
+
+    // Stop the camera feed
+    function stopCamera() {
+        if (videoStream) {
+            videoStream.getTracks().forEach(track => track.stop());
+        }
+    }
+
+    function showError(error) {
+        console.error("Geolocation error:", error);
+        switch (error.code) {
+            case error.PERMISSION_DENIED:
+                if (confirm("Location access was denied. Would you like to try again?")) {
+                    getLocation();
+                } else {
+                    alert("Please enable location access in your browser settings.");
+                }
+                break;
+            case error.POSITION_UNAVAILABLE:
+                alert("Location information is unavailable.");
+                break;
+            case error.TIMEOUT:
+                alert("The request to get user location timed out. Please try again.");
+                break;
+            case error.UNKNOWN_ERROR:
+                alert("An unknown error occurred.");
+                break;
+        }
+    }
+
+    function getAddressFromLatLng(latitude, longitude) {
+        const apiKey = 'AIzaSyCoZSVkyGR645u4B_OOFmepLzrRBB8Hgmc'; // Replace with your actual Google Maps API key
+        const geocodeUrl =
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`;
+
+        fetch(geocodeUrl)
+            .then(response => response.json())
+            .then(data => {
+                console.log("Geocode response:", data);
+                if (data.status === "OK") {
+                    const address = data.results[0].formatted_address;
+                    document.getElementById("location").value = address;
+
+                    // Submit the form
+                    submitForm();
+                } else {
+                    alert("Could not fetch address. Please try again.");
+                }
+            })
+            .catch(error => {
+                alert("Error fetching address. Please check your connection.");
+                console.error("Geocoding error:", error);
+            });
+    }
+
+    function submitForm() {
+        const formData = new FormData(document.getElementById("clockInForm"));
+
+        fetch("{{ url('manager/dashboard') }}", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Full check-in response:", data);
+                if (data.status === 'low_accuracy') {
+                    alert(data.message);
+                    $('#imageUploadModal').modal('show');
+                } else if (data.status === 'success') {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Check-in error:', error);
+                alert("Error submitting check-in. Please try again.");
+            });
+    }
+
+    // Submit captured image
+    document.getElementById("submitImage").addEventListener("click", function () {
+        const capturedImage = document.getElementById("capturedImage").src;
+
+        // Validate if an image was captured
+        if (!capturedImage || capturedImage === '') {
+            alert("Please capture an image before submitting.");
+            return;
+        }
+
+        // Convert base64 image to file for submission
+        fetch(capturedImage)
+            .then(res => res.blob())
+            .then(blob => {
+                const formData = new FormData(document.getElementById("clockInForm"));
+                formData.append('image', blob, 'checkin_photo.png');
+                formData.append('low_accuracy', lowAccuracyCheckIn);
+
                 fetch("{{ url('manager/dashboard') }}", {
                         method: "POST",
                         body: formData,
@@ -798,6 +1012,7 @@
     $('#imageUploadModal').on('hidden.bs.modal', stopCamera);
 
 </script>
+
 
 
 <!-- CAROUSEL -->
@@ -861,6 +1076,7 @@
 </script>
 
 <!-- CALENDAR -->
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const calendar = document.getElementById('calendar');
@@ -899,6 +1115,8 @@
             let totalOvertimeSeconds = 0; // Counter for total overtime
             let paidLeaveCount = 0; // Counter for paid leaves
             let unpaidLeaveCount = 0; // Counter for unpaid leaves
+            let totalRegularHolidaySeconds = 0;
+            let totalSpecialHolidaySeconds = 0;
 
             let currentDate = new Date(startDate);
             while (currentDate <= endDate) {
@@ -941,15 +1159,27 @@
                     totalLate.innerText = "Total Late: " + (dayData.totalLate || 'N/A');
                     dayDiv.appendChild(totalLate);
 
-                    if (dayData.timeTotal) {
-                        const timeParts = dayData.timeTotal.split(':').map(Number);
-                        totalWorkedSeconds += timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2];
-                    }
-
                     if (dayData.totalLate) {
                         const lateParts = dayData.totalLate.split(':').map(Number);
                         totalLateSeconds += lateParts[0] * 3600 + lateParts[1] * 60 + lateParts[2];
                     }
+
+                    if (dayData.timeTotal) {
+                        const timeParts = dayData.timeTotal.split(':').map(Number);
+                        const workedSeconds = timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2];
+                        totalWorkedSeconds += workedSeconds;
+
+                        // Allocate holiday hours if applicable
+                        const holiday = checkHoliday(currentDate, holidays);
+                        if (holiday) {
+                            if (holiday.type === 'Regular') {
+                                totalRegularHolidaySeconds += workedSeconds;
+                            } else if (holiday.type === 'Special') {
+                                totalSpecialHolidaySeconds += workedSeconds;
+                            }
+                        }
+                    }
+
                 }
 
                 // Check for approved leave on this day
@@ -1004,7 +1234,13 @@
                     const holidayDiv = document.createElement('div');
                     holidayDiv.className = 'holiday-button';
                     holidayDiv.innerText = holiday.title;
-                    holidayDiv.style.backgroundColor = 'green';
+
+                    if (holiday.type === 'Regular') {
+                        holidayDiv.style.backgroundColor = 'red';
+                    } else if (holiday.type === 'Special') {
+                        holidayDiv.style.backgroundColor = 'green';
+                    }
+
                     holidayDiv.style.color = 'white';
                     holidayDiv.style.padding = '5px';
                     holidayDiv.style.marginTop = '5px';
@@ -1037,12 +1273,18 @@
             // Display total stats at the bottom
             const totalBox = document.createElement('div');
             totalBox.className = 'day total-box';
-            totalBox.innerText =
-                `Total Worked Hours: ${totalWorkedFormatted}\nTotal Late: ${totalLateFormatted}\nApproved Overtime: ${totalOvertimeFormatted}\nPaid Leaves: ${paidLeaveCount}\nUnpaid Leaves: ${unpaidLeaveCount}\nStatus: ${status}`;
+            totalBox.innerText = `
+            Total Worked Hours: ${formatTime(totalWorkedSeconds)}
+            Total Late: ${formatTime(totalLateSeconds)}
+            Approved Overtime: ${formatTime(totalOvertimeSeconds)}
+            Regular Holiday Hours: ${formatTime(totalRegularHolidaySeconds)}
+            Special Holiday Hours: ${formatTime(totalSpecialHolidaySeconds)}
+            Paid Leaves: ${paidLeaveCount}
+            Unpaid Leaves: ${unpaidLeaveCount}
+            Status: ${status || 'new'}
+        `;
             calendar.appendChild(totalBox);
         }
-
-
 
         function checkHoliday(date, holidays) {
             const formattedDate =
@@ -1094,109 +1336,109 @@
             let startDate, endDate;
 
             switch (monthIndex) {
-                case 0:
-                    startDate = new Date(Date.UTC(year - 1, 11, 26));
-                    endDate = new Date(Date.UTC(year, 0, 10));
+                case 0: // December 25 (previous year) to January 9
+                    startDate = new Date(Date.UTC(year - 1, 11, 25));
+                    endDate = new Date(Date.UTC(year, 0, 9));
                     break;
-                case 1:
-                    startDate = new Date(Date.UTC(year, 0, 11));
-                    endDate = new Date(Date.UTC(year, 0, 25));
+                case 1: // January 10 to January 24
+                    startDate = new Date(Date.UTC(year, 0, 10));
+                    endDate = new Date(Date.UTC(year, 0, 24));
                     break;
-                case 2:
-                    startDate = new Date(Date.UTC(year, 0, 26));
-                    endDate = new Date(Date.UTC(year, 1, 10));
+                case 2: // January 25 to February 9
+                    startDate = new Date(Date.UTC(year, 0, 25));
+                    endDate = new Date(Date.UTC(year, 1, 9));
                     break;
-                case 3:
-                    startDate = new Date(Date.UTC(year, 1, 11));
-                    endDate = new Date(Date.UTC(year, 1, 25));
+                case 3: // February 10 to February 24
+                    startDate = new Date(Date.UTC(year, 1, 10));
+                    endDate = new Date(Date.UTC(year, 1, 24));
                     break;
-                case 4:
-                    startDate = new Date(Date.UTC(year, 1, 26));
-                    endDate = new Date(Date.UTC(year, 2, 10));
+                case 4: // February 25 to March 9
+                    startDate = new Date(Date.UTC(year, 1, 25));
+                    endDate = new Date(Date.UTC(year, 2, 9));
                     break;
-                case 5:
-                    startDate = new Date(Date.UTC(year, 2, 11));
-                    endDate = new Date(Date.UTC(year, 2, 25));
+                case 5: // March 10 to March 24
+                    startDate = new Date(Date.UTC(year, 2, 10));
+                    endDate = new Date(Date.UTC(year, 2, 24));
                     break;
-                case 6:
-                    startDate = new Date(Date.UTC(year, 2, 26));
-                    endDate = new Date(Date.UTC(year, 3, 10));
+                case 6: // March 25 to April 9
+                    startDate = new Date(Date.UTC(year, 2, 25));
+                    endDate = new Date(Date.UTC(year, 3, 9));
                     break;
-                case 7:
-                    startDate = new Date(Date.UTC(year, 3, 11));
-                    endDate = new Date(Date.UTC(year, 3, 25));
+                case 7: // April 10 to April 24
+                    startDate = new Date(Date.UTC(year, 3, 10));
+                    endDate = new Date(Date.UTC(year, 3, 24));
                     break;
-                case 8:
-                    startDate = new Date(Date.UTC(year, 3, 26));
-                    endDate = new Date(Date.UTC(year, 4, 10));
+                case 8: // April 25 to May 9
+                    startDate = new Date(Date.UTC(year, 3, 25));
+                    endDate = new Date(Date.UTC(year, 4, 9));
                     break;
-                case 9:
-                    startDate = new Date(Date.UTC(year, 4, 11));
-                    endDate = new Date(Date.UTC(year, 4, 25));
+                case 9: // May 10 to May 24
+                    startDate = new Date(Date.UTC(year, 4, 10));
+                    endDate = new Date(Date.UTC(year, 4, 24));
                     break;
-                case 10:
-                    startDate = new Date(Date.UTC(year, 4, 26));
-                    endDate = new Date(Date.UTC(year, 5, 10));
+                case 10: // May 25 to June 9
+                    startDate = new Date(Date.UTC(year, 4, 25));
+                    endDate = new Date(Date.UTC(year, 5, 9));
                     break;
-                case 11:
-                    startDate = new Date(Date.UTC(year, 5, 11));
-                    endDate = new Date(Date.UTC(year, 5, 25));
+                case 11: // June 10 to June 24
+                    startDate = new Date(Date.UTC(year, 5, 10));
+                    endDate = new Date(Date.UTC(year, 5, 24));
                     break;
-                case 12:
-                    startDate = new Date(Date.UTC(year, 5, 26));
-                    endDate = new Date(Date.UTC(year, 6, 10));
+                case 12: // June 25 to July 9
+                    startDate = new Date(Date.UTC(year, 5, 25));
+                    endDate = new Date(Date.UTC(year, 6, 9));
                     break;
-                case 13:
-                    startDate = new Date(Date.UTC(year, 6, 11));
-                    endDate = new Date(Date.UTC(year, 6, 25));
+                case 13: // July 10 to July 24
+                    startDate = new Date(Date.UTC(year, 6, 10));
+                    endDate = new Date(Date.UTC(year, 6, 24));
                     break;
-                case 14:
-                    startDate = new Date(Date.UTC(year, 6, 26));
-                    endDate = new Date(Date.UTC(year, 7, 10));
+                case 14: // July 25 to August 9
+                    startDate = new Date(Date.UTC(year, 6, 25));
+                    endDate = new Date(Date.UTC(year, 7, 9));
                     break;
-                case 15:
-                    startDate = new Date(Date.UTC(year, 7, 11));
-                    endDate = new Date(Date.UTC(year, 7, 25));
+                case 15: // August 10 to August 24
+                    startDate = new Date(Date.UTC(year, 7, 10));
+                    endDate = new Date(Date.UTC(year, 7, 24));
                     break;
-                case 16:
-                    startDate = new Date(Date.UTC(year, 7, 26));
-                    endDate = new Date(Date.UTC(year, 8, 10));
+                case 16: // August 25 to September 9
+                    startDate = new Date(Date.UTC(year, 7, 25));
+                    endDate = new Date(Date.UTC(year, 8, 9));
                     break;
-                case 17:
-                    startDate = new Date(Date.UTC(year, 8, 11));
-                    endDate = new Date(Date.UTC(year, 8, 25));
+                case 17: // September 10 to September 24
+                    startDate = new Date(Date.UTC(year, 8, 10));
+                    endDate = new Date(Date.UTC(year, 8, 24));
                     break;
-                case 18:
-                    startDate = new Date(Date.UTC(year, 8, 26));
-                    endDate = new Date(Date.UTC(year, 9, 10));
+                case 18: // September 25 to October 9
+                    startDate = new Date(Date.UTC(year, 8, 25));
+                    endDate = new Date(Date.UTC(year, 9, 9));
                     break;
-                case 19:
-                    startDate = new Date(Date.UTC(year, 9, 11));
-                    endDate = new Date(Date.UTC(year, 9, 25));
+                case 19: // October 10 to October 24
+                    startDate = new Date(Date.UTC(year, 9, 10));
+                    endDate = new Date(Date.UTC(year, 9, 24));
                     break;
-                case 20:
-                    startDate = new Date(Date.UTC(year, 9, 26));
-                    endDate = new Date(Date.UTC(year, 10, 10));
+                case 20: // October 25 to November 9
+                    startDate = new Date(Date.UTC(year, 9, 25));
+                    endDate = new Date(Date.UTC(year, 10, 9));
                     break;
-                case 21:
-                    startDate = new Date(Date.UTC(year, 10, 11));
-                    endDate = new Date(Date.UTC(year, 10, 25));
+                case 21: // November 10 to November 24
+                    startDate = new Date(Date.UTC(year, 10, 10));
+                    endDate = new Date(Date.UTC(year, 10, 24));
                     break;
-                case 22:
-                    startDate = new Date(Date.UTC(year, 10, 26));
-                    endDate = new Date(Date.UTC(year, 11, 10));
+                case 22: // November 25 to December 9
+                    startDate = new Date(Date.UTC(year, 10, 25));
+                    endDate = new Date(Date.UTC(year, 11, 9));
                     break;
-                case 23:
-                    startDate = new Date(Date.UTC(year, 11, 11));
-                    endDate = new Date(Date.UTC(year, 11, 25));
+                case 23: // December 10 to December 24
+                    startDate = new Date(Date.UTC(year, 11, 10));
+                    endDate = new Date(Date.UTC(year, 11, 24));
                     break;
             }
-
             return {
                 startDate,
                 endDate
             };
         }
+
 
         function searchCalendar() {
             const monthIndex = parseInt(monthSelect.value);
@@ -1230,26 +1472,28 @@
 
             const totalBox = document.querySelector('.total-box');
 
-            // Extract total worked hours, late hours, overtime, and leave counts
-            const totalWorked = totalBox.innerText.match(/Total Worked Hours: (\d{2}:\d{2}:\d{2})/)[1];
+            // Extract stats from the Total Box
+            const totalWorked = totalBox.innerText.match(/Total Worked Hours: (\d+:\d{2}:\d{2})/)[1];
             const totalLate = totalBox.innerText.match(/Total Late: (\d{2}:\d{2}:\d{2})/)[1];
-            const unpaidLeaveCount = totalBox.innerText.match(/Unpaid Leaves: (\d+)/)[
-                1]; // Updated to match unpaid leaves
-            const paidLeaveCount = totalBox.innerText.match(/Paid Leaves: (\d+)/)[
-                1]; // Updated to match paid leaves
-            const approvedOvertime = totalBox.innerText.match(/Approved Overtime: (\d{2}:\d{2}:\d{2})/)[
-                1]; // Updated to match approved overtime
+            const unpaidLeaveCount = totalBox.innerText.match(/Unpaid Leaves: (\d+)/)[1];
+            const paidLeaveCount = totalBox.innerText.match(/Paid Leaves: (\d+)/)[1];
+            const approvedOvertime = totalBox.innerText.match(/Approved Overtime: (\d{2}:\d{2}:\d{2})/)[1];
+            const regularHolidayHours = totalBox.innerText.match(/Regular Holiday Hours: (\d{2}:\d{2}:\d{2})/)[
+                1];
+            const specialHolidayHours = totalBox.innerText.match(/Special Holiday Hours: (\d{2}:\d{2}:\d{2})/)[
+                1];
 
-            // Create the data object to be sent to the server
             const data = {
                 total_worked: totalWorked,
                 total_late: totalLate,
                 cutoff: cutoff,
                 start_date: startDate.toISOString().split('T')[0],
                 end_date: endDate.toISOString().split('T')[0],
-                unpaid_leave: unpaidLeaveCount, // New unpaid leave count
-                paid_leave: paidLeaveCount, // New paid leave count
-                approved_overtime: approvedOvertime, // New approved overtime value
+                unpaid_leave: unpaidLeaveCount,
+                paid_leave: paidLeaveCount,
+                approved_overtime: approvedOvertime,
+                regular_holiday_hours: regularHolidayHours,
+                special_holiday_hours: specialHolidayHours,
                 year: year,
                 status: 'pending'
             };
@@ -1329,7 +1573,8 @@
         }
 
         searchButton.addEventListener('click', searchCalendar);
-        saveButton.addEventListener('click', saveAttendance);
+        saveButton.addEventListener('click',
+            saveAttendance);
 
         // Initial search when the page loads
         const currentDate = new Date();
@@ -1338,7 +1583,7 @@
 
         if (currentDay <= 10) {
             initialMonthIndex = currentDate.getMonth() * 2;
-        } else if (currentDay <= 25) {
+        } else if (currentDay <= 24) {
             initialMonthIndex = currentDate.getMonth() * 2 + 1;
         } else {
             initialMonthIndex = currentDate.getMonth() * 2 + 2;
@@ -1355,10 +1600,8 @@
 <!-- TIMER COUNTDOWN -->
 <script>
     const countdownElement = document.getElementById('countdown');
-    const startButton = document.getElementById('startButton');
-    const resetButton = document.getElementById('resetButton');
     const countdownKey = 'countdownEndTime';
-    const lastStartKey = 'lastCountdownDate';
+    const countdownTypeKey = 'countdownType';
 
     function formatTime(seconds) {
         const hours = Math.floor(seconds / 3600);
@@ -1373,49 +1616,62 @@
             const now = new Date().getTime();
             const timeRemaining = Math.max(Math.floor((endTime - now) / 1000), 0);
 
-            countdownElement.textContent = `${formatTime(timeRemaining)}`;
+            countdownElement.textContent = formatTime(timeRemaining);
 
             if (timeRemaining > 0) {
                 setTimeout(updateCountdown, 1000);
             } else {
                 countdownElement.textContent = "Time's up!";
                 localStorage.removeItem(countdownKey);
+                localStorage.removeItem(countdownTypeKey);
             }
         }
     }
 
-    function startCountdown() {
+    function startCountdown(durationMinutes) {
         const now = new Date().getTime();
-        const oneHourInMillis = 3600 * 1000;
-        const endTime = now + oneHourInMillis;
+        const durationMillis = durationMinutes * 60 * 1000;
+        const endTime = now + durationMillis;
+
         localStorage.setItem(countdownKey, endTime);
+        localStorage.setItem(countdownTypeKey, `${durationMinutes}min`);
 
         updateCountdown();
     }
 
-    function checkIfNewDay() {
-        const lastStartDate = localStorage.getItem(lastStartKey);
-        const today = new Date().toDateString();
-
-        if (lastStartDate !== today) {
-            localStorage.setItem(lastStartKey, today);
-            return true;
-        }
-        return false;
+    function resetCountdown() {
+        localStorage.removeItem(countdownKey);
+        localStorage.removeItem(countdownTypeKey);
+        countdownElement.textContent = "00:00:00";
     }
 
-    startButton.addEventListener('click', function () {
-        if (checkIfNewDay()) {
-            startCountdown();
-        } else {
-            countdownElement.textContent = "Countdown can only be started once per day.";
-        }
+    // Event listeners for break buttons
+    document.getElementById('start1HourBreak').addEventListener('click', function (e) {
+        e.preventDefault(); // Prevent form submission for countdown purposes
+        startCountdown(60); // Start 1-hour countdown
+        this.closest('form').submit(); // Submit the form to the server
     });
 
-    resetButton.addEventListener('click', function () {
-        localStorage.removeItem(countdownKey);
-        localStorage.removeItem(lastStartKey);
-        countdownElement.textContent = "1:00:00";
+    document.getElementById('end1HourBreak').addEventListener('click', function (e) {
+        e.preventDefault(); // Prevent form submission for countdown purposes
+        if (localStorage.getItem(countdownTypeKey) === '60min') {
+            resetCountdown(); // Reset only if 1-hour break is active
+        }
+        this.closest('form').submit(); // Submit the form to the server
+    });
+
+    document.getElementById('start15MinBreak').addEventListener('click', function (e) {
+        e.preventDefault(); // Prevent form submission for countdown purposes
+        startCountdown(15); // Start 15-minute countdown
+        this.closest('form').submit(); // Submit the form to the server
+    });
+
+    document.getElementById('end15MinBreak').addEventListener('click', function (e) {
+        e.preventDefault(); // Prevent form submission for countdown purposes
+        if (localStorage.getItem(countdownTypeKey) === '15min') {
+            resetCountdown(); // Reset only if 15-minute break is active
+        }
+        this.closest('form').submit(); // Submit the form to the server
     });
 
     // Initialize the countdown if it's already set
@@ -1434,5 +1690,8 @@
     setTimeout(refreshPage, 1800000); // 30 minutes = 1800000 milliseconds
 
 </script>
+
+
+
 
 @endsection
