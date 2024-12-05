@@ -15,7 +15,7 @@ class LoanController extends Controller
 {
     public function loan()
     {
-        $users = User::all();
+        $users = User::where('status', 'active')->get();
         $loans = Loan::with('user')->get();
         return view('admin.loan.loan', compact('users', 'loans'));
     }
@@ -55,7 +55,7 @@ class LoanController extends Controller
         try {
             // Create the loan
             $loan = new Loan();
-        
+
             $loan->users_id = $request->input('users_id');
             $loan->loan_name = $request->input('loan_name');
             $loan->amount = $request->input('amount');
@@ -72,13 +72,13 @@ class LoanController extends Controller
             // Return with an error message
             return redirect()->back()->with('error', 'Failed to create loan. Please try again.');
         }
-        
+
     }
 
     public function loanComplete(Request $request, $id)
     {
         $loan = Loan::findOrFail($id);
-    
+
         if ($loan->status === 'Completed') {
             return redirect()->back()->with('error', 'It is already completed.');
         }
@@ -92,7 +92,7 @@ class LoanController extends Controller
     public function loanHold(Request $request, $id)
     {
         $loan = Loan::findOrFail($id);
-    
+
         if ($loan->status === 'Hold') {
             return redirect()->back()->with('error', 'It is already on hold.');
         }
@@ -106,7 +106,7 @@ class LoanController extends Controller
     public function loanActive(Request $request, $id)
     {
         $loan = Loan::findOrFail($id);
-    
+
         if ($loan->status === 'Active') {
             return redirect()->back()->with('error', 'It is already Active');
         }
@@ -145,16 +145,16 @@ class LoanController extends Controller
 
             return redirect()->back()->with('error', $errorMessages);
         }
-            
+
         try {
             $loan = Loan::findOrFail($id);
-    
+
             $loan->loan_name = $request->input('loan_namee');
             $loan->amount = $request->input('amounte');
             $loan->payable_in_cutoff = $request->input('payable_in_cutoffe');
             $loan->payable_amount_per_cutoff = $request->input('payable_amount_per_cutoffe');
             $loan->save();
-    
+
             return redirect()->back()->with('success', 'Loan updated successfully.');
         } catch (Exception $e) {
             return redirect()->back()->with('error', 'Failed to update loan: ' . $e->getMessage());

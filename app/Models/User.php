@@ -132,7 +132,7 @@ class User extends Authenticatable
         if ($loggedInUser->isSupervisor() || $loggedInUser->isHr()) {
             return 'Management';
         }
-        
+
         $supervisorRoles = [
             'IT' => self::ROLE_MANAGER,
         ];
@@ -156,7 +156,7 @@ class User extends Authenticatable
                    ->whereNotIn('role_as', $supervisorRoles)
                    ->get();
     }
-    
+
 
     /**
      * The attributes that should be hidden for serialization.
@@ -185,7 +185,7 @@ class User extends Authenticatable
                 $query->where('status', 'active');
             }
         });
-    
+
         // Automatically create overtime credits for new users
         static::created(function ($user) {
             OvertimeCredits::create([
@@ -194,7 +194,7 @@ class User extends Authenticatable
             ]);
         });
     }
-    
+
 
     public function employeeAttendance ()
     {
@@ -401,49 +401,49 @@ class User extends Authenticatable
         return $this->hasMany(AttendanceEditHistory::class, 'edited_by');
     }
 
-    
+
     public function checkIn(Request $request)
     {
         try {
             $currentDate = Carbon::now('Asia/Manila')->toDateString();
             Log::info("Current Date: $currentDate");
-    
+
             // Check if the user has already timed in for the day
             $employeeAttendance = $this->employeeAttendance()
                 ->where('date', $currentDate)
                 ->first();
-    
+
             if ($employeeAttendance) {
                 Log::info("Already timed in for today.");
                 return response()->json(['status' => 'error', 'message' => 'You have already timed in!']);
             }
-    
+
             // Get user's shift schedule
             $shiftSchedule = ShiftSchedule::where('users_id', auth()->user()->id)
                 ->where('date', $currentDate)
                 ->first();
-    
+
             if (!$shiftSchedule) {
                 Log::info("Shift schedule not found.");
                 return response()->json(['status' => 'error', 'message' => 'Shift schedule not found for today.']);
             }
-    
+
             // Geolocation data from request
             $latitude = $request->latitude;
             $longitude = $request->longitude;
             Log::info("User location: Latitude = $latitude, Longitude = $longitude");
-    
+
             // Retrieve all geofences assigned to the user
             $userGeofences = UserGeofence::where('user_id', auth()->user()->id)
                 ->with('geofenceSetting')
                 ->get();
-    
+
             Log::info("Fetched geofences: " . json_encode($userGeofences->toArray()));
-    
+
             $isWithinGeofence = false;
             $isWithinTempRadius = false;
             $tempRadius = 2000; // Temporary threshold in meters
-    
+
             foreach ($userGeofences as $userGeofence) {
                 if ($userGeofence->geofenceSetting) {
                     $geofence = $userGeofence->geofenceSetting;
@@ -454,27 +454,27 @@ class User extends Authenticatable
                         $geofence->longitude
                     );
                     Log::info("Distance to geofence {$geofence->fencing_name}: $distance meters");
-    
+
                     // If user is within any geofence radius, mark as true and break loop
                     if ($distance <= $geofence->fencing_radius) {
                         $isWithinGeofence = true;
                         break;
                     }
-    
+
                     // If user is within temporary radius
                     if ($distance <= $tempRadius) {
                         $isWithinTempRadius = true;
                     }
                 }
             }
-    
+
             if ($isWithinGeofence || $userGeofences->isEmpty()) {
                 Log::info("User is within a geofence or no geofence assigned, proceeding to check-in.");
                 // Complete check-in logic
                 $timeIn = Carbon::now('Asia/Manila');
                 $status = 'On Time';
                 $totalLate = '00:00:00';
-    
+
                 if (!$shiftSchedule->isFlexibleTime) {
                     $lateThreshold = Carbon::parse($shiftSchedule->lateThreshold, 'Asia/Manila');
                     if ($timeIn->greaterThan($lateThreshold)) {
@@ -483,7 +483,7 @@ class User extends Authenticatable
                         $totalLate = gmdate("H:i:s", $totalLateInSeconds);
                     }
                 }
-    
+
                 // Handle device detection
                 $userAgent = $request->header('User-Agent');
                 $agentDetector = new AgentDetector($userAgent);
@@ -491,7 +491,7 @@ class User extends Authenticatable
                 $platform = $agentDetector->platform();
                 $browser = $agentDetector->browser();
                 $deviceInfo = "{$deviceType} ({$platform}, {$browser})";
-    
+
                 // Save attendance record
                 $this->employeeAttendance()->create([
                     'name' => auth()->user()->fName . ' ' . auth()->user()->lName,
@@ -504,25 +504,25 @@ class User extends Authenticatable
                     'device' => $deviceInfo,
                     'location' => $request->location,
                 ]);
-    
+
                 Log::info("Check-in successful.");
                 return response()->json(['status' => 'success', 'message' => 'Checked in successfully!']);
             }
-    
+
             if ($isWithinTempRadius && !$isWithinGeofence) {
                 Log::info("User is outside geofence but within temporary radius.");
                 return response()->json(['status' => 'low_accuracy', 'message' => 'Low accuracy, please upload a photo to complete check-in.']);
             }
-    
+
             Log::info("User is outside all geofences and temporary radius.");
             return response()->json(['status' => 'error', 'message' => 'You are outside all assigned geofence areas.']);
-    
+
         } catch (\Exception $e) {
             Log::error('Check-in Error: ' . $e->getMessage(), ['exception' => $e]);
             return response()->json(['status' => 'error', 'message' => 'An unexpected error occurred. Please try again later.']);
         }
     }
-    
+
 
     // Helper function to calculate distance between two points using latitude and longitude
     protected function calculateDistance($lat1, $lon1, $lat2, $lon2)
@@ -706,7 +706,7 @@ public function breakOut()
             $now = Carbon::now('Asia/Manila');
             $dateToday = $now->toDateString();
             $dateYesterday = $now->copy()->subDay()->toDateString();
-    
+
             // Retrieve the most recent timeIn record without a timeOut
             $timeIn = $this->employeeAttendance()
                 ->where(function ($query) use ($dateToday, $dateYesterday) {
@@ -716,60 +716,131 @@ public function breakOut()
                 ->whereNull('timeOut')
                 ->latest('timeIn')
                 ->first();
-    
+
             if (!$timeIn) {
                 return back()->with('error', "You don't have a time-in record. Please time in first.");
             }
-    
+
             // Record the timeOut
             $timeOut = $now->format('h:i:s A');
-    
+
             // Parse shift start and end times
             $shiftStart = Carbon::parse($timeIn->timeIn, 'Asia/Manila');
             $shiftEnd = Carbon::parse($timeOut, 'Asia/Manila');
-    
+
             // Adjust timeOut if it's past midnight (i.e., next day)
             if ($shiftEnd->lt($shiftStart)) {
                 $shiftEnd->addDay();
             }
-    
+
             // Define night shift period
             $nightShiftStartToday = Carbon::parse('22:00:00', 'Asia/Manila'); // 10:00 PM today
             $nightShiftEndNextDay = Carbon::parse('06:00:00', 'Asia/Manila')->addDay(); // 6:00 AM the next day
-    
+
             // Calculate overlap with night shift
             $night_diff_seconds = 0;
-            
+
             // Ensure shift intersects with the night shift period
             if ($shiftStart <= $nightShiftEndNextDay && $shiftEnd >= $nightShiftStartToday) {
                 // Determine the actual start of the night differential within the shift
                 $nightStart = $shiftStart->max($nightShiftStartToday);
                 $nightEnd = $shiftEnd->min($nightShiftEndNextDay);
-    
+
                 // Calculate the duration of the overlap in seconds
                 $night_diff_seconds = $nightEnd->diffInSeconds($nightStart);
             }
-    
+
             // Convert night differential seconds to HH:MM:SS format
             $hours = floor($night_diff_seconds / 3600);
             $minutes = floor(($night_diff_seconds % 3600) / 60);
             $seconds = $night_diff_seconds % 60;
             $night_diff_hours = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
-    
+
             // Save night_diff_hours to the database
             $timeIn->update([
                 'timeOut' => $timeOut,
                 'night_diff_hours' => $night_diff_hours,
             ]);
-    
+
             return back()->with('success', 'You have successfully timed out. Thank you for your hard work!');
-    
+
         } catch (Exception $e) {
             Log::error('Check-out Error: ' . $e->getMessage(), ['exception' => $e]);
             return back()->with('error', 'An unexpected error occurred. Please try again later.');
         }
     }
-    
+
+    // **Make the api Clockout**
+    public function clockoutt()
+    {
+        try {
+            $now = Carbon::now('Asia/Manila');
+            $dateToday = $now->toDateString();
+            $dateYesterday = $now->copy()->subDay()->toDateString();
+
+            // Retrieve the most recent timeIn record without a timeOut
+            $timeIn = $this->employeeAttendance()
+                ->where(function ($query) use ($dateToday, $dateYesterday) {
+                    $query->whereDate('date', $dateToday)
+                        ->orWhereDate('date', $dateYesterday);
+                })
+                ->whereNull('timeOut')
+                ->latest('timeIn')
+                ->first();
+
+            if (!$timeIn) {
+                return response()->json(['status' => 'error', 'message' => "You don't have a time-in record. Please time in first."]);
+            }
+
+            // Record the timeOut
+            $timeOut = $now->format('h:i:s A');
+
+            // Parse shift start and end times
+            $shiftStart = Carbon::parse($timeIn->timeIn, 'Asia/Manila');
+            $shiftEnd = Carbon::parse($timeOut, 'Asia/Manila');
+
+            // Adjust timeOut if it's past midnight (i.e., next day)
+            if ($shiftEnd->lt($shiftStart)) {
+                $shiftEnd->addDay();
+            }
+
+            // Define night shift period
+            $nightShiftStartToday = Carbon::parse('22:00:00', 'Asia/Manila'); // 10:00 PM today
+            $nightShiftEndNextDay = Carbon::parse('06:00:00', 'Asia/Manila')->addDay(); // 6:00 AM the next day
+
+            // Calculate overlap with night shift
+            $night_diff_seconds = 0;
+
+            // Ensure shift intersects with the night shift period
+            if ($shiftStart <= $nightShiftEndNextDay && $shiftEnd >= $nightShiftStartToday) {
+                // Determine the actual start of the night differential within the shift
+                $nightStart = $shiftStart->max($nightShiftStartToday);
+                $nightEnd = $shiftEnd->min($nightShiftEndNextDay);
+
+                // Calculate the duration of the overlap in seconds
+                $night_diff_seconds = $nightEnd->diffInSeconds($nightStart);
+            }
+
+            // Convert night differential seconds to HH:MM:SS format
+            $hours = floor($night_diff_seconds / 3600);
+            $minutes = floor(($night_diff_seconds % 3600) / 60);
+            $seconds = $night_diff_seconds % 60;
+            $night_diff_hours = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+
+            // Save night_diff_hours to the database
+            $timeIn->update([
+                'timeOut' => $timeOut,
+                'night_diff_hours' => $night_diff_hours,
+            ]);
+
+            return response()->json(['status' => 'success', 'message' => 'You have successfully timed out. Thank you for your hard work!']);
+
+        } catch (Exception $e) {
+            Log::error('Check-out Error: ' . $e->getMessage(), ['exception' => $e]);
+            return response()->json(['status' => 'error', 'message' => 'An unexpected error occurred. Please try again later.']);
+        }
+    }
+
     public function checkForMissedCheckOuts()
     {
         // Get yesterday's date

@@ -27,11 +27,12 @@ class AttendanceReportController extends Controller
         $year = $request->get('year', date('Y'));
         $department = $request->get('department');
         $date = $request->get('date'); // Keep single date search
-        $startDate = $request->get('start_date'); 
-        $endDate = $request->get('end_date'); 
-    
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+
         // Query users with their attendance records filtered by date range, specific date, and optionally department
         $usersQuery = User::query()
+            ->where('status', 'active')
             ->with(['employeeAttendance' => function ($query) use ($startDate, $endDate, $date, $month, $year, $department) {
                 // Filter by date range if both start_date and end_date are provided
                 if ($startDate && $endDate) {
@@ -43,7 +44,7 @@ class AttendanceReportController extends Controller
                     // Otherwise, filter by the selected month and year
                     $query->whereMonth('date', $month)->whereYear('date', $year);
                 }
-    
+
                 if ($department) {
                     $query->whereHas('user', function ($query) use ($department) {
                         $query->where('department', $department);
@@ -54,12 +55,12 @@ class AttendanceReportController extends Controller
             ->when($employeeName, function ($query) use ($employeeName) {
                 // Split the input into parts
                 $names = explode(' ', $employeeName);
-            
+
                 // If the input contains more than one part, assume the last part is the last name
                 if (count($names) > 1) {
                     $lName = array_pop($names); // Last part as the last name
                     $fName = implode(' ', $names); // Combine the remaining parts as the first name
-            
+
                     // Check for exact match of combined fName and lName
                     $query->where(function ($query) use ($fName, $lName) {
                         $query->where('fName', 'like', '%' . $fName . '%')
@@ -73,17 +74,17 @@ class AttendanceReportController extends Controller
                     });
                 }
             });
-    
+
         // Apply department filter directly on the users query
         if ($department) {
             $usersQuery->where('department', $department);
         }
-    
+
         $users = $usersQuery->orderBy('fName')->orderBy('lName')->get();
-    
+
         // Fetch distinct departments for the dropdown filter
         $departments = User::select('department')->distinct()->get();
-    
+
         return view('admin.attendance.index', [
             'users' => $users,
             'month' => $month,
@@ -147,7 +148,7 @@ class AttendanceReportController extends Controller
             return response()->json($request);
         }
     }
- 
+
     private function getMonthNumber($monthName)
     {
         $monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -165,17 +166,17 @@ class AttendanceReportController extends Controller
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
         $cutOff = $request->input('cut_off');
-    
+
         // Initialize the query
         $data = ApprovedAttendance::query();
-    
+
         // If no status is selected, default to showing pending requests
         if (empty($status)) {
             $data->where('status', 'Pending');
         }
-    
+
         if ($user->isAdmin() || $user->isHR()) {
-            
+
             $pendingCount = ApprovedAttendance::where('status', 'Pending')->count();
             $approvedCount = ApprovedAttendance::where('status', 'Approved')->count();
             $declinedCount = ApprovedAttendance::where('status', 'Declined')->count();
@@ -187,7 +188,7 @@ class AttendanceReportController extends Controller
                       ->where('role_as', '!=', User::ROLE_ADMIN) // Not Admin
                       ->where('id', '!=', $user->id); // Not their own requests
             });
-    
+
             $pendingCount = ApprovedAttendance::where('status', 'Pending')
                                 ->whereHas('user', function ($query) use ($user) {
                                     $query->where('department', $user->department)
@@ -195,7 +196,7 @@ class AttendanceReportController extends Controller
                                           ->where('role_as', '!=', User::ROLE_ADMIN) // Not Admin
                                           ->where('id', '!=', $user->id); // Not their own requests
                                 })->count();
-    
+
             $approvedCount = ApprovedAttendance::where('status', 'Approved')
                                 ->whereHas('user', function ($query) use ($user) {
                                     $query->where('department', $user->department)
@@ -212,13 +213,13 @@ class AttendanceReportController extends Controller
                                           ->where('id', '!=', $user->id); // Not their own requests
                                 })->count();
         } else {
-           
+
             $data->where('users_id', $user->id);
-    
+
             $pendingCount = ApprovedAttendance::where('status', 'Pending')
                                 ->where('users_id', $user->id)
                                 ->count();
-    
+
             $approvedCount = ApprovedAttendance::where('status', 'Approved')
                                 ->where('users_id', $user->id)
                                 ->count();
@@ -226,7 +227,7 @@ class AttendanceReportController extends Controller
                                 ->where('users_id', $user->id)
                                 ->count();
         }
-    
+
         // Apply search filters
         if (!empty($searchInput)) {
             $names = explode(' ', $searchInput); // Split input by space
@@ -248,11 +249,11 @@ class AttendanceReportController extends Controller
         if (!empty($cutOff)) {
             $data->where('cut_off', 'like', "%$cutOff%");
         }
-    
+
         if (!empty($status)) {
             $data->where('status', 'like', "%$status%");
         }
-    
+
         // Apply date range filter on start_date
         if (!empty($startDate) && !empty($endDate)) {
             $data->where(function($query) use ($startDate, $endDate) {
@@ -264,31 +265,31 @@ class AttendanceReportController extends Controller
                       });
             });
         }
-    
+
         $attendance = $data->get();
-    
+
         return view('admin.timesheet.timesheet', compact('attendance', 'pendingCount', 'user', 'approvedCount', 'declinedCount'));
     }
 
     public function approve($id)
     {
         $att = ApprovedAttendance::findOrFail($id);
-    
+
         // Log the attendance data
         Log::info('Attendance Data', [
             'cutoff' => $att->cut_off,
             'start_date' => $att->start_date,
             'end_date' => $att->end_date,
         ]);
-    
+
         $user = $att->user;
         $att->status = 'Approved';
         $att->approved_by = auth()->user()->id;
         $att->save();
-    
+
         // Notify the user
         $user->notify(new AttendanceApprovedNotification($att));
-    
+
         return redirect()->back()->with('success', 'Timesheet Approved');
     }
 
@@ -296,10 +297,10 @@ class AttendanceReportController extends Controller
     {
         $att = ApprovedAttendance::findOrFail($id);
         $user = $att->user;
-    
+
         $att->status = 'Declined';
         $att->save();
-    
+
         Alert::success('Attendance Declined');
         return redirect()->back();
     }
@@ -319,7 +320,7 @@ class AttendanceReportController extends Controller
         Alert::success('Attendance Updated');
         return redirect()->back();
     }
-    
+
     public function destroyAttendance($id)
     {
         $appr = ApprovedAttendance::findOrFail($id);
@@ -333,18 +334,18 @@ class AttendanceReportController extends Controller
     public function viewTimesheet(Request $request, $id)
     {
         $att = ApprovedAttendance::findOrFail($id);
-    
+
         $employeeName = $request->input('employee_name');
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
         $cutOff = $request->input('cut_off');
-    
+
         $query = EmployeeAttendance::where('users_id', $att->users_id);
-    
+
         if ($startDate) {
             $query->whereDate('date', '>=', $startDate);
         }
-    
+
         if ($endDate) {
             $query->whereDate('date', '<=', $endDate);
         }
@@ -353,7 +354,7 @@ class AttendanceReportController extends Controller
 
         $totalLateSeconds = 0;
         $totalSeconds = 0;
-    
+
         foreach ($attendanceRecords as $attendance) {
             // Calculate total work time
             $timeTotal = explode(':', $attendance->timeTotal);
@@ -361,7 +362,7 @@ class AttendanceReportController extends Controller
                 $seconds = ($timeTotal[0] * 3600) + ($timeTotal[1] * 60) + $timeTotal[2];
                 $totalSeconds += $seconds;
             }
-        
+
             // Calculate total late time
             $totalLate = explode(':', $attendance->totalLate);
             if (count($totalLate) === 3 && is_numeric($totalLate[0]) && is_numeric($totalLate[1]) && is_numeric($totalLate[2])) {
@@ -369,18 +370,18 @@ class AttendanceReportController extends Controller
                 $totalLateSeconds += $seconds;
             }
         }
-        
+
         // Convert total seconds to hours:minutes:seconds format
         $totalHours = floor($totalSeconds / 3600);
         $totalMinutes = floor(($totalSeconds % 3600) / 60);
         $totalSeconds = $totalSeconds % 60;
         $totalTime = sprintf("%02d:%02d:%02d", $totalHours, $totalMinutes, $totalSeconds);
-        
+
         $totalLateHours = floor($totalLateSeconds / 3600);
         $totalLateMinutes = floor(($totalLateSeconds % 3600) / 60);
         $totalLateSeconds = $totalLateSeconds % 60;
         $totalLate = sprintf("%02d:%02d:%02d", $totalLateHours, $totalLateMinutes, $totalLateSeconds);
-        
+
         return view('admin.timesheet.viewtimesheet', [
             'att' => $att,
             'attendanceRecords' => $attendanceRecords,
@@ -388,7 +389,7 @@ class AttendanceReportController extends Controller
             'total' => $totalTime,
         ]);
     }
-    
+
 
     // ATTENDANCETABLE EDIT/UPDATE
 
@@ -398,10 +399,10 @@ class AttendanceReportController extends Controller
         $month = $request->get('month', date('m'));
         $year = $request->get('year', date('Y'));
         $department = $request->get('department');
-        $date = $request->get('date', date('Y-m-d')); 
-        $startDate = $request->get('start_date'); 
-        $endDate = $request->get('end_date'); 
-    
+        $date = $request->get('date', date('Y-m-d'));
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+
         // Query users with their attendance records filtered by date range, specific date, and optionally department
         $usersQuery = User::query()
             ->with(['employeeAttendance' => function ($query) use ($startDate, $endDate, $date, $month, $year, $department) {
@@ -415,7 +416,7 @@ class AttendanceReportController extends Controller
                     // Otherwise, filter by the selected month and year
                     $query->whereMonth('date', $month)->whereYear('date', $year);
                 }
-    
+
                 if ($department) {
                     $query->whereHas('user', function ($query) use ($department) {
                         $query->where('department', $department);
@@ -426,12 +427,12 @@ class AttendanceReportController extends Controller
             ->when($employeeName, function ($query) use ($employeeName) {
                 // Split the input into parts
                 $names = explode(' ', $employeeName);
-            
+
                 // If the input contains more than one part, assume the last part is the last name
                 if (count($names) > 1) {
                     $lName = array_pop($names); // Last part as the last name
                     $fName = implode(' ', $names); // Combine the remaining parts as the first name
-            
+
                     // Check for exact match of combined fName and lName
                     $query->where(function ($query) use ($fName, $lName) {
                         $query->where('fName', 'like', '%' . $fName . '%')
@@ -445,18 +446,18 @@ class AttendanceReportController extends Controller
                     });
                 }
             });
-        
+
         // Apply department filter directly on the users query
         if ($department) {
             $usersQuery->where('department', $department);
         }
-    
+
         $users = $usersQuery->get();
-    
+
 
         // Fetch distinct departments for the dropdown filter
         $departments = User::select('department')->distinct()->get();
-    
+
         return view('admin.attendance.attendancetable', [
             'filteredData' => $users,
             'month' => $month,
@@ -465,22 +466,22 @@ class AttendanceReportController extends Controller
             'selectedEmployeeName' => $employeeName,
             'selectedDepartment' => $department,
 
-            'selectedDate' => $date, 
-            'selectedStartDate' => $startDate, 
-            'selectedEndDate' => $endDate, 
+            'selectedDate' => $date,
+            'selectedStartDate' => $startDate,
+            'selectedEndDate' => $endDate,
         ]);
     }
 
     public function updateTableAttendance(Request $request, $id)
     {
         $attupdate = EmployeeAttendance::findOrFail($id);
-    
+
         // Log changes
         $original = $attupdate->toArray();
         $changes = array_diff_assoc($request->only([
             'timeIn', 'breakIn', 'breakOut', 'timeOut', 'totalLate', 'totalHours'
         ]), $original);
-    
+
         if (!empty($changes)) {
             AttendanceEditHistory::create([
                 'attendance_id' => $id,
@@ -488,7 +489,7 @@ class AttendanceReportController extends Controller
                 'edited_by' => Auth::id(),
             ]);
         }
-    
+
         // Update the record
         $attupdate->timeIn = $request->input('timeIn');
         $attupdate->breakIn = $request->input('breakIn');
@@ -499,7 +500,7 @@ class AttendanceReportController extends Controller
         $attupdate->status = 'Edited';
         $attupdate->edited_by = Auth::id();
         $attupdate->save();
-    
+
         Alert::success('Attendance Updated');
         return redirect()->back();
     }
@@ -521,7 +522,7 @@ class AttendanceReportController extends Controller
 
         return response()->json(['history' => $history]);
     }
-    
+
 
     public function destroyTableAttendance($id)
     {

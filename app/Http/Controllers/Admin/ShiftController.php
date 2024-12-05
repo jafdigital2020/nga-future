@@ -24,39 +24,41 @@ class ShiftController extends Controller
         $department = $request->input('department');
         $departments = User::distinct()->pluck('department');
         $name = trim($request->input('name'));
-        $user = User::all();  
-        
+
+        $user = User::where('status', 'active')->get();
+
+
         // Generate an array of Carbon date instances based on the selected range
         $dates = collect([]);
         $period = CarbonPeriod::create($startDate, $endDate);
         foreach ($period as $date) {
             $dates->push($date);
         }
-        
+
         // Get distinct departments for filtering
         $departments = User::distinct()->pluck('department');
-        
+
         // Initialize the query to fetch users and their schedules
         $data = User::with(['shiftSchedule' => function ($query) use ($startDate, $endDate) {
             $query->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
         }]);
-    
+
         // Apply department filter if provided
         if ($department) {
             $data->where('department', 'like', "%$department%");
         }
-    
+
         // Apply name filtering if provided
         if ($name) {
             $data->where(function ($query) use ($name) {
                 // Split the input into parts
                 $names = explode(' ', $name);
-                
+
                 if (count($names) > 1) {
                     // Assume last part is the last name, and the rest are first name parts
                     $lName = array_pop($names);
                     $fName = implode(' ', $names);
-    
+
                     // Handle search for both combined fName and lName
                     $query->where(function ($query) use ($fName, $lName) {
                         $query->whereRaw('LOWER(fName) like ?', ['%' . strtolower($fName) . '%'])
@@ -69,10 +71,10 @@ class ShiftController extends Controller
                 }
             });
         }
-    
+
         // Execute the query and get the users
         $users = $data->get(); // Ensure this is called after all where conditions
-    
+
         return view('admin.shiftschedule.daily', compact('dates', 'users', 'startDate', 'endDate', 'departments', 'user'));
     }
 
@@ -81,12 +83,12 @@ class ShiftController extends Controller
     {
         // Validate department input
         $department = $request->input('department');
-    
+
         // If department is not selected, return an error response
         if ($department === null) {
-            return response()->json([], 400); 
+            return response()->json([], 400);
         }
-    
+
         // Check if the selected department is "all"
         if ($department === 'all') {
             // Get all employees
@@ -95,10 +97,10 @@ class ShiftController extends Controller
             // Get employees for the specific department
             $employees = User::where('department', $department)->get(['id', 'name']);
         }
-    
+
         return response()->json($employees);
     }
-    
+
 
     public function shiftList()
     {
@@ -128,7 +130,7 @@ class ShiftController extends Controller
                 'tag' => 'nullable|string|max:255',
                 'note' => 'nullable|string|max:500',
             ]);
-    
+
             // Create the shift
             Shift::create([
                 'shift_name' => $request->shift_name,
@@ -144,17 +146,17 @@ class ShiftController extends Controller
                 'tag' => $request->tag,
                 'note' => $request->note,
             ]);
-    
+
             return redirect()->back()->with('success', 'Shift added successfully!');
-        
+
         } catch (QueryException $e) {
             // Handle database errors
             return redirect()->back()->with('error', 'Database error: ' . $e->getMessage());
-        
+
         } catch (ValidationException $e) {
             // Handle validation errors
             return redirect()->back()->withErrors($e->validator)->withInput();
-    
+
         } catch (Exception $e) {
             // Handle any other errors
             return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage());
@@ -166,7 +168,7 @@ class ShiftController extends Controller
         // Validate department input
         $department = $request->input('department');
         if (!$department) {
-            return response()->json([], 400); 
+            return response()->json([], 400);
         }
 
         $employees = User::where('department', $department)->get(['id', 'name']);
@@ -202,40 +204,40 @@ class ShiftController extends Controller
         try {
             // Check if the recurring option is selected
             $isRecurring = $request->recurring ? true : false;
-            
+
             // Get selected weekdays from checkboxes
             $selectedDays = $request->input('days'); // e.g., ['monday', 'tuesday', 'wednesday']
-            
+
             // Loop through each user
             foreach ($request->users_id as $userId) {
                 // Retrieve the user's first and last name
                 $user = User::find($userId);
                 $userFullName = $user->fName . ' ' . $user->lName;
-        
+
                 if ($selectedDays && !$isRecurring) {
                     // If specific weekdays are selected (e.g., Monday, Tuesday, Wednesday)
                     // Define a start date and end date or number of days (for example, assign for 30 days)
                     $startDate = Carbon::now();
                     $endDate = $startDate->copy()->addDays(30); // Assign for the next 30 days
-    
+
                     // Loop through the range of dates
                     for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
                         // Get the day of the week for the current date
                         $dayOfWeek = strtolower($date->format('l')); // Get day of the week in lowercase (e.g., 'monday')
-    
+
                         // If the current day of the week is in the selected days, create a schedule
                         if (in_array($dayOfWeek, $selectedDays)) {
                             $formattedDate = $date->format('Y-m-d');
-                            
+
                             // Check if shift schedule already exists for the user on the date
                             $existingSchedule = ShiftSchedule::where('users_id', $userId)
                                 ->where('date', $formattedDate)
                                 ->first();
-    
+
                             if ($existingSchedule) {
                                 continue; // Skip this date if the schedule already exists
                             }
-    
+
                             // Proceed to create shift schedule if no existing schedule found
                             if ($request->flexibleTime) {
                                 // Create a flexible shift schedule
@@ -248,7 +250,7 @@ class ShiftController extends Controller
                                     'date' => $formattedDate,
                                     'break_time' => $request->break_time,
                                     'allowedHours' => $request->allowedHours,
-                                    'shift_id' => $request->input('shift_id'), 
+                                    'shift_id' => $request->input('shift_id'),
                                     'recurring' => false, // Not recurring
                                 ]);
                             } else {
@@ -256,7 +258,7 @@ class ShiftController extends Controller
                                 $shiftStart = Carbon::parse($request->shiftStart)->format('H:i:s');
                                 $lateThreshold = Carbon::parse($request->lateThreshold)->format('H:i:s');
                                 $shiftEnd = Carbon::parse($request->shiftEnd)->format('H:i:s');
-    
+
                                 // Create a non-flexible shift schedule
                                 ShiftSchedule::create([
                                     'users_id' => $userId,
@@ -266,7 +268,7 @@ class ShiftController extends Controller
                                     'date' => $formattedDate,
                                     'break_time' => $request->break_time,
                                     'allowedHours' => $request->allowedHours,
-                                    'shift_id' => $request->input('shift_id'),  
+                                    'shift_id' => $request->input('shift_id'),
                                     'isFlexibleTime' => false,
                                     'recurring' => false, // Not recurring
                                 ]);
@@ -276,7 +278,7 @@ class ShiftController extends Controller
                 } else {
                     // If not recurring and no specific weekdays selected, use the provided dates
                     $dates = explode(',', $request->input('dates')[0]);
-    
+
                     // Loop through each date
                     foreach ($dates as $date) {
                         try {
@@ -284,16 +286,16 @@ class ShiftController extends Controller
                         } catch (\Exception $e) {
                             return redirect()->back()->with('error', 'Invalid date format: ' . $date);
                         }
-    
+
                         // Check if shift schedule already exists for the user on the date
                         $existingSchedule = ShiftSchedule::where('users_id', $userId)
                             ->where('date', $formattedDate)
                             ->first();
-    
+
                         if ($existingSchedule) {
                             return redirect()->back()->with('error', 'Shift schedule already exists for ' . $userFullName );
                         }
-    
+
                         // Proceed to create shift schedule if no existing schedule found
                         if ($request->flexibleTime) {
                             // Create a flexible shift schedule
@@ -306,7 +308,7 @@ class ShiftController extends Controller
                                 'date' => $formattedDate,
                                 'break_time' => $request->break_time,
                                 'allowedHours' => $request->allowedHours,
-                                'shift_id' => $request->input('shift_id'), 
+                                'shift_id' => $request->input('shift_id'),
                                 'recurring' => false,
                                 'selected_days' => json_encode($selectedDays),
                             ]);
@@ -315,7 +317,7 @@ class ShiftController extends Controller
                             $shiftStart = Carbon::parse($request->shiftStart)->format('H:i:s');
                             $lateThreshold = Carbon::parse($request->lateThreshold)->format('H:i:s');
                             $shiftEnd = Carbon::parse($request->shiftEnd)->format('H:i:s');
-    
+
                             // Create a non-flexible shift schedule
                             ShiftSchedule::create([
                                 'users_id' => $userId,
@@ -325,7 +327,7 @@ class ShiftController extends Controller
                                 'date' => $formattedDate,
                                 'break_time' => $request->break_time,
                                 'allowedHours' => $request->allowedHours,
-                                'shift_id' => $request->input('shift_id'),  
+                                'shift_id' => $request->input('shift_id'),
                                 'isFlexibleTime' => false,
                                 'recurring' => false,
                                 'selected_days' => json_encode($selectedDays),
@@ -334,7 +336,7 @@ class ShiftController extends Controller
                     }
                 }
             }
-    
+
             return redirect()->back()->with('success', 'Shifts added successfully for selected users!');
         } catch (QueryException $e) {
             return redirect()->back()->with('error', 'Database error: ' . $e->getMessage());
@@ -344,8 +346,8 @@ class ShiftController extends Controller
             return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage());
         }
     }
-    
-    
+
+
     public function dailyScheduling(Request $request)
     {
         try {
@@ -356,10 +358,10 @@ class ShiftController extends Controller
                     $shift->lateThreshold = null;
                     $shift->shiftEnd = null;
                     $shift->isFlexibleTime = true;
-                    $shift->date = $request->date; 
+                    $shift->date = $request->date;
                     $shift->break_time = $request->break_time;
                     $shift->allowedHours = $request->allowedHours;
-                    $shift->shift_id = $request->shift_id; 
+                    $shift->shift_id = $request->shift_id;
                     $shift->save();
 
                     return redirect()->back()->with('success', 'Added Schedule with Flexible Time');
@@ -379,7 +381,7 @@ class ShiftController extends Controller
                         'allowedHours' => $request->allowedHours,
                         'date' => $request->date,
                         'shift_id' => $request->shift_id,
-                        'isFlexibleTime' => false, 
+                        'isFlexibleTime' => false,
                     ]);
 
                     return redirect()->back()->with('success', 'Shift added successfully!');
@@ -389,11 +391,11 @@ class ShiftController extends Controller
                 } catch (QueryException $e) {
                     // Handle database errors
                     return redirect()->back()->with('error', 'Database error: ' . $e->getMessage());
-                
+
                 } catch (ValidationException $e) {
                     // Handle validation errors
                     return redirect()->back()->withErrors($e->validator)->withInput();
-            
+
                 } catch (Exception $e) {
                     // Handle any other errors
                     return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage());
@@ -405,7 +407,7 @@ class ShiftController extends Controller
         try {
             // Find the shift schedule by ID
             $shift = ShiftSchedule::findOrFail($id);
-    
+
             // Update the shift schedule with the form inputs
             $shift->shiftStart = $request->shiftStart ? Carbon::parse($request->shiftStart)->format('H:i:s') : null;
             $shift->lateThreshold = $request->lateThreshold ? Carbon::parse($request->lateThreshold)->format('H:i:s') : null;
@@ -414,10 +416,10 @@ class ShiftController extends Controller
             $shift->allowedHours = $request->allowedHours;
             $shift->date = $request->date;
             $shift->isFlexibleTime = $request->flexibleTime ? true : false;
-    
+
             // Save the updated shift schedule
             $shift->save();
-    
+
             return redirect()->back()->with('success', 'Shift updated successfully!');
         } catch (QueryException $e) {
             // Handle database errors
@@ -455,14 +457,14 @@ class ShiftController extends Controller
         $request->validate([
             'user_id' => 'required|exists:users,id', // Ensure the user ID exists in the users table
         ]);
-    
+
         // Retrieve the user ID from the request
         $userId = $request->input('user_id');
-    
+
         try {
             // Delete all schedules associated with the user
             $deletedRows = ShiftSchedule::where('users_id', $userId)->delete();
-    
+
             // Redirect back with success message
             return redirect()->back()->with('success', "Successfully deleted $deletedRows schedules for the user.");
         } catch (\Exception $e) {
@@ -472,5 +474,5 @@ class ShiftController extends Controller
         }
     }
 
-    
+
 }

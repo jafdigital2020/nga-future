@@ -34,9 +34,9 @@ class DashboardController extends Controller
         $authUserId = $user->id;
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
-      // Retrieve the max breaks setting with a null check
-      $breakSettings = BreakSettings::first();
-      $maxBreaks = $breakSettings ? $breakSettings->max_breaks : 0;
+        // Retrieve the max breaks setting with a null check
+        $breakSettings = BreakSettings::first();
+        $maxBreaks = $breakSettings ? $breakSettings->max_breaks : 0;
 
         // Get today’s attendance record and decode the breaks
         $currentDate = Carbon::today()->toDateString();
@@ -120,8 +120,8 @@ class DashboardController extends Controller
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
 
-    // Fetch attendance data with status_code filter
-    $attendanceData = EmployeeAttendance::where('users_id', $authUserId)
+        // Fetch attendance data with status_code filter
+        $attendanceData = EmployeeAttendance::where('users_id', $authUserId)
         ->whereBetween('date', [$startDate, $endDate])
         ->whereIn('status_code', ['Active', 'Approved'])  // Add status_code filter
         ->select('date', 'timeIn', 'timeOut', 'timeTotal', 'totalLate')
@@ -285,7 +285,7 @@ class DashboardController extends Controller
 
             $timeIn = Carbon::now('Asia/Manila');
 
-        // Get user's shift schedule
+            // Get user's shift schedule
             $shiftSchedule = ShiftSchedule::where('users_id', auth()->user()->id)
                 ->where('date', $currentDate)
                 ->first();
@@ -295,7 +295,7 @@ class DashboardController extends Controller
             }
 
 
-        // Determine status and total late based on shift times if not flexible
+            // Determine status and total late based on shift times if not flexible
             $status = 'On Time';
             $totalLate = '00:00:00';
             $timeEnd = null;

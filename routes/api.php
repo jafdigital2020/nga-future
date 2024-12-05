@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Employee\api\AttendanceController;
+use App\Http\Controllers\Employee\api\InformationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,12 +25,22 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('/login', [LoginController::class, 'apiLogin']);
 
+
+
+
 // EMP PROTECTED ROUTES
 Route::middleware(['auth:sanctum'])->prefix('clock')->group(function () {
     // Clock In
-    Route::post('timein', [AttendanceController::class, 'store']);
+    Route::post('in', [AttendanceController::class, 'store']);
     // Clock Out
-    Route::post('timein', [AttendanceController::class, 'store']);
+    Route::post('out', [AttendanceController::class, 'clockout']);
 
 });
+
+//attendance
+Route::get('/gettodayattendance', [AttendanceController::class, 'getattendance']);
+
+Route::get('/getprofileinfomation', [InformationController::class, 'getProfileInformation']);
+
+
 

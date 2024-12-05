@@ -19,29 +19,29 @@ class AssetController extends Controller
         $statuses = Asset::select('status')->distinct()->pluck('status');
         $models = Asset::select('model')->distinct()->pluck('model');
         $manufacturers = Asset::select('manufacturer')->distinct()->pluck('manufacturer');
-    
+
         // Build the base query for assets
         $query = Asset::query();
-    
+
         // Apply filters if they are set in the request
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-    
+
         if ($request->filled('model')) {
             $query->where('model', $request->model);
         }
-    
+
         if ($request->filled('manufacturer')) {
             $query->where('manufacturer', $request->manufacturer);
         }
-    
+
         // Execute the query to get the filtered results
         $assets = $query->get();
-    
+
         return view('admin.asset.asset', compact('assets', 'statuses', 'models', 'manufacturers'));
     }
-    
+
 
     public function assetStore(Request $request)
     {
@@ -56,7 +56,7 @@ class AssetController extends Controller
             'status' => 'required|in:0,1,2', // 0 = Available, 1 = Deployed, 2 = Returned
             'value' => 'nullable|numeric',
         ]);
-    
+
         try {
             // Map status codes to labels if needed
             $statusMapping = [
@@ -64,7 +64,7 @@ class AssetController extends Controller
                 '1' => 'Deployed',
                 '2' => 'Returned',
             ];
-    
+
             // Create a new asset with validated data
             $asset = Asset::create([
                 'name' => $validatedData['name'],
@@ -76,9 +76,9 @@ class AssetController extends Controller
                 'status' => $statusMapping[$validatedData['status']],
                 'value' => $validatedData['value'] ?? null,
             ]);
-    
+
             return redirect()->back()->with('success', 'Asset created successfully');
-    
+
         } catch (\Exception $e) {
             Log::error('Error creating asset: '.$e->getMessage());
             return redirect()->back()->with('error', 'An error occurred while creating the asset. Please try again.');
@@ -97,7 +97,7 @@ class AssetController extends Controller
             'status.required' => 'The status is required.',
             'value.numeric' => 'The value must be a valid number.',
         ];
-    
+
         // Validation rules
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
@@ -109,17 +109,17 @@ class AssetController extends Controller
             'status' => 'required|string|in:Available,Deployed,Returned',
             'value' => 'nullable|numeric|min:0',
         ], $messages);
-    
+
         // Check if validation fails
         if ($validator->fails()) {
             // Redirect back with error messages
             return redirect()->back()->withErrors($validator)->withInput();
         }
-    
+
         try {
             // Find the asset by ID
             $asset = Asset::findOrFail($id);
-    
+
             // Update asset fields with validated data
             $asset->name = $request->input('name');
             $asset->purchase_date = $request->input('purchase_date');
@@ -129,19 +129,19 @@ class AssetController extends Controller
             $asset->condition = $request->input('condition');
             $asset->status = $request->input('status');
             $asset->value = $request->input('value');
-    
+
             // Save the updated asset
             $asset->save();
-    
+
             return redirect()->back()->with('success', 'Asset updated successfully.');
-    
+
         } catch (\Exception $e) {
             // Log the error and redirect back with a failure message
             Log::error('Failed to update asset: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to update asset: ' . $e->getMessage());
         }
     }
-    
+
     public function assetDestroy($id)
     {
         $asset = Asset::findOrFail($id);
@@ -150,13 +150,14 @@ class AssetController extends Controller
 
         return redirect()->back()->with('success', 'Asset deleted sucessfully!');
     }
-    
+
     // ** USER ASSET ASSIGN ** //
 
     public function userAsset()
     {
-        $assets = Asset::where('status', 'Available')->get(); 
-        $users = User::all(); 
+        $assets = Asset::where('status', 'Available')->get();
+        // $users = User::all();
+        $users = User::where('status', 'active')->get();
         $assignedAssets = UserAsset::with('asset', 'user')->whereNull('return_date')->get();
 
         $availableAssets = Asset::where('status', 'Available')
@@ -171,7 +172,7 @@ class AssetController extends Controller
             ->selectRaw('name, COUNT(*) as count')
             ->get();
 
-    
+
         return view('admin.asset.userasset', compact('assets', 'users', 'assignedAssets', 'availableAssets', 'deployedAssets'));
     }
 
@@ -183,15 +184,15 @@ class AssetController extends Controller
             'assignment_date' => 'required|date',
             'notes' => 'nullable|string',
         ]);
-    
+
         try {
             $asset = Asset::findOrFail($request->asset_id);
-    
+
             // Check if asset is available
             if ($asset->status !== 'Available') {
                 return redirect()->back()->with('error', 'Asset is not available for assignment.');
             }
-    
+
             // Create a new UserAsset record to link the asset to the user
             UserAsset::create([
                 'users_id' => $request->user_id,
@@ -199,13 +200,13 @@ class AssetController extends Controller
                 'assign_date' => $request->assignment_date,
                 'note' => $request->notes,
             ]);
-    
+
             // Update the asset status to "Deployed"
             $asset->status = 'Deployed';
             $asset->save();
-    
+
             return redirect()->back()->with('success', 'Asset assigned to user successfully.');
-    
+
         } catch (\Exception $e) {
             // Log the error with details for troubleshooting
             Log::error('Failed to assign asset', [
@@ -215,11 +216,11 @@ class AssetController extends Controller
                 'request_data' => $request->all(),
                 'trace' => $e->getTraceAsString()
             ]);
-    
+
             return redirect()->back()->with('error', 'Failed to assign asset: ' . $e->getMessage());
         }
     }
-    
+
     public function returnAsset($assetId)
     {
         try {

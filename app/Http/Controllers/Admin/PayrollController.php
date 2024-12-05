@@ -31,11 +31,11 @@ class PayrollController extends Controller
 {
     public function index()
     {
-        $users = User::all();
+        $users = User::where('status', 'active')->get();
         return view('admin.payroll.index', compact('users'));
     }
 
-    // ** Attendance Query Search Filter ** // 
+    // ** Attendance Query Search Filter ** //
 
     public function approvedTime(Request $request)
     {
@@ -44,42 +44,42 @@ class PayrollController extends Controller
         $cutoffPeriod = $request->input('cutoff_period'); // Get cutoff_period from request
         $status = $request->input('status', 'approved'); // Default to "approved" if no status is specified
         $selectedYear = $request->input('year', now()->year); // Get the year from the request or default to the current year
-    
+
         $data = ApprovedAttendance::query();
-    
+
         // Add filter for employee name if provided
         if ($employeeName) {
             $data->where('name', 'like', "%$employeeName%");
         }
-    
+
         // Add filter for department if provided
         if ($department) {
             $data->where('department', $department);
         }
-    
+
         // Add filter for status
         if ($status) {
             $data->where('status', $status);
         }
-    
+
         // Add filter for year if provided
         if ($selectedYear) {
             $data->where('year', $selectedYear);
         }
-    
+
         // Add filter for cutoff_period if provided
         if ($cutoffPeriod) {
             $data->where('cut_off', $cutoffPeriod); // Search the cut_off column
         }
-    
+
         $approved = $data->get();
-    
+
         // Assuming you have a list of departments to pass to the view
         $departments = User::select('department')->distinct()->get();
-    
+
         // Assuming you have a list of possible statuses
         $statuses = ApprovedAttendance::select('status')->distinct()->get();
-    
+
         return view('admin.payroll.approve', compact('approved', 'departments', 'statuses', 'cutoffPeriod', 'status', 'selectedYear'));
     }
 
@@ -89,62 +89,62 @@ class PayrollController extends Controller
     //     try {
     //         $approvedAttendance = ApprovedAttendance::findOrFail($id);
     //         $user = $approvedAttendance->user;
- 
+
     //         // Otherwise, return the preview data
     //         // $monthlySalary = $user->mSalary; // I JUST ADJUST THIS BECAUSE I ADD HOURLY RATE SAME VARIABLE NAME BUT IT COMPUTES HOURLY RATE
     //            // $monthlySalary = $user->mSalary;
-    //            $hourlyRate = $user->hourly_rate; 
-    //            // $dailyRate = $monthlySalary / 22; 
-    //            $dailyRate = $hourlyRate * 8;    
+    //            $hourlyRate = $user->hourly_rate;
+    //            // $dailyRate = $monthlySalary / 22;
+    //            $dailyRate = $hourlyRate * 8;
     //            $monthlySalary = $dailyRate * 22;
     //            // $monthlySalary = $user->mSalary;
-    
+
     //         $formattedDailyRate = number_format($dailyRate, 2, '.', '');
     //         $formattedHourlyRate = number_format($hourlyRate, 2, '.', '');
-    
+
     //         $totalHours = $approvedAttendance->totalHours;
     //         list($hours, $minutes, $seconds) = explode(':', $totalHours);
     //         $totalHoursDecimal = $hours + ($minutes / 60) + ($seconds / 3600);
-    
+
     //         $overtimeHours = $approvedAttendance->approvedOvertime ?? '00:00:00';
     //         list($otHours, $otMinutes, $otSeconds) = explode(':', $overtimeHours);
     //         $overtimeHoursDecimal = $otHours + ($otMinutes / 60) + ($otSeconds / 3600);
-    
+
     //         $overtimeRate = $hourlyRate * 1.25;
     //         $overtimePay = $overtimeRate * $overtimeHoursDecimal;
-    
+
     //         // Fetch Deductions
     //         $userDeductions = UserDeduction::where('users_id', $user->id)
-    //         ->where('active', 1) 
+    //         ->where('active', 1)
     //         ->with('deductionList')
     //         ->get();
     //         $deductions = [];
     //         $totalDeductions = 0;
-    
+
     //         foreach ($userDeductions as $userDeduction) {
     //             $deductionName = $userDeduction->deductionList->name;
     //             $deductionValue = $userDeduction->deductionList->amount;
     //             $deductionType = $userDeduction->deductionList->type;
-    //             $deductionId = $userDeduction->deductionList->id; 
-    
+    //             $deductionId = $userDeduction->deductionList->id;
+
     //             $deductionAmount = ($deductionType === 'percentage') ? ($deductionValue / 100) * $monthlySalary : $deductionValue;
-    
+
     //             $deductions[] = [
     //                 'deduction_id' => $deductionId,
     //                 'name' => $deductionName,
     //                 'amount' => number_format($deductionAmount, 2),
     //             ];
-    
+
     //             $totalDeductions += $deductionAmount;
     //         }
-    
+
     //         // Fetch Loans
     //         $loans = Loan::where('users_id', $user->id)
     //         ->where('status', 'Active')
     //         ->get();
     //         $totalLoans = 0;
     //         $loanDetails = [];
-    
+
     //         foreach ($loans as $loan) {
     //             $totalLoans += $loan->payable_amount_per_cutoff;
     //             $loanDetails[] = [
@@ -153,31 +153,31 @@ class PayrollController extends Controller
     //                 'amount' => number_format($loan->payable_amount_per_cutoff, 2),
     //             ];
     //         }
-    
+
     //         // Fetch Earnings
     //         $userEarnings = UserEarning::where('users_id', $user->id)
-    //         ->where('active', 1) 
+    //         ->where('active', 1)
     //         ->with('earningList')
     //         ->get();
     //         $earnings = [];
     //         $totalEarnings = 0;
-    
+
     //         foreach ($userEarnings as $userEarning) {
     //             $earningName = $userEarning->earningList->name;
     //             $earningAmount = $userEarning->earningList->amount;
     //             $earningId = $userEarning->earningList->id;
-    
+
     //             $earnings[] = [
     //                 'earning_id' => $earningId,
     //                 'name' => $earningName,
     //                 'amount' => number_format($earningAmount, 2),
     //             ];
-    
+
     //             $totalEarnings += $earningAmount;
     //         }
-    
+
     //         $totalEarnings += $overtimePay;
-    
+
     //         $paidLeaveDays = $approvedAttendance->paidLeave ?? 0;
     //         $paidLeaveAmount = $paidLeaveDays * $dailyRate;
     //         $totalEarnings += $paidLeaveAmount;
@@ -190,7 +190,7 @@ class PayrollController extends Controller
 
     //         // Calculate net pay
     //         $netPay = $basicPay + $totalEarnings - $totalDeductions - $totalLoans;
-    
+
     //         // Return the preview data
     //         return response()->json([
     //             'basicPay' => number_format($basicPay, 2),
@@ -205,7 +205,7 @@ class PayrollController extends Controller
     //             'overtimePay' => number_format($overtimePay, 2),
     //             'paidLeaveAmount' => number_format($paidLeaveAmount, 2),
     //         ]);
-    
+
     //     } catch (\Exception $e) {
     //         return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
     //     }
@@ -216,27 +216,27 @@ class PayrollController extends Controller
         try {
             $approvedAttendance = ApprovedAttendance::findOrFail($id);
             $user = $approvedAttendance->user;
- 
+
             // Otherwise, return the preview data
             // $monthlySalary = $user->mSalary; // I JUST ADJUST THIS BECAUSE I ADD HOURLY RATE SAME VARIABLE NAME BUT IT COMPUTES HOURLY RATE
                // $monthlySalary = $user->mSalary;
-               $hourlyRate = $user->hourly_rate; 
-               // $dailyRate = $monthlySalary / 22; 
-               $dailyRate = $hourlyRate * 8;    
+               $hourlyRate = $user->hourly_rate;
+               // $dailyRate = $monthlySalary / 22;
+               $dailyRate = $hourlyRate * 8;
                $monthlySalary = $dailyRate * 22;
                // $monthlySalary = $user->mSalary;
-    
+
             $formattedDailyRate = number_format($dailyRate, 2, '.', '');
             $formattedHourlyRate = number_format($hourlyRate, 2, '.', '');
-    
+
             $totalHours = $approvedAttendance->totalHours;
             list($hours, $minutes, $seconds) = explode(':', $totalHours);
             $totalHoursDecimal = $hours + ($minutes / 60) + ($seconds / 3600);
-    
+
             $overtimeHours = $approvedAttendance->approvedOvertime ?? '00:00:00';
             list($otHours, $otMinutes, $otSeconds) = explode(':', $overtimeHours);
             $overtimeHoursDecimal = $otHours + ($otMinutes / 60) + ($otSeconds / 3600);
-    
+
             $overtimeRate = $hourlyRate * 1.25;
             $overtimePay = $overtimeRate * $overtimeHoursDecimal;
 
@@ -269,46 +269,46 @@ class PayrollController extends Controller
                     }
                 }
             }
-    
+
             // Holiday Pay Computation for Special Holidays
             $specialHolidayPay = $specialHolidayHours * $hourlyRate * 1.3; // 130% pay for hours worked
-    
+
             // Deduct holiday hours from total hours to compute regular hours
             $regularHours = $totalHoursDecimal - ($regularHolidayHours + $specialHolidayHours);
             $regularPay = $regularHours * $hourlyRate;
-    
+
             // Fetch Deductions
             $userDeductions = UserDeduction::where('users_id', $user->id)
-            ->where('active', 1) 
+            ->where('active', 1)
             ->with('deductionList')
             ->get();
             $deductions = [];
             $totalDeductions = 0;
-    
+
             foreach ($userDeductions as $userDeduction) {
                 $deductionName = $userDeduction->deductionList->name;
                 $deductionValue = $userDeduction->deductionList->amount;
                 $deductionType = $userDeduction->deductionList->type;
-                $deductionId = $userDeduction->deductionList->id; 
-    
+                $deductionId = $userDeduction->deductionList->id;
+
                 $deductionAmount = ($deductionType === 'percentage') ? ($deductionValue / 100) * $monthlySalary : $deductionValue;
-    
+
                 $deductions[] = [
                     'deduction_id' => $deductionId,
                     'name' => $deductionName,
                     'amount' => number_format($deductionAmount, 2),
                 ];
-    
+
                 $totalDeductions += $deductionAmount;
             }
-    
+
             // Fetch Loans
             $loans = Loan::where('users_id', $user->id)
             ->where('status', 'Active')
             ->get();
             $totalLoans = 0;
             $loanDetails = [];
-    
+
             foreach ($loans as $loan) {
                 $totalLoans += $loan->payable_amount_per_cutoff;
                 $loanDetails[] = [
@@ -317,31 +317,31 @@ class PayrollController extends Controller
                     'amount' => number_format($loan->payable_amount_per_cutoff, 2),
                 ];
             }
-    
+
             // Fetch Earnings
             $userEarnings = UserEarning::where('users_id', $user->id)
-            ->where('active', 1) 
+            ->where('active', 1)
             ->with('earningList')
             ->get();
             $earnings = [];
             $totalEarnings = 0;
-    
+
             foreach ($userEarnings as $userEarning) {
                 $earningName = $userEarning->earningList->name;
                 $earningAmount = $userEarning->earningList->amount;
                 $earningId = $userEarning->earningList->id;
-    
+
                 $earnings[] = [
                     'earning_id' => $earningId,
                     'name' => $earningName,
                     'amount' => number_format($earningAmount, 2),
                 ];
-    
+
                 $totalEarnings += $earningAmount;
             }
-    
+
             $totalEarnings += $overtimePay + $regularHolidayPay + $specialHolidayPay;
-    
+
             $paidLeaveDays = $approvedAttendance->paidLeave ?? 0;
             $paidLeaveAmount = $paidLeaveDays * $dailyRate;
             $totalEarnings += $paidLeaveAmount;
@@ -351,7 +351,7 @@ class PayrollController extends Controller
 
             // Calculate net pay
             $netPay = $grossPay - $totalDeductions - $totalLoans;
-    
+
             // Return the preview data
             return response()->json([
                 'basicPay' => number_format($regularPay, 2),
@@ -368,7 +368,7 @@ class PayrollController extends Controller
                 'regularHolidayPay' => number_format($regularHolidayPay, 2),
                 'specialHolidayPay' => number_format($specialHolidayPay, 2),
             ]);
-    
+
         } catch (\Exception $e) {
             return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
         }
@@ -380,19 +380,19 @@ class PayrollController extends Controller
         try {
             $approvedAttendance = ApprovedAttendance::findOrFail($id);
             $user = $approvedAttendance->user;
-    
+
             // Calculate Daily and Hourly Rates
                // $monthlySalary = $user->mSalary;
-               $hourlyRate = $user->hourly_rate; 
-               // $dailyRate = $monthlySalary / 22; 
-               $dailyRate = $hourlyRate * 8;    
+               $hourlyRate = $user->hourly_rate;
+               // $dailyRate = $monthlySalary / 22;
+               $dailyRate = $hourlyRate * 8;
                $monthlySalary = $dailyRate * 22;
                // $monthlySalary = $user->mSalary;
-               
+
             // Format daily and hourly rates
             $formattedDailyRate = number_format($dailyRate, 2, '.', '');
             $formattedHourlyRate = number_format($hourlyRate, 2, '.', '');
-    
+
             // Validate input
             $validated = $request->validate([
                 'grossPay' => 'required|numeric',
@@ -406,28 +406,28 @@ class PayrollController extends Controller
                 'deductions.*' => 'nullable|numeric',
                 'deduction_names.*' => 'required|string', // Validate deduction names
                 'earning_names.*' => 'required|string',   // Validate earnings names
-                'loan_names.*' => 'required|string', 
+                'loan_names.*' => 'required|string',
                 'loans.*' => 'nullable|numeric',
                 'regularHolidayPay' => 'nullable|numeric',
                 'specialHolidayPay' => 'nullable|numeric',
             ]);
-    
+
             // Check if payroll already exists
             $existingPayroll = SalaryTable::where('users_id', $user->id)
                 ->where('month', $approvedAttendance->month)
                 ->where('cut_off', $approvedAttendance->cut_off)
                 ->first();
-    
+
             if ($existingPayroll) {
                 return response()->json(['error' => 'Payroll already exists for this user.'], 400);
             }
-    
+
             // deductions array
             $deductions = [];
             $deductionIds = $request->input('deduction_ids', []);
             $deductionNames = $request->input('deduction_names', []);
             $deductionAmounts = $request->input('deductions', []);
-    
+
             foreach ($deductionAmounts as $index => $amount) {
                 if (isset($deductionIds[$index]) && isset($deductionNames[$index])) {
                     $deductions[] = [
@@ -437,13 +437,13 @@ class PayrollController extends Controller
                     ];
                 }
             }
-    
+
             // earnings array
             $earnings = [];
             $earningIds = $request->input('earning_ids', []);
             $earningNames = $request->input('earning_names', []);
             $earningAmounts = $request->input('earnings', []);
-    
+
             foreach ($earningAmounts as $index => $amount) {
                 if (isset($earningIds[$index]) && isset($earningNames[$index])) {
                     $earnings[] = [
@@ -469,7 +469,7 @@ class PayrollController extends Controller
                     ];
                 }
             }
-    
+
             // Save to SalaryTable
             SalaryTable::create([
                 'users_id' => $user->id,
@@ -497,44 +497,44 @@ class PayrollController extends Controller
                 'special_holiday_pay' => $request->input('specialHolidayPay'),
                 'status' => 'Processed',
             ]);
-    
+
             // Mark as processed
             $approvedAttendance->status = 'Processed';
             $approvedAttendance->save();
-    
+
             return response()->json(['success' => 'Payroll processed successfully!']);
-    
+
         } catch (\Exception $e) {
             return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
         }
     }
-  
+
     // ** Seamless Process Payroll ** /
     public function processPayroll($approvedAttendanceId)
     {
         try {
             $approvedAttendance = ApprovedAttendance::find($approvedAttendanceId);
             $user = $approvedAttendance->user;
-    
+
             // Check if a record for this user with the same month and cut-off already exists
             $existingSalary = SalaryTable::where('users_id', $user->id)
                 ->where('month', $approvedAttendance->month)
                 ->where('cut_off', $approvedAttendance->cut_off)
                 ->first();
-    
+
             if ($existingSalary) {
                 return redirect()->back()->with(['error' => 'Payroll for this user has already been processed for the selected cut-off and month.']);
             }
-    
+
             // Calculate Daily and Hourly Rates
             $hourlyRate = floatval($user->hourly_rate);
             $dailyRate = $hourlyRate * 8; // Assuming 8 hours per day
             $monthlySalary = $dailyRate * 22; // Assuming 22 workdays in a month
-    
+
             // Format daily and hourly rates
             $formattedDailyRate = number_format($dailyRate, 2, '.', '');
             $formattedHourlyRate = number_format($hourlyRate, 2, '.', '');
-    
+
             // Convert total hours to decimal format
             $totalHours = $approvedAttendance->totalHours;
             if ($totalHours) {
@@ -543,7 +543,7 @@ class PayrollController extends Controller
             } else {
                 $totalHoursDecimal = 0.0; // Default to 0 if null or invalid
             }
-    
+
             // Convert overtime hours to decimal format
             $overtimeHours = $approvedAttendance->approvedOvertime ?? '00:00:00';
             if ($overtimeHours) {
@@ -552,15 +552,15 @@ class PayrollController extends Controller
             } else {
                 $overtimeHoursDecimal = 0.0; // Default to 0 if null or invalid
             }
-    
+
             // Fetch holiday hours
             $regularHolidayHours = floatval($approvedAttendance->regular_holiday_hours ?? 0);
             $specialHolidayHours = floatval($approvedAttendance->special_holiday_hours ?? 0);
-    
+
             // Holiday Pay Computation for Regular Holidays
             $regularHolidayDays = $user->holidays()->where('type', 'regular')->get();
             $regularHolidayPay = 0.0;
-    
+
             foreach ($regularHolidayDays as $holiday) {
                 if (
                     $holiday->holidayDate >= $approvedAttendance->start_date &&
@@ -582,18 +582,18 @@ class PayrollController extends Controller
                     }
                 }
             }
-    
+
             // Holiday Pay Computation for Special Holidays
             $specialHolidayPay = $specialHolidayHours * $hourlyRate * 1.3; // 130% pay for hours worked
-    
+
             // Deduct holiday hours from total hours to compute regular hours
             $regularHours = $totalHoursDecimal - ($regularHolidayHours + $specialHolidayHours);
             $regularPay = $regularHours * $hourlyRate;
-    
+
             // Compute Overtime Pay (1.25x the hourly rate)
             $overtimeRate = $hourlyRate * 1.25;
             $overtimePay = $overtimeRate * $overtimeHoursDecimal;
-    
+
             // Fetch Deductions
             $userDeductions = UserDeduction::where('users_id', $user->id)
                 ->where('active', 1)
@@ -601,34 +601,34 @@ class PayrollController extends Controller
                 ->get();
             $deductions = [];
             $totalDeductions = 0.0;
-    
+
             foreach ($userDeductions as $userDeduction) {
                 $deductionName = $userDeduction->deductionList->name;
                 $deductionValue = floatval($userDeduction->deductionList->amount);
                 $deductionType = $userDeduction->deductionList->type;
-    
+
                 if ($deductionType === 'percentage') {
                     $deductionAmount = ($deductionValue / 100) * $monthlySalary;
                 } else {
                     $deductionAmount = $deductionValue;
                 }
-    
+
                 $deductions[] = [
                     'deduction_id' => $userDeduction->deduction_id,
                     'name' => $deductionName,
                     'amount' => $deductionAmount,
                 ];
-    
+
                 $totalDeductions += $deductionAmount;
             }
-    
+
             // Fetch Loans
             $loans = Loan::where('users_id', $user->id)
                 ->where('status', 'Active')
                 ->get();
             $totalLoans = 0.0;
             $loanDetails = [];
-    
+
             foreach ($loans as $loan) {
                 $loanAmount = floatval($loan->payable_amount_per_cutoff);
                 $totalLoans += $loanAmount;
@@ -638,7 +638,7 @@ class PayrollController extends Controller
                     'amount' => $loanAmount,
                 ];
             }
-    
+
             // Fetch Dynamic Earnings
             $userEarnings = UserEarning::where('users_id', $user->id)
                 ->where('active', 1)
@@ -646,33 +646,33 @@ class PayrollController extends Controller
                 ->get();
             $earnings = [];
             $totalEarnings = 0.0;
-    
+
             foreach ($userEarnings as $userEarning) {
                 $earningName = $userEarning->earningList->name;
                 $earningAmount = floatval($userEarning->earningList->amount);
-    
+
                 $earnings[] = [
                     'earning_id' => $userEarning->earning_id,
                     'name' => $earningName,
                     'amount' => $earningAmount,
                 ];
-    
+
                 $totalEarnings += $earningAmount;
             }
-    
+
             // Add overtime and holiday pay to total earnings
             $totalEarnings += $overtimePay + $regularHolidayPay + $specialHolidayPay;
 
             // Calculate paid leave (assuming 'paidLeave' is available in the attendance)
-            $paidLeaveDays = $approvedAttendance->paidLeave ?? 0; 
+            $paidLeaveDays = $approvedAttendance->paidLeave ?? 0;
             $paidLeaveAmount = $paidLeaveDays * $dailyRate;
-    
+
             // Calculate Gross Pay
             $grossPay = $regularPay + $totalEarnings;
-    
+
             // Calculate Net Pay
             $netPay = $grossPay - $totalDeductions - $totalLoans;
-    
+
             // Save to SalaryTable
             $newSalary = SalaryTable::create([
                 'users_id' => $user->id,
@@ -701,25 +701,25 @@ class PayrollController extends Controller
                 'special_holiday_pay' => number_format($specialHolidayPay, 2),
                 'status' => 'Processed',
             ]);
-    
+
             $approvedAttendance->status = 'Processed';
             $approvedAttendance->save();
-    
+
             return redirect()->back()->with(['success' => 'Payroll processed successfully!']);
         } catch (\Exception $e) {
             // Log the error to laravel.log
             Log::error('Error in processPayroll: ', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-    
+
             return redirect()->back()->with(['error' => 'An error occurred while processing payroll: ' . $e->getMessage()]);
         }
     }
-    
+
 
     private function calculateCurrentCutoff($date)
     {
         $day = $date->day;
         $month = $date->month;
-        
+
         // Define cut-off periods with start and end dates
         $cutoffs = [
             0 => [26, 12, 10, 1],
@@ -747,26 +747,26 @@ class PayrollController extends Controller
             22 => [26, 11, 10, 12],
             23 => [11, 12, 25, 12],
         ];
-    
+
         // Determine the current cutoff period
         foreach ($cutoffs as $index => $cutoff) {
             [$startDay, $startMonth, $endDay, $endMonth] = $cutoff;
             $startDate = now()->setMonth($startMonth)->setDay($startDay);
             $endDate = now()->setMonth($endMonth)->setDay($endDay);
-    
+
             if ($startMonth > $endMonth) {
                 // Adjust the end year for December to January case
                 $endDate = $endDate->addYear();
             }
-    
+
             if ($date->between($startDate, $endDate)) {
                 return $index;
             }
         }
-    
+
         return 0; // Default to 0 if no match found
     }
-    
+
     private function getCutoffPeriodDates($cutoffPeriod, $year)
     {
         $cutoffs = [
@@ -795,15 +795,15 @@ class PayrollController extends Controller
             22 => ['start' => '11-26', 'end' => '12-10'],
             23 => ['start' => '12-11', 'end' => '12-25'],
         ];
-    
+
         $startDate = Carbon::createFromFormat('m-d', $cutoffs[$cutoffPeriod]['start'])->year($year);
         $endDate = Carbon::createFromFormat('m-d', $cutoffs[$cutoffPeriod]['end'])->year($year);
-    
+
         // Adjust the end year for December to January case
         if ($cutoffs[$cutoffPeriod]['start'] > $cutoffs[$cutoffPeriod]['end']) {
             $endDate = $endDate->addYear();
         }
-    
+
         return [
             'start' => $startDate,
             'end' => $endDate
@@ -824,111 +824,111 @@ class PayrollController extends Controller
         return redirect()->back();
 
     }
-    
+
     public function payroll($id)
     {
         $attendance = ApprovedAttendance::with('user')->findOrFail($id);
-    
+
         // Fetch dynamic deductions for the user
         $userDeductions = UserDeduction::where('users_id', $attendance->user->id)
             ->with('deductionList') // Load deduction details
             ->get();
-    
+
         // Initialize variables
         $dynamicDeductions = [];
         $totalDeductions = 0;
-    
+
         // Calculate deductions based on user deductions
         foreach ($userDeductions as $userDeduction) {
             if ($userDeduction->deductionList) {
                 $deductionName = $userDeduction->deductionList->name;
                 $deductionValue = $userDeduction->deductionList->amount;
                 $deductionType = $userDeduction->deductionList->type;
-    
+
                 // Calculate deduction amount based on type
                 if ($deductionType === 'percentage') {
                     $deductionAmount = ($deductionValue / 100) * $attendance->user->mSalary;
                 } else {
                     $deductionAmount = $deductionValue;
                 }
-    
+
                 $dynamicDeductions[$deductionName] = [
                     'amount' => $deductionAmount,
                     'type' => $deductionType,
                     'value' => $deductionValue,
                 ];
-    
+
                 $totalDeductions += $deductionAmount;
             }
         }
-    
+
         // Fetch dynamic earnings for the user
         $dynamicEarnings = UserEarning::where('users_id', $attendance->user->id)
             ->with('earningList') // Eager-load the related EarningList
             ->get();
-    
+
         $totalEarnings = 0;
-    
+
         // Calculate total earnings
         foreach ($dynamicEarnings as $earning) {
             $totalEarnings += $earning->earningList->amount;
         }
-    
+
         // Fetch loans for the user
         $loans = Loan::where('users_id', $attendance->user->id)->get();
-        
+
         // Calculate loan deductions
         $totalLoanDeductions = 0;
         foreach ($loans as $loan) {
             $totalLoanDeductions += $loan->payable_amount_per_cutoff;
         }
-    
+
         // Calculate daily and hourly rates
         $monthlySalary = $attendance->user->mSalary;
-        $dailyRate = $monthlySalary / 22; 
+        $dailyRate = $monthlySalary / 22;
         $hourlyRate = ($monthlySalary / 22) / 8;
-    
+
         $formattedDailyRate = number_format($dailyRate, 2, '.', '');
         $formattedHourlyRate = number_format($hourlyRate, 2, '.', '');
-    
+
         // Convert total hours (00:00:00) to decimal format
         $totalHoursArray = explode(':', $attendance->totalHours);
         $totalHoursDecimal = 0;
         if (count($totalHoursArray) === 3) {
             $totalHoursDecimal = $totalHoursArray[0] + ($totalHoursArray[1] / 60) + ($totalHoursArray[2] / 3600);
         }
-    
+
         // Convert overtime hours (00:00:00) to decimal format
         $overtimeHoursArray = explode(':', $attendance->approvedOvertime);
         $overtimeHoursDecimal = 0;
         if (count($overtimeHoursArray) === 3) {
             $overtimeHoursDecimal = $overtimeHoursArray[0] + ($overtimeHoursArray[1] / 60) + ($overtimeHoursArray[2] / 3600);
         }
-    
+
         // Calculate gross pay
         $grossPay = $formattedHourlyRate * $totalHoursDecimal;
-    
+
         // Calculate overtime pay
         $overtimeRate = $hourlyRate * 1.25; // Overtime rate is 1.25x the regular hourly rate
         $overtimePay = $overtimeRate * $overtimeHoursDecimal;
-    
+
         // Add overtime pay to total earnings
         $totalEarnings += $overtimePay;
-    
+
         // Calculate paid leave (assuming 'paidLeave' is available in the attendance)
         $paidLeaveDays = $attendance->paidLeave ?? 0; // Assuming 'paidLeave' is a field in attendance
         $paidLeaveAmount = $paidLeaveDays * $dailyRate;
-    
+
         // Add paid leave amount to total earnings
         $totalEarnings += $paidLeaveAmount;
-    
+
         // Calculate net pay
         $netPay = $grossPay + $totalEarnings - $totalDeductions - $totalLoanDeductions;
-    
+
         // Pass all necessary data to the view
         return view('admin.payroll.edit', compact('attendance', 'dynamicDeductions', 'dynamicEarnings', 'loans', 'grossPay', 'totalDeductions', 'totalEarnings', 'netPay', 'formattedHourlyRate', 'formattedDailyRate', 'totalLoanDeductions', 'overtimePay', 'paidLeaveAmount'));
     }
-     
+
     public function destroy($id)
     {
         $approved = ApprovedAttendance::findOrFail($id);
@@ -938,7 +938,7 @@ class PayrollController extends Controller
         Alert::success('Attendance deleted successfully');
         return redirect()->back();
     }
-    
+
     public function payslip(Request $request, $id)
     {
 
@@ -994,7 +994,7 @@ class PayrollController extends Controller
        $payroll->reimbursement = $request->input('reimbursement');
        $payroll->sssLoan = $request->input('sssLoan');
        $payroll->hmo = $request->input('hmo');
-       
+
 
         // Check which button was pressed and update status accordingly
         $action = $request->input('action');
@@ -1017,39 +1017,39 @@ class PayrollController extends Controller
    {
        $employeeName = $request->input('name');
        $department = $request->input('department');
-       $cutoffPeriod = $request->input('cutoff_period'); 
-       $selectedYear = $request->input('year', now()->year); 
+       $cutoffPeriod = $request->input('cutoff_period');
+       $selectedYear = $request->input('year', now()->year);
        $departments = User::distinct()->pluck('department');
-   
+
        // Initialize the query without calling query()
        $data = SalaryTable::with('approvedAttendance');
-   
+
        // Apply filters independently
        if (!empty($employeeName)) {
            $data->where('ename', 'like', "%$employeeName%");
        }
-   
+
        if ($department) {
         $data->whereHas('user', function ($query) use ($department) {
             $query->where('department', 'like', "%$department%");
         });
     }
-   
+
        if($selectedYear) {
             $data->where('year', $selectedYear);
        }
-   
+
        // Add filter for cutoff_period if provided
        if ($cutoffPeriod) {
-           $data->where('cut_off', $cutoffPeriod); 
+           $data->where('cut_off', $cutoffPeriod);
        }
-   
+
        // Add filter for status being 'Processed', 'Revision', 'Declined', 'Revised'
        $data->whereIn('status', ['Processed', 'Revision', 'Declined', 'Revised']);
-   
+
        // Fetch the filtered data
        $payslip = $data->get();
-   
+
        return view('admin.payroll.processed', compact('payslip', 'departments', 'cutoffPeriod', 'selectedYear'));
    }
 
@@ -1059,7 +1059,7 @@ class PayrollController extends Controller
         try {
             // Find the SalaryTable record using salary_id
             $salary = SalaryTable::findOrFail($request->salary_id);
-    
+
             // Update basic salary fields
             $salary->overtimeHours = $request->input('overtimeHours');
             $salary->paidLeave = $request->input('paidLeave');
@@ -1070,7 +1070,7 @@ class PayrollController extends Controller
             $salary->total_deductions = $request->input('total_deductions');
             $salary->total_earnings = $request->input('total_earnings');
             $salary->net_pay = $request->input('net_pay');
-    
+
             // Parse updated deductions, earnings, and loans
             $deductions = [];
             foreach ($request->input('deductions', []) as $key => $amount) {
@@ -1080,7 +1080,7 @@ class PayrollController extends Controller
                     'amount' => $amount
                 ];
             }
-    
+
             $earnings = [];
             foreach ($request->input('earnings', []) as $key => $amount) {
                 $earnings[] = [
@@ -1089,7 +1089,7 @@ class PayrollController extends Controller
                     'amount' => $amount
                 ];
             }
-    
+
             $loans = [];
             foreach ($request->input('loans', []) as $key => $amount) {
                 $loans[] = [
@@ -1098,7 +1098,7 @@ class PayrollController extends Controller
                     'amount' => $amount
                 ];
             }
-    
+
             // Encode to JSON and update the salary record
             $salary->deductions = json_encode($deductions);
             $salary->earnings = json_encode($earnings);
@@ -1106,7 +1106,7 @@ class PayrollController extends Controller
             $salary->status = 'Revised';
             // Save the updated record
             $salary->save();
-    
+
             // Return with success message
             return redirect()->back()->with(['success' => 'Salary record updated successfully!']);
         } catch (\Exception $e) {
@@ -1118,26 +1118,26 @@ class PayrollController extends Controller
     public function processedApproved(Request $request, $id)
     {
         Log::info('Starting approval process for SalaryTable ID: ' . $id);
-        
+
         $edit = SalaryTable::findOrFail($id);
         Log::info('Found SalaryTable: ', [$edit->toArray()]);
-    
+
         // Check if the status is already 'Approved'
         if ($edit->status === 'Approved') {
             Log::warning('Approval attempt for already approved SalaryTable ID: ' . $id);
             Alert::error('This is already approved.');
             return redirect()->back();
         }
-    
+
         // Update the status to 'Approved'
         $edit->status = 'Approved';
         $edit->save();
         Log::info('Updated status to Approved for SalaryTable ID: ' . $id);
-    
+
         // Decode the earnings field
         $earningsArray = json_decode($edit->earnings, true);
         Log::info('Earnings Array: ', [$earningsArray]);
-    
+
         if (is_array($earningsArray)) {
             foreach ($earningsArray as $earningData) {
                 $earningId = $earningData['earning_id'];
@@ -1181,11 +1181,11 @@ class PayrollController extends Controller
                 }
             }
         }
-    
+
         // Decode the deductions field
         $deductionsArray = json_decode($edit->deductions, true);
         Log::info('Deductions Array: ', [$deductionsArray]);
-    
+
         // Process Deductions
         if (is_array($deductionsArray)) {
             foreach ($deductionsArray as $deductionData) {
@@ -1230,26 +1230,26 @@ class PayrollController extends Controller
                 }
             }
         }
-    
+
         // Decode the loans field
         $loansArray = json_decode($edit->loans, true);
         Log::info('Loans Array: ', [$loansArray]);
-    
+
         // Process Loans
         if (is_array($loansArray)) {
             foreach ($loansArray as $loanData) {
                 $loanId = $loanData['loan_id'];
                 Log::info('Processing loan ID: ' . $loanId);
-    
+
                 // Fetch the corresponding Loan record
                 $loan = Loan::find($loanId);
-    
+
                 if ($loan) {
                     Log::info('Found Loan: ', [$loan->toArray()]);
-    
+
                     // Increment amount_paid by payable_amount_per_cutoff
                     $loan->amount_paid += $loan->payable_amount_per_cutoff;
-                    
+
                     // Check if amount_paid now matches the total loan amount
                     if ($loan->amount_paid >= $loan->amount) {
                         // Set status to Completed and date_completed to today
@@ -1257,7 +1257,7 @@ class PayrollController extends Controller
                         $loan->date_completed = now();
                         Log::info('Loan completed for Loan ID: ' . $loanId);
                     }
-    
+
                     // Save the updated loan information
                     $loan->save();
                     Log::info('Updated amount_paid for Loan ID: ' . $loanId);
@@ -1266,72 +1266,72 @@ class PayrollController extends Controller
                 }
             }
         }
-    
+
         Alert::success('Payslip Approved.');
         Log::info('Payslip approved successfully for SalaryTable ID: ' . $id);
         return redirect()->back();
     }
-    
+
     // ** PROCESSED REVISION ** //
     public function processedRevision(Request $request, $id)
     {
         $request->validate([
             'notes' => 'required|string|max:255'
         ]);
-    
+
         $edit = SalaryTable::findOrFail($id);
-    
+
         if ($edit->status === 'Revision') {
             Alert::error('It is pending for revision.');
             return redirect()->back();
         }
-    
+
         // Update status and save the note
         $edit->status = 'Revision';
         $edit->notes = $request->input('notes');  // Save the notes to the 'notes' column
         $edit->save();
-    
+
         Alert::success('Payslip is for Revision.');
         return redirect()->back();
     }
-    
+
     // ** PROCESSED DECLINED ** //
    public function processedDeclined(Request $request, $id)
    {
        $edit = SalaryTable::findOrFail($id);
-   
+
        // Check if the status is already 'Approved'
        if ($edit->status === 'Declined') {
            Alert::error('This is already declined.');
            return redirect()->back();
        }
-   
+
        // Update the status to 'Approved'
        $edit->status = 'Declined';
        $edit->save();
-   
+
        Alert::success('Payslip Declined.');
        return redirect()->back();
    }
-   
+
     // ** Approved Payslip (From Processed) ** //
    public function approvedPayslip(Request $request)
    {
        $employeeName = $request->input('name');
        $department = $request->input('department');
-       $cutoffPeriod = $request->input('cutoff_period'); 
-       $selectedYear = $request->input('year', now()->year); 
+       $cutoffPeriod = $request->input('cutoff_period');
+       $selectedYear = $request->input('year', now()->year);
        $departments = User::distinct()->pluck('department');
-   
+
        // Start the query on the SalaryTable model
        $data = SalaryTable::with('approvedAttendance')
            ->where('status', 'Approved'); // Filter for status first
-   
+
        // Apply filters independently
        if (!empty($employeeName)) {
            $data->where('ename', 'like', "%$employeeName%");
        }
-   
+
        // Ensure the department filter is applied only on the User model
        if (!empty($department)) {
            // Use whereHas to filter based on the related User's department
@@ -1339,41 +1339,41 @@ class PayrollController extends Controller
                $query->where('department', 'like', "%$department%");
            });
        }
-   
+
        // Add filter for cutoff_period if provided
        if ($cutoffPeriod) {
-           $data->where('cut_off', $cutoffPeriod); 
+           $data->where('cut_off', $cutoffPeriod);
        }
-   
+
        // Get the filtered payslip data
        $payslip = $data->get();
-   
+
        return view('admin.payroll.approvepayslip', compact('payslip', 'departments', 'cutoffPeriod', 'selectedYear'));
    }
-   
+
     // ** Generate Payslip Action ** //
    public function generatePayslip(Request $request, $id)
    {
        $edit = SalaryTable::findOrFail($id);
-   
+
        if ($edit->status === 'Payslip') {
            Alert::error('This is already generated.');
            return redirect()->back();
        }
-   
+
        $edit->status = 'Payslip';
        $edit->save();
-   
+
        return redirect()->back()->with('success', 'Payslip Generated');
    }
 
-    // ** Generated Payslip View ** // 
+    // ** Generated Payslip View ** //
    public function payslipView(Request $request)
    {
         $employeeName = $request->input('name');
         $department = $request->input('department');
-        $cutoffPeriod = $request->input('cutoff_period'); 
-        $selectedYear = $request->input('year', now()->year); 
+        $cutoffPeriod = $request->input('cutoff_period');
+        $selectedYear = $request->input('year', now()->year);
         $departments = User::distinct()->pluck('department');
 
         // Start the query on the SalaryTable model
@@ -1395,25 +1395,25 @@ class PayrollController extends Controller
 
         // Add filter for cutoff_period if provided
         if ($cutoffPeriod) {
-            $data->where('cut_off', $cutoffPeriod); 
+            $data->where('cut_off', $cutoffPeriod);
         }
 
         // Get the filtered payslip data
         $payslip = $data->get();
-   
+
        return view('admin.payroll.payslip', compact('payslip', 'departments', 'cutoffPeriod', 'selectedYear'));
    }
-   
+
     // ** View Payslip ** //
     public function viewPayslip($id)
     {
         $view = SalaryTable::with('user')->findOrFail($id);
-    
+
         // Decode JSON columns
         $earnings = json_decode($view->earnings, true);
         $loans = json_decode($view->loans, true);
         $deductions = json_decode($view->deductions, true);
-    
+
         return view('admin.payroll.payslipview', compact('view', 'earnings', 'loans', 'deductions'));
     }
 
@@ -1431,54 +1431,54 @@ class PayrollController extends Controller
         return view('admin.payroll.processededit', compact('pay'));
    }
 
-    // ** Bulk Action For Processed Payroll ** // 
+    // ** Bulk Action For Processed Payroll ** //
    public function processedBulkAction(Request $request)
    {
        $this->validate($request, [
            'action' => 'required|string',
            'ids' => 'required|array',
-           'ids.*' => 'exists:salary_tables,id', 
+           'ids.*' => 'exists:salary_tables,id',
        ]);
-   
+
        $action = $request->input('action');
        $ids = $request->input('ids');
-   
+
        $successCount = 0;
        $errorMessages = [];
-   
+
        foreach ($ids as $id) {
            $payroll = SalaryTable::find($id);
-   
+
            if (!$payroll) {
                continue; // Skip if the payroll entry is not found
            }
-   
+
            if ($action === 'Approved') {
                if ($payroll->status === 'Approved') {
                    $errorMessages[] = "Payroll ID {$id} is already approved.";
                    continue;
                }
-   
+
                // Update the status to 'Approved'
                $payroll->status = 'Approved';
                $payroll->save();
-   
+
                // Decode the earnings and deductions fields
                $earningsArray = json_decode($payroll->earnings, true);
                $deductionsArray = json_decode($payroll->deductions, true);
                $loansArray = json_decode($payroll->loans, true);
-   
+
                // Process Earnings
                if (is_array($earningsArray)) {
                    foreach ($earningsArray as $earningData) {
                        $earningId = $earningData['earning_id'];
                        $earningList = EarningList::find($earningId);
-   
+
                        if ($earningList && !$earningList->is_every_payroll && $earningList->inclusion_limit) {
                            $userEarning = UserEarning::where('users_id', $payroll->users_id)
                                ->where('earning_id', $earningId)
                                ->first();
-   
+
                            if ($userEarning) {
                                if ($userEarning->inclusion_count < $earningList->inclusion_limit) {
                                    $userEarning->inclusion_count += 1;
@@ -1491,18 +1491,18 @@ class PayrollController extends Controller
                        }
                    }
                }
-   
+
                // Process Deductions
                if (is_array($deductionsArray)) {
                    foreach ($deductionsArray as $deductionData) {
                        $deductionId = $deductionData['deduction_id'];
                        $deductionList = DeductionList::find($deductionId);
-   
+
                        if ($deductionList && !$deductionList->is_every_payroll && $deductionList->inclusion_limit) {
                            $userDeduction = UserDeduction::where('users_id', $payroll->users_id)
                                ->where('deduction_id', $deductionId)
                                ->first();
-   
+
                            if ($userDeduction) {
                                if ($userDeduction->inclusion_count < $deductionList->inclusion_limit) {
                                    $userDeduction->inclusion_count += 1;
@@ -1515,16 +1515,16 @@ class PayrollController extends Controller
                        }
                    }
                }
-   
+
                // Process Loans
                if (is_array($loansArray)) {
                    foreach ($loansArray as $loanData) {
                        $loanId = $loanData['loan_id'];
                        $loan = Loan::find($loanId);
-   
+
                        if ($loan) {
                            $loan->amount_paid += $loan->payable_amount_per_cutoff;
-   
+
                            if ($loan->amount_paid >= $loan->amount) {
                                $loan->status = 'Completed';
                                $loan->date_completed = now();
@@ -1533,7 +1533,7 @@ class PayrollController extends Controller
                        }
                    }
                }
-   
+
                $successCount++;
            } elseif ($action === 'Revision') {
                if ($payroll->status === 'Revision') {
@@ -1553,7 +1553,7 @@ class PayrollController extends Controller
                $successCount++;
            }
        }
-   
+
        if ($successCount > 0) {
            return response()->json([
                'success' => true,
@@ -1566,8 +1566,8 @@ class PayrollController extends Controller
            ]);
        }
    }
-   
-    // ** Bulk Action For Generate Payslip (Approve Payslip) ** //  
+
+    // ** Bulk Action For Generate Payslip (Approve Payslip) ** //
     public function generatePayslipBulkAction(Request $request)
     {
         $this->validate($request, [
@@ -1597,7 +1597,7 @@ class PayrollController extends Controller
                 $payroll->status = 'Payslip';
                 $payroll->save();
                 $successCount++;
-            } 
+            }
         }
 
         if ($successCount > 0) {
@@ -1617,63 +1617,63 @@ class PayrollController extends Controller
     {
         $ids = $request->input('ids');
         $action = $request->input('action');
-    
+
         if ($action !== 'Process' || empty($ids)) {
             return response()->json(['success' => false, 'message' => 'Invalid action or no records selected.']);
         }
-    
+
         DB::beginTransaction();
-    
+
         try {
             foreach ($ids as $approvedAttendanceId) {
                 $approvedAttendance = ApprovedAttendance::find($approvedAttendanceId);
-    
+
                 if (!$approvedAttendance) {
                     continue; // Skip if record is not found
                 }
-    
+
                 $user = $approvedAttendance->user;
-    
+
                 // Check if payroll is already processed for the month and cut-off
                 $existingSalary = SalaryTable::where('users_id', $user->id)
                     ->where('month', $approvedAttendance->month)
                     ->where('cut_off', $approvedAttendance->cut_off)
                     ->first();
-    
+
                 if ($existingSalary) {
                     continue; // Skip if payroll already processed
                 }
-    
+
                 // --- Calculation Logic ---
                 // Calculate Daily and Hourly Rates
                // $monthlySalary = $user->mSalary;
-               $hourlyRate = $user->hourly_rate; 
-               // $dailyRate = $monthlySalary / 22; 
-               $dailyRate = $hourlyRate * 8;    
+               $hourlyRate = $user->hourly_rate;
+               // $dailyRate = $monthlySalary / 22;
+               $dailyRate = $hourlyRate * 8;
                $monthlySalary = $dailyRate * 22;
                // $monthlySalary = $user->mSalary;
-    
+
                 // Format daily and hourly rates
                 $formattedDailyRate = number_format($dailyRate, 2, '.', '');
                 $formattedHourlyRate = number_format($hourlyRate, 2, '.', '');
-    
+
                 // Convert total hours to decimal format
                 $totalHours = $approvedAttendance->totalHours;
                 list($hours, $minutes, $seconds) = explode(':', $totalHours);
                 $totalHoursDecimal = $hours + ($minutes / 60) + ($seconds / 3600);
-    
+
                 // Convert overtime hours to decimal format
                 $overtimeHours = $approvedAttendance->approvedOvertime ?? '00:00:00';
                 list($otHours, $otMinutes, $otSeconds) = explode(':', $overtimeHours);
                 $overtimeHoursDecimal = $otHours + ($otMinutes / 60) + ($otSeconds / 3600);
-    
+
                 // Calculate gross pay (for regular working hours)
                 $basicPay = $formattedHourlyRate * $totalHoursDecimal;
-    
+
                 // Calculate overtime pay (1.25x the regular hourly rate)
                 $overtimeRate = $hourlyRate * 1.25;
                 $overtimePay = $overtimeRate * $overtimeHoursDecimal;
-    
+
                 // Fetch Deductions
                 $userDeductions = UserDeduction::where('users_id', $user->id)
                     ->where('active', 1)
@@ -1681,31 +1681,31 @@ class PayrollController extends Controller
                     ->get();
                 $deductions = [];
                 $totalDeductions = 0;
-    
+
                 foreach ($userDeductions as $userDeduction) {
                     $deductionName = $userDeduction->deductionList->name;
                     $deductionValue = $userDeduction->deductionList->amount;
                     $deductionType = $userDeduction->deductionList->type;
-    
+
                     // Calculate deduction amount based on type
                     $deductionAmount = ($deductionType === 'percentage') ? ($deductionValue / 100) * $monthlySalary : $deductionValue;
-    
+
                     $deductions[] = [
                         'deduction_id' => $userDeduction->deduction_id,
                         'name' => $deductionName,
                         'amount' => $deductionAmount,
                     ];
-    
+
                     $totalDeductions += $deductionAmount;
                 }
-    
+
                 // Fetch Loans
                 $loans = Loan::where('users_id', $user->id)
                     ->where('status', 'Active')
                     ->get();
                 $loanDetails = [];
                 $totalLoans = 0;
-    
+
                 foreach ($loans as $loan) {
                     $totalLoans += $loan->payable_amount_per_cutoff;
                     $loanDetails[] = [
@@ -1714,7 +1714,7 @@ class PayrollController extends Controller
                         'amount' => $loan->payable_amount_per_cutoff,
                     ];
                 }
-    
+
                 // Fetch Dynamic Earnings
                 $userEarnings = UserEarning::where('users_id', $user->id)
                     ->where('active', 1)
@@ -1722,41 +1722,41 @@ class PayrollController extends Controller
                     ->get();
                 $earnings = [];
                 $totalEarnings = 0;
-    
+
                 foreach ($userEarnings as $userEarning) {
                     $earningName = $userEarning->earningList->name;
                     $earningAmount = $userEarning->earningList->amount;
-    
+
                     $earnings[] = [
                         'earning_id' => $userEarning->earning_id,
                         'name' => $earningName,
                         'amount' => $earningAmount,
                     ];
-    
+
                     $totalEarnings += $earningAmount;
                 }
-    
+
                 // Add overtime pay to total earnings
                 $totalEarnings += $overtimePay;
-    
+
                 // Calculate paid leave
                 $paidLeaveDays = $approvedAttendance->paidLeave ?? 0;
                 $paidLeaveAmount = $paidLeaveDays * $dailyRate;
-    
+
                 // Add paid leave amount to total earnings
                 $totalEarnings += $paidLeaveAmount;
-    
+
                 // Basic Pay
                 $basicPay = $formattedHourlyRate * $totalHoursDecimal;
-    
+
                 // Gross Pay
                 $grossPay = $basicPay + $totalEarnings;
-    
+
                 // Calculate net pay
                 $netPay = $basicPay + $totalEarnings - $totalDeductions - $totalLoans;
-    
+
                 // --- End Calculation Logic ---
-    
+
                 // Save to SalaryTable
                 SalaryTable::create([
                     'users_id' => $user->id,
@@ -1783,21 +1783,21 @@ class PayrollController extends Controller
                     'paidLeave' => number_format($paidLeaveAmount, 2),
                     'status' => 'Processed',
                 ]);
-    
+
                 // Update the attendance status to "Processed"
                 $approvedAttendance->status = 'Processed';
                 $approvedAttendance->save();
             }
-    
+
             DB::commit();
-    
+
             return response()->json(['success' => true, 'message' => 'Bulk payroll processing completed successfully!']);
-    
+
         } catch (\Exception $e) {
             DB::rollBack();
-    
+
             return response()->json(['success' => false, 'message' => 'An error occurred during bulk processing: ' . $e->getMessage()]);
         }
     }
-    
+
 }

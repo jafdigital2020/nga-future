@@ -27,7 +27,7 @@ class EmployeeController extends Controller
 {
     public function index ()
     {
-        $emp = User::all();
+        $emp = User::where('status', 'active')->get();
         $names = User::select(DB::raw("CONCAT(fName, ' ', lName) as full_name"))
              ->distinct()
              ->pluck('full_name');
@@ -46,24 +46,24 @@ class EmployeeController extends Controller
         $names = User::select(DB::raw("CONCAT(fName, ' ', lName) as full_name"))
         ->distinct()
         ->pluck('full_name');
-    
+
         // Fetch distinct departments
         $departments = User::distinct()->pluck('department');
-    
+
         // Initialize the query
         $data = User::query();
-    
+
         // Search by name
         if ($name) {
             $data->where(function ($query) use ($name) {
                 // Split the input into parts
                 $names = explode(' ', $name);
-                
+
                 if (count($names) > 1) {
                     // Assume last part is the last name, and the rest are first name parts
                     $lName = array_pop($names);
                     $fName = implode(' ', $names);
-        
+
                     // Handle search for both combined fName and lName
                     $query->where(function ($query) use ($fName, $lName) {
                         $query->whereRaw('LOWER(fName) like ?', ['%' . strtolower($fName) . '%'])
@@ -76,30 +76,30 @@ class EmployeeController extends Controller
                 }
             });
         }
-    
+
         // Search by employee number
         if ($empNumber) {
             $data->where('empNumber', 'like', "%$empNumber%");
         }
-    
+
         // Search by department
         if ($department) {
             $data->where('department', 'like', "%$department%");
         }
-    
+
         // Execute the query and get results
         $emp = $data->orderBy('fName')->orderBy('lName')->get();
-    
+
         // Return the view with the search results and departments
         return view('admin.employee.grid', compact('emp', 'departments', 'names'));
     }
-    
+
     public function search(Request $request)
     {
         $name = trim($request->input('name')); // Trim any whitespace
         $empNumber = $request->input('empNumber');
         $department = $request->input('department');
-        
+
         $names = User::select(DB::raw("CONCAT(fName, ' ', lName) as full_name"))
         ->distinct()
         ->pluck('full_name');
@@ -114,12 +114,12 @@ class EmployeeController extends Controller
             $data->where(function ($query) use ($name) {
                 // Split the input into parts
                 $names = explode(' ', $name);
-                
+
                 if (count($names) > 1) {
                     // Assume last part is the last name, and the rest are first name parts
                     $lName = array_pop($names);
                     $fName = implode(' ', $names);
-        
+
                     // Handle search for both combined fName and lName
                     $query->where(function ($query) use ($fName, $lName) {
                         $query->whereRaw('LOWER(fName) like ?', ['%' . strtolower($fName) . '%'])
@@ -132,7 +132,7 @@ class EmployeeController extends Controller
                 }
             });
         }
-    
+
         // Search by employee number
         if ($empNumber) {
             $data->where('empNumber', 'like', "%$empNumber%");
@@ -220,17 +220,17 @@ class EmployeeController extends Controller
     // {
     //     // Get the employee ID from the request
     //     $userId = $request->input('emp_delete_id');
-        
+
     //     // Find the user by ID
     //     $data = User::find($userId);
-    
+
     //     // Check if the user exists
     //     if ($data) {
     //         // Update the user's status to 'inactive'
     //         $data->update([
     //             'status' => 'inactive', // Assuming you have a 'status' field
     //         ]);
-    
+
     //         // Return success message
     //         return redirect()->back()->with('success', 'User status updated to inactive successfully!');
     //     } else {
@@ -258,15 +258,15 @@ class EmployeeController extends Controller
             'userAssets.asset',
             'memos'
         )->findOrFail($user_id);
-    
+
         $department = $user->department;
         $supervisor = $user->supervisor;
-    
+
         // Filter users with role_as of 1, 2, or 4
         $users = User::whereIn('role_as', [1, 2, 4])->get();
-    
+
         $leaveTypes = LeaveType::all();
-    
+
         switch ($user->role_as) {
             case 1:
                 $user->role_as_text = 'Admin';
@@ -280,15 +280,15 @@ class EmployeeController extends Controller
             default:
                 $user->role_as_text = 'Unknown';
         }
-    
+
         return view('admin.employee.edit', compact('user', 'supervisor', 'users', 'leaveTypes'));
     }
-    
+
 
     public function update(Request $request, $user_id)
     {
         $user = User::findOrFail($user_id);
-    
+
         // Create a Validator instance
         $validator = Validator::make($request->all(), [
             'empNumber' => 'required|string',
@@ -311,12 +311,12 @@ class EmployeeController extends Controller
             'reporting_to.exists' => 'The selected Reporting To is invalid or does not exist.',
             'reporting_to.not_in' => 'You cannot select the same user in reporting to.',
         ]);
-        
+
         // Check for validation failure
         if ($validator->fails()) {
             // Get all validation error messages
             $errors = $validator->errors();
-    
+
             if ($errors->has('reporting_to')) {
                 $errorMessage = $errors->first('reporting_to');
             } elseif ($errors->has('empNumber')) {
@@ -332,11 +332,11 @@ class EmployeeController extends Controller
             } else {
                 $errorMessage = 'Please correct the errors and try again.';
             }
-    
+
             Alert::error('Validation Error', $errorMessage);
             return redirect()->back()->withErrors($validator)->withInput();
         }
-        
+
         // Proceed with updating the user if validation passes
         $user->name = $request->input('name');
         $user->fName = $request->input('fName');
@@ -352,28 +352,28 @@ class EmployeeController extends Controller
         $user->email = $request->input('email');
         $user->hourly_rate = $request->input('hourly_rate');
         $user->reporting_to = $request->input('reporting_to');
-        
+
         if ($request->filled('password')) {
             $user->password = Hash::make($request->input('password'));
         }
-        
+
         $user->role_as = $request['role_as'];
         if ($request->has('image')) {
             $imageName = time() . '.' . $request->image->extension();
             $request->image->move(public_path('images'), $imageName);
             $user->image = $imageName;
         }
-        
+
         $user->save();
-    
+
         return redirect()->back()->with('success', 'Employee Updated!');
     }
-    
+
     public function leaveCredits(Request $request, $id)
     {
         try {
             $user = User::findOrFail($id);
-    
+
             // Validate leave credits input
             $validator = Validator::make($request->all(), [
                 'leave_credits.*' => 'required|numeric|min:0',
@@ -382,31 +382,31 @@ class EmployeeController extends Controller
                 'leave_credits.*.numeric' => 'Leave credit must be a number.',
                 'leave_credits.*.min' => 'Leave credit cannot be negative.',
             ]);
-    
+
             if ($validator->fails()) {
                 return redirect()->back()->withErrors($validator)->withInput();
             }
-    
+
             // Fetch leave types to check maximum allowed days for each leave type
             $leaveTypes = LeaveType::whereIn('id', array_keys($request->input('leave_credits', [])))->get()->keyBy('id');
-    
+
             $leaveCreditsData = $request->input('leave_credits', []);
-    
+
             // Iterate through each leave type and validate against maximum allowed days
             foreach ($leaveCreditsData as $leaveTypeId => $remainingCredits) {
                 if (!isset($leaveTypes[$leaveTypeId])) {
                     return redirect()->back()->with('error', "Leave type ID $leaveTypeId is invalid.");
                 }
-    
+
                 $maxAllowedDays = $leaveTypes[$leaveTypeId]->leaveDays;
-    
+
                 // Check if the submitted credits exceed the allowed leave days
                 if ($remainingCredits > $maxAllowedDays) {
                     return redirect()->back()->with([
                         "error" => "The leave credit for leave type {$leaveTypes[$leaveTypeId]->leaveType} cannot exceed $maxAllowedDays days."
                     ])->withInput();
                 }
-    
+
                 // Create or update leave credits
                 LeaveCredit::updateOrCreate(
                     [
@@ -418,15 +418,15 @@ class EmployeeController extends Controller
                     ]
                 );
             }
-    
+
             return redirect()->back()->with('success', 'Leave Updated!');
-    
+
         } catch (\Exception $e) {
             Log::error('Error updating leave credits for user ID ' . $id . ': ' . $e->getMessage());
             return redirect()->back()->with('error', 'Something went wrong while updating leave credits. Please try again.');
         }
     }
-    
+
     public function government (Request $request, $user_id)
     {
         $user = User::findOrFail($user_id);
@@ -556,27 +556,27 @@ class EmployeeController extends Controller
                 'date_issue' => 'required|date',
                 'attached_file' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048', // Allows image and PDF files up to 2MB
             ]);
-    
+
             // Find the user by ID and load any existing memos
             $user = User::with('memos')->findOrFail($id);
-    
+
             // Prepare to create a new memo
             $memo = new Memo();
             $memo->users_id = $user->id;
             $memo->date_issue = $request->input('date_issue');
-    
+
             // Handle file upload if provided
             if ($request->hasFile('attached_file')) {
                 $filePath = $request->file('attached_file')->store('memos', 'public');
                 $memo->attached_file = $filePath;
             }
-    
+
             // Save the memo
             $memo->save();
-    
+
             // Return success response
             return redirect()->back()->with('success', 'Memo created successfully.');
-    
+
         } catch (\Exception $e) {
             // Log and handle errors
             Log::error('Memo creation failed: ' . $e->getMessage());
@@ -642,32 +642,32 @@ class EmployeeController extends Controller
     {
         $users = User::all(); // Get all users if needed
         $availableLeaveTypes = LeaveType::all(); // Get all leave types
-    
+
         // Initialize assigned leave types and leave credits if necessary
         $assignedLeaveTypes = []; // You may set this based on some logic
         $leaveCredits = []; // This can be used to track user-specific leave credits
-    
+
         return view('admin.employee.create', compact('users', 'availableLeaveTypes', 'assignedLeaveTypes', 'leaveCredits'));
     }
-    
-    
+
+
     public function create(Request $request)
     {
         try {
             // Check the current user count
             $userCount = User::count();
-    
+
             if ($userCount >= 52) {
                 return redirect()->back()->with('error', 'User limit reached. You cannot create more users.');
             }
-    
+
             // Handle image upload
             $imageName = 'default.png';
             if ($request->hasFile('image')) {
                 $imageName = time() . '.' . $request->image->extension();
                 $request->image->move(public_path('images'), $imageName);
             }
-    
+
             // Create user with Eloquent to handle timestamps automatically
             $user = User::create([
                 'name' => $request->input('name'),
@@ -693,7 +693,7 @@ class EmployeeController extends Controller
                 'reporting_to' => $request->input('reporting_to'),
                 'image' => $imageName,
             ]);
-    
+
             // Handle leave credits
             $leaveTypes = $request->input('leave_types'); // This should be an array of leave type IDs
             if ($leaveTypes && is_array($leaveTypes)) {
@@ -713,7 +713,7 @@ class EmployeeController extends Controller
                     }
                 }
             }
-    
+
             return redirect()->route('admin.employeeindex')->with('success', 'Employee Added Successfully');
         } catch (ValidationException $e) {
             Alert::error('Validation Error', $e->getMessage())->persistent(true);
@@ -724,8 +724,8 @@ class EmployeeController extends Controller
             return redirect()->back()->withInput();
         }
     }
-    
-    
+
+
     public function validateStep1(Request $request)
     {
         $validatedData = $request->validate([
@@ -811,115 +811,115 @@ class EmployeeController extends Controller
     {
         $validatedData = $request->validate([
             'leave_types' => 'required|array',
-            'leave_types.*' => 'integer|min:0', 
+            'leave_types.*' => 'integer|min:0',
             'leave_types.required' => 'At least one leave type must be selected.',
             'leave_types.array' => 'Invalid leave types selection.',
             'leave_types.*.integer' => 'Leave days must be a valid integer.',
             'leave_types.*.min' => 'Leave days cannot be negative.',
         ]);
-    
-        return $validatedData; 
+
+        return $validatedData;
     }
-    
+
     public function bulkCreate(Request $request)
     {
         $request->validate([
             'file' => 'required|mimes:csv,txt',
         ]);
-    
+
         // Log start of the bulk upload process
         Log::info('Bulk user creation process started.');
-    
+
         // Get the current user count
         $userCount = User::count();
         Log::info('Current user count: ' . $userCount);
-        
+
         // If the total user count is already at 11, prevent further creation
         if ($userCount >= 52) {
             return redirect()->back()->with('error', 'User limit reached. You cannot add more users.');
         }
-    
+
         if ($file = $request->file('file')) {
             Log::info('File found. Starting file processing.');
-    
+
             $fileData = fopen($file, 'r');
             $header = fgetcsv($fileData); // Get header row
-    
+
             $newUsersCount = 0;
             $errors = []; // Collect errors here
             $existingEmails = User::pluck('email')->toArray(); // Get existing emails
             $existingEmpNumbers = User::pluck('empNumber')->toArray(); // Get existing empNumbers
             $processedEmails = []; // Keep track of processed emails in the CSV
             $processedEmpNumbers = []; // Keep track of processed empNumbers in the CSV
-    
+
             while ($row = fgetcsv($fileData)) {
                 $newUsersCount++;
-    
+
                 // Combine header with row data
                 $userData = array_combine($header, $row);
                 Log::info('Processing row ' . $newUsersCount, $userData);
-    
+
                 // Check if adding this user will exceed the limit
                 if (User::count() >= 13) {
                     $errors[] = "Row $newUsersCount: User limit reached. Cannot add more users.";
                     continue;
                 }
-    
+
                 // Check if required fields are missing or invalid
                 if (empty($userData['fName']) || empty($userData['lName']) || empty($userData['email']) || empty($userData['password'])) {
                     $errors[] = "Row $newUsersCount: Missing required fields (fName, lName, email, or password).";
                     continue; // Skip this row
                 }
-    
+
                 // Validate email format
                 if (!filter_var($userData['email'], FILTER_VALIDATE_EMAIL)) {
                     $errors[] = "Row $newUsersCount: Invalid email format.";
                     continue; // Skip this row
                 }
-    
+
                 // Remove commas from hourly_rate and validate it
                 $userData['hourly_rate'] = str_replace(',', '', $userData['hourly_rate']);
                 if (!is_numeric($userData['hourly_rate'])) {
                     $errors[] = "Row $newUsersCount: Salary must be a numeric value without commas.";
                     continue; // Skip this row
                 }
-    
+
                 // Check for duplicates in the CSV file
                 if (in_array($userData['email'], $processedEmails)) {
                     $errors[] = "Row $newUsersCount: Duplicate entry for email '{$userData['email']}' in the CSV file.";
                     Log::warning("Row $newUsersCount: Duplicate email '{$userData['email']}' found in the CSV file.");
                     continue; // Skip this row
                 }
-    
+
                 if (in_array($userData['empNumber'], $processedEmpNumbers)) {
                     $errors[] = "Row $newUsersCount: Duplicate entry for employee number '{$userData['empNumber']}' in the CSV file.";
                     Log::warning("Row $newUsersCount: Duplicate employee number '{$userData['empNumber']}' found in the CSV file.");
                     continue; // Skip this row
                 }
-    
+
                 // Check for duplicates in the database
                 if (in_array($userData['email'], $existingEmails)) {
                     $errors[] = "Row $newUsersCount: The email '{$userData['email']}' already exists in the database.";
                     Log::warning("Row $newUsersCount: Email '{$userData['email']}' already exists in the database.");
                     continue; // Skip this row
                 }
-    
+
                 if (in_array($userData['empNumber'], $existingEmpNumbers)) {
                     $errors[] = "Row $newUsersCount: The employee number '{$userData['empNumber']}' already exists in the database.";
                     Log::warning("Row $newUsersCount: Employee number '{$userData['empNumber']}' already exists in the database.");
                     continue; // Skip this row
                 }
-    
+
                 // Add email and empNumber to processed arrays to track duplicates
                 $processedEmails[] = $userData['email'];
                 $processedEmpNumbers[] = $userData['empNumber'];
-    
+
                 // Concatenate name fields
                 $userData['name'] = $userData['fName'] . ' ' . ($userData['mName'] ?? '') . ' ' . $userData['lName'];
-    
+
                 // Hash the password
                 $userData['password'] = Hash::make($userData['password']);
-    
+
                 try {
                     // Create the user
                     User::create($userData);
@@ -929,22 +929,22 @@ class EmployeeController extends Controller
                     $errors[] = "Row $newUsersCount: Failed to create user due to a database error.";
                 }
             }
-    
+
             fclose($fileData);
-    
+
             // Check if any errors occurred
             if (!empty($errors)) {
                 Log::error('Bulk upload errors: ', $errors);
                 // Format the errors for the UI
                 return redirect()->back()->with('error', 'There were errors in the bulk upload: ' . implode('<br>', $errors));
             }
-    
+
             return redirect()->back()->with('success', 'Users created successfully.');
         }
-    
+
         return redirect()->back()->with('error', 'No file was uploaded.');
     }
-    
+
     public function showInactiveUsers()
     {
         // Fetch users with status 'inactive'
@@ -961,6 +961,6 @@ class EmployeeController extends Controller
         return redirect()->back()->with('success', 'User activated successfully!');
     }
 
-    
+
 
 }
