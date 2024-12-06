@@ -32,128 +32,28 @@ use App\Notifications\AttendanceSubmissionNotification;
 
 class AttendanceController extends Controller
 {
-    public function index(Request $request)
-    {
-        $user = Auth::user();
-        $authUserId = $user->id;
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
-        // Retrieve the max breaks setting with a null check
-        $breakSettings = BreakSettings::first();
-        $maxBreaks = $breakSettings ? $breakSettings->max_breaks : 0;
 
-        // Get today’s attendance record and decode the breaks
-        $currentDate = Carbon::today()->toDateString();
-        $attendance = EmployeeAttendance::where('users_id', $authUserId)
-                                        ->where('date', $currentDate)
-                                        ->first();
-        $breaks = $attendance ? json_decode($attendance->breaks, true) : [];
+    public function getattendance(Request $request){
 
-        // Calculate other necessary data for the dashboard
-        $totalLeaveCredits = LeaveCredit::where('user_id', $authUserId)->sum('remaining_credits');
-        $latestAnnouncement = Announcement::latest()->first();
-        $policies = Policy::all();
+        $currentDate = Carbon::now('Asia/Manila')->toDateString();
 
-        $attendanceApproved = EmployeeAttendance::where('users_id', $authUserId)
-                                 ->where('status', 'Approved')
-                                 ->count();
+        $userId = $request->input('user_id');
+        $data = EmployeeAttendance::where('users_id', $userId)
+            ->whereDate('created_at', $currentDate)
+            ->get();
 
-        $leaveApproved = LeaveRequest::where('users_id', $authUserId)
-                                  ->where('status', 'Approved')
-                                  ->count();
-
-        $leavePending = LeaveRequest::where('users_id', $authUserId)
-                                  ->where('status', 'Pending')
-                                  ->count();
-
-        $record = EmploymentRecord::where('users_id', $user->id)->get();
-        $salrecord = EmployementSalary::where('users_id', $user->id)->get();
-
-        // Filter attendance data based on status_code and date range
-        $data = EmployeeAttendance::where('users_id', $authUserId)
-            ->whereIn('status_code', ['Active', 'Approved']);
-
-        if ($startDate && $endDate) {
-            $data->whereBetween('date', [$startDate, $endDate]);
-        }
-
-        $filteredData = $data->get();
-
-        $department = $user->department;
-        $supervisor = $user->supervisor;
-
-        if ($request->ajax()) {
-            $leaveRequests = LeaveRequest::where('users_id', $authUserId)
-                ->where(function($query) use ($startDate, $endDate) {
-                    $query->whereBetween('start_date', [$startDate, $endDate])
-                          ->orWhereBetween('end_date', [$startDate, $endDate])
-                          ->orWhereRaw('? BETWEEN start_date AND end_date', [$startDate])
-                          ->orWhereRaw('? BETWEEN start_date AND end_date', [$endDate]);
-                })
-                ->get();
+        if($data === null || $data->isEmpty()){
             return response()->json([
-                'attendance' => $filteredData,
-                'leaves' => $leaveRequests,
-            ]);
+                'status' => 'success',
+                'message' => 'You have not timed in today'
+            ], 200);
         }
-
-        $total = EmployeeAttendance::sum('timeTotal');
-        $all = DB::table('attendance')->get();
-        $empatt = DB::table('attendance')->where('users_id', $authUserId)->get();
-        $latest = EmployeeAttendance::where('users_id', $authUserId)->latest()->first();
-
-        $today = Carbon::today();
-
-        // Get the nearest holiday after or equal to today
-        $nearestHoliday = SettingsHoliday::where('holidayDate', '>=', $today)
-                                          ->orderBy('holidayDate', 'asc')
-                                          ->first();
-
-        return view('emp.dashboard', compact(
-            'attendanceApproved', 'policies', 'user', 'empatt', 'all', 'total', 'latest',
-            'filteredData', 'supervisor', 'record', 'salrecord', 'leaveApproved',
-            'leavePending', 'nearestHoliday', 'latestAnnouncement', 'totalLeaveCredits',
-            'breaks', 'maxBreaks'
-        ));
-    }
-
-
-    public function getUserAttendance(Request $request)
-    {
-        $authUserId = Auth::id();
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
-
-    // Fetch attendance data with status_code filter
-    $attendanceData = EmployeeAttendance::where('users_id', $authUserId)
-        ->whereBetween('date', [$startDate, $endDate])
-        ->whereIn('status_code', ['Active', 'Approved'])  // Add status_code filter
-        ->select('date', 'timeIn', 'timeOut', 'timeTotal', 'totalLate')
-        ->get();
-
-        // Fetch leave requests with leave type
-        $leaveRequests = LeaveRequest::with('leaveType')
-            ->where('users_id', $authUserId)
-            ->where(function($query) use ($startDate, $endDate) {
-                $query->whereBetween('start_date', [$startDate, $endDate])
-                    ->orWhereBetween('end_date', [$startDate, $endDate])
-                    ->orWhereRaw('? BETWEEN start_date AND end_date', [$startDate])
-                    ->orWhereRaw('? BETWEEN start_date AND end_date', [$endDate]);
-            })
-            ->get();
-
-        // Fetch approved overtime requests
-        $approvedOvertime = OvertimeRequest::where('users_id', $authUserId)
-            ->whereBetween('date', [$startDate, $endDate])
-            ->where('status', 'Approved')
-            ->select('date', 'start_time', 'end_time', 'total_hours', 'reason')
-            ->get();
 
         return response()->json([
-            'attendance' => $attendanceData,
-            'leaves' => $leaveRequests,
-            'overtime' => $approvedOvertime,
-        ]);
+            'status' => 'success',
+            'data' => $data
+        ], 200);
+
     }
 
     // ** Clock In ** //
@@ -285,17 +185,7 @@ class AttendanceController extends Controller
     }
 
 
-    public function getattendance(Request $request){
 
-        $userId = $request->input('user_id');
-        $data = EmployeeAttendance::where('users_id', $userId)->get();
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $data
-        ], 200);
-
-    }
 
 
     // ** TIME OUT ** //
@@ -303,32 +193,33 @@ class AttendanceController extends Controller
     {
         try{
 
-            // $now = Carbon::now('Asia/Manila');
-            // $dateToday = $now->toDateString();
-            // $dateYesterday = $now->copy()->subDay()->toDateString();
+            $now = Carbon::now('Asia/Manila');
+            $dateToday = $now->toDateString();
+            $dateYesterday = $now->copy()->subDay()->toDateString();
 
 
-            // $timeIn = $this->employeeAttendance()
-            //     ->where(function ($query) use ($dateToday, $dateYesterday) {
-            //         $query->whereDate('date', $dateToday)
-            //             ->orWhereDate('date', $dateYesterday);
-            //     })
-            //     ->whereNull('timeOut')
-            //     ->latest('timeIn')
-            //     ->first();
+            $timeIn = auth()->user()->employeeAttendance()
+                ->where(function ($query) use ($dateToday, $dateYesterday) {
+                    $query->whereDate('date', $dateToday)
+                        ->orWhereDate('date', $dateYesterday);
+                })
+                ->whereNull('timeOut')
+                ->latest('timeIn')
+                ->first();
 
-            // if (!$timeIn) {
-            //     return back()->with('error', "You don't have a time-in record. Please time in first.");
-            // }
-
-
-
+            if (!$timeIn) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => "You don't have a time-in record. Please time in first."
+                ], 400);
+            }
 
             $request->user()->clockoutt();
 
+
             return response()->json([
                     'status' => 'success',
-                    'message' => 'You have successfully timed out. Thank you for your hard work!'
+                    'message' => 'You have successfully timed out. Thank you for your hard work!',
                 ], 200);
         }
         catch (Exception $e) {
@@ -338,6 +229,257 @@ class AttendanceController extends Controller
 
     }
 
+
+    public function startBreak15m(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            $currentDate = Carbon::now('Asia/Manila')->toDateString();
+
+            // Get the attendance record for today
+            $attendance = EmployeeAttendance::where('users_id', $user->id)
+                            ->where('date', $currentDate)
+                            ->first();
+
+            if (!$attendance) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Attendance record not found for today.'
+            ], 404);
+            }
+
+            // Get the max number of breaks allowed from settings
+            $maxBreaks = BreakSettings::first()->max_breaks;
+
+            // Decode the current breaks array or initialize it
+            $breaks = $attendance->breaks ? json_decode($attendance->breaks, true) : [];
+
+            // Check if there's an ongoing break (end is null)
+            foreach ($breaks as $break) {
+            if ($break['end'] === null) {
+                return response()->json([
+                'status' => 'error',
+                'message' => 'You already have an ongoing 15-minute break.'
+                ], 400);
+            }
+            }
+
+            // Check if the max number of breaks is already reached
+            if (count($breaks) >= $maxBreaks) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'You have reached the maximum number of 15-minute breaks for today.'
+            ], 400);
+            }
+
+            // Add a new break with the start time in hh:mm:ss AM/PM format and no end time
+            $breaks[] = ['start' => Carbon::now('Asia/Manila')->format('h:i:s A'), 'end' => null];
+            $attendance->breaks = json_encode($breaks);
+            $attendance->save();
+
+            return response()->json([
+            'status' => 'success',
+            'message' => '15-minute break started.',
+            'breaks' => $breaks
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Start Break Error: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred while starting the break.'
+            ], 500);
+        }
+    }
+
+
+    public function endBreak15m(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            $currentDate = Carbon::now('Asia/Manila')->toDateString();
+
+            // Get the attendance record for today
+            $attendance = EmployeeAttendance::where('users_id', $user->id)
+                            ->where('date', $currentDate)
+                            ->first();
+
+            if (!$attendance) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Attendance record not found for today.'
+            ], 404);
+            }
+
+            // Decode the breaks array
+            $breaks = $attendance->breaks ? json_decode($attendance->breaks, true) : [];
+
+            // Find the first break that has a start time but no end time
+            $breakEnded = false;
+            foreach ($breaks as &$break) {
+            if ($break['start'] && !$break['end']) {
+                // Set the end time in hh:mm:ss AM/PM format
+                $break['end'] = Carbon::now('Asia/Manila')->format('h:i:s A');
+                $breakEnded = true;
+                break;
+            }
+            }
+
+            if (!$breakEnded) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No active 15-mins break to end.'
+            ], 400);
+            }
+
+            // Save the updated breaks array
+            $attendance->breaks = json_encode($breaks);
+            $attendance->save();
+
+            return response()->json([
+            'status' => 'success',
+            'message' => '15-minute break ended.',
+            'breaks' => $breaks
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('End Break Error: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred while ending the break.'
+            ], 500);
+        }
+    }
+
+
+
+
+    public function startBreak1h(Request $request)
+    {
+        //start break 1h
+
+        $now = Carbon::now('Asia/Manila');
+        $dateToday = $now->toDateString();
+        $dateYesterday = $now->copy()->subDay()->toDateString();
+
+    // Look for attendance records that may have started yesterday and continued into today
+        $breakin = EmployeeAttendance::where('users_id', auth()->user()->id)
+        ->whereIn('date', [$dateYesterday, $dateToday])
+        ->whereNull('breakIn')
+        ->latest('date')
+        ->first();
+
+    if (!$breakin) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'You have already taken a break or have not timed in yet.'
+        ], 400);
+    }
+
+    // Check if the user has already timed out
+    $timeout = EmployeeAttendance::where('users_id', auth()->user()->id)
+        ->whereIn('date', [$dateYesterday, $dateToday])
+        ->whereNotNull('timeOut')
+        ->latest('date')
+        ->first();
+
+    if ($timeout) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'You have already timed out.'
+        ], 400);
+    }
+
+    $breakInTime = $now;
+    $breakEndTime = $breakInTime->copy()->addHour(); // Add 1 hour to calculate break end time
+
+    $breakin->update([
+        'breakIn' => $breakInTime->format('h:i:s A'),
+        'breakEnd' => $breakEndTime->format('h:i:s A'),
+    ]);
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'You have successfully started your break.',
+        'data' => $breakin
+    ], 200);
+    }
+
+
+    public function endBreak1h(Request $request)
+    {
+
+        $now = Carbon::now('Asia/Manila');
+        $dateToday = $now->toDateString();
+        $dateYesterday = $now->copy()->subDay()->toDateString();
+
+        // Check if the user has already timed out
+        $timeout = EmployeeAttendance::where('users_id', auth()->user()->id)
+            ->whereIn('date', [$dateYesterday, $dateToday])
+            ->whereNotNull('timeOut')
+            ->latest('date')
+            ->first();
+
+        if ($timeout) {
+            return response()->json([
+            'status' => 'error',
+            'message' => 'You have already timed out.'
+            ], 400);
+        }
+
+        $breakout = EmployeeAttendance::where('users_id', auth()->user()->id)
+            ->whereIn('date', [$dateYesterday, $dateToday])
+            ->whereNotNull('breakIn')
+            ->whereNull('breakOut')
+            ->latest('date')
+            ->first();
+
+        if (!$breakout) {
+            return response()->json([
+            'status' => 'error',
+            'message' => 'You have not taken a break yet or have already returned.'
+            ], 400);
+        }
+
+        $breakInTime = Carbon::parse($breakout->breakIn);
+        $breakOutTime = $now;
+        $diffInMinutes = $breakInTime->diffInMinutes($breakOutTime);
+        $breakLateFormat = null;
+
+        // Check if break time exceeded 60 minutes
+        if ($diffInMinutes > 60) {
+            $exceededMinutes = $diffInMinutes - 60;
+            $breakLateFormat = CarbonInterval::minutes($exceededMinutes)->cascade()->format('%H:%I:%S');
+            $breakout->update([
+                'breakLate' => $breakLateFormat,
+            ]);
+        }
+
+        $breakEndTime = Carbon::parse($breakout->breakEnd);
+        if ($breakOutTime->greaterThan($breakEndTime)) {
+            $exceededMinutes = $breakOutTime->diffInMinutes($breakEndTime);
+            $breakLateFormat = CarbonInterval::minutes($exceededMinutes)->cascade()->format('%H:%I:%S');
+            $breakout->update([
+                'breakLate' => $breakLateFormat,
+            ]);
+        }
+
+        $breakout->update([
+            'breakOut' => $now->format('h:i:s A'),
+        ]);
+
+        $message = 'Welcome Back!';
+        if ($breakLateFormat) {
+            $message .= ' You were late by ' . $breakLateFormat . ' (HH:MM:SS).';
+        }
+
+
+
+        return response()->json([
+            'status' => 'success',
+            'message' => '1-hour break ended successfully.',
+            'data' => $breakout
+        ], 200);
+
+    }
 
 
 

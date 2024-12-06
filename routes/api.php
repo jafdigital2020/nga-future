@@ -5,6 +5,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Employee\api\AttendanceController;
 use App\Http\Controllers\Employee\api\InformationController;
+use App\Http\Controllers\Employee\api\BankController;
+use App\Http\Controllers\Employee\api\LeaveController;
+use App\Http\Controllers\Employee\api\EmegencyContactController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -35,12 +39,47 @@ Route::middleware(['auth:sanctum'])->prefix('clock')->group(function () {
     // Clock Out
     Route::post('out', [AttendanceController::class, 'clockout']);
 
+    //breaks
+    Route::post('breakout15m', [AttendanceController::class, 'startBreak15m']);
+    Route::post('breakin15m', [AttendanceController::class, 'endBreak15m']);
+    Route::post('breakout1h', [AttendanceController::class, 'startBreak1h']);
+    Route::post('breakin1h', [AttendanceController::class, 'endBreak1h']);
+
+
 });
 
 //attendance
 Route::get('/gettodayattendance', [AttendanceController::class, 'getattendance']);
 
-Route::get('/getprofileinfomation', [InformationController::class, 'getProfileInformation']);
+
+//profileInformation
+Route::get('/profileinfomation/{id}', [InformationController::class, 'getProfileInformation']);
+
+
+
+
+//Addtional Info
+Route::get('/additionalinformation/{id}', [InformationController::class, 'getAdditionalInformation']);
+Route::post('/additionalinformation/{id}', [InformationController::class, 'createupdateAdditionalInformation']);
+
+//bankinformation
+Route::get('/bankinformation/{id}', [BankController::class, 'getBankInformation']);
+Route::post('/bankinformation/{id}', [BankController::class, 'createupdateBankInformation']);
+
+
+//emergency Contact
+Route::get('/emergencycontact/{id}', [EmegencyContactController::class, 'getEmegencyContact']);
+Route::post('/emergencycontact/{id}', [EmegencyContactController::class, 'createupdateEmegencyContact']);
+
+//leave request
+Route::get('/leaverequest', [LeaveController::class, 'getLeaveRequest']);
+Route::post('/leaverequest', [LeaveController::class, 'createLeaveRequest']);
+Route::put('/leaverequest/{id}', [LeaveController::class, 'updateLeaveRequest']);
+Route::delete('/leaverequest/{id}', [LeaveController::class, 'deleteLeaveRequest']);
+
+
+
+
 
 
 

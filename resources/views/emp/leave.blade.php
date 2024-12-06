@@ -246,11 +246,11 @@
                                         <img src="{{ asset('images/default.png') }}" alt="Profile Image" />
                                         @endif
                                     </a>
-                                    {{ $req->approver 
-                                        ? ($req->approver->fName || $req->approver->lName 
-                                            ? $req->approver->fName . ' ' . $req->approver->lName 
-                                            : $req->approver->name) 
-                                        : 'Not Approved Yet' 
+                                    {{ $req->approver
+                                        ? ($req->approver->fName || $req->approver->lName
+                                            ? $req->approver->fName . ' ' . $req->approver->lName
+                                            : $req->approver->name)
+                                        : 'Not Approved Yet'
                                     }}
 
                                 </h2>

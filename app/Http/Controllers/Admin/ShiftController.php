@@ -62,12 +62,12 @@ class ShiftController extends Controller
                     // Handle search for both combined fName and lName
                     $query->where(function ($query) use ($fName, $lName) {
                         $query->whereRaw('LOWER(fName) like ?', ['%' . strtolower($fName) . '%'])
-                              ->whereRaw('LOWER(lName) like ?', ['%' . strtolower($lName) . '%']);
+                            ->whereRaw('LOWER(lName) like ?', ['%' . strtolower($lName) . '%']);
                     });
                 } else {
                     // Single part, search in both fields
                     $query->whereRaw('LOWER(fName) like ?', ['%' . strtolower($name) . '%'])
-                          ->orWhereRaw('LOWER(lName) like ?', ['%' . strtolower($name) . '%']);
+                        ->orWhereRaw('LOWER(lName) like ?', ['%' . strtolower($name) . '%']);
                 }
             });
         }
