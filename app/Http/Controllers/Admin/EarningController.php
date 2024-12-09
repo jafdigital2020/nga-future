@@ -54,6 +54,7 @@ class EarningController extends Controller
                 'name' => $request->name,
                 'amount' => $request->amount,
                 'type' => $request->type,
+                'tax_type' => $request->tax_type,
                 'inclusion_limit' => $request->is_every_payroll == 1 ? null : $request->inclusion_limit, // Null if every payroll
                 'is_every_payroll' => $request->is_every_payroll,
             ]);
