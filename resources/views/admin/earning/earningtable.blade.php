@@ -32,6 +32,7 @@
                             <th>Earning Name</th>
                             <th>Amount</th>
                             <th>Type</th>
+                            <th>Tax Type</th>
                             <th>Inclusion Limit</th>
                             <th>Every Payroll</th>
                             <th class="text-right">Actions</th>
@@ -42,6 +43,7 @@
                         <tr>
                             <td>{{ $earning->name }}</td>
                             <td>{{ $earning->amount }}</td>
+                            <td>{{ $earning->tax_type }}</td>
                             <td>{{ $earning->type }}</td>
                             <td>
                                 @if($earning->is_every_payroll)
@@ -110,10 +112,22 @@
                             <div class="form-group">
                                 <label>Type<span class="text-danger">*</span></label>
                                 <div class="form-group form-focus select-focus">
-                                    <select class="form-control" name="type">
+                                    <select class="form-select" name="type" required>
                                         <option value="">-</option>
                                         <option value="fixed">Fixed</option>
                                         <option value="percentage">Percentage</option>
+                                    </select> <label class="focus-label">Select Type</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label>Tax Type<span class="text-danger">*</span></label>
+                                <div class="form-group form-focus select-focus">
+                                    <select class="form-select" name="tax_type" required>
+                                        <option value="">-</option>
+                                        <option value="non-taxable">Non Taxable</option>
+                                        <option value="taxable">Taxable</option>
                                     </select> <label class="focus-label">Select Type</label>
                                 </div>
                             </div>

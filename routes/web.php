@@ -10,7 +10,7 @@ Route::get('/', function () {
 
 Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'webLogin'])->name('web.login');
 
-Auth::routes(['register' => false]);
+Auth::routes(['register' => true]);
 
 
 // Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

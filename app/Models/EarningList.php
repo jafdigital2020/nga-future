@@ -10,7 +10,7 @@ class EarningList extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'amount', 'type', 'inclusion_limit', 'is_every_payroll'];
+    protected $fillable = ['name', 'amount', 'type', 'inclusion_limit', 'is_every_payroll', 'tax_type'];
 
     public function userEarning()
     {
