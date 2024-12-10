@@ -66,7 +66,8 @@
                                             data-name="{{ $earning->name }}" data-amount="{{ $earning->amount }}"
                                             data-type="{{ $earning->type }}"
                                             data-inclusion_limit="{{ $earning->inclusion_limit }}"
-                                            data-is_every_payroll="{{ $earning->is_every_payroll }}">
+                                            data-is_every_payroll="{{ $earning->is_every_payroll }}"
+                                            data-tax_type ="{{ $earning->tax_type }}">
                                             <i class="fa fa-pencil m-r-5"></i> Edit</a>
                                         <a class="dropdown-item delete-earning" href="#" data-id="{{ $earning->id }}">
                                             <i class="fa fa-trash-o m-r-5"></i> Delete</a>
@@ -189,6 +190,18 @@
                         </div>
                         <div class="col-sm-12">
                             <div class="form-group">
+                                <label>Tax Type<span class="text-danger">*</span></label>
+                                <div class="form-group form-focus select-focus">
+                                    <select class="form-control" name="tax_type" id="tax_typee" required>
+                                        <option value="">-</option>
+                                        <option value="non-taxable">Non Taxable</option>
+                                        <option value="taxable">Taxable</option>
+                                    </select> <label class="focus-label">Select Type</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-12">
+                            <div class="form-group">
                                 <label>Type<span class="text-danger">*</span></label>
                                 <div class="form-group form-focus select-focus">
                                     <select class="form-control" name="typee" id="typee">
@@ -272,6 +285,7 @@
         var type = $(this).data('type');
         var limit = $(this).data('inclusion_limit');
         var everyPayroll = $(this).data('is_every_payroll');
+        var taxType = $(this).data('tax_type');
 
         $('#earning_ide').val(earningId);
         $('#namee').val(name);
@@ -279,6 +293,7 @@
         $('#typee').val(type);
         $('#inclusion_limite').val(limit);
         $('#is_every_payrolle').val(everyPayroll);
+        $('#tax_typee').val(taxType);
 
 
         $('#editEarningForm').attr('action', '/admin/earning/edit/' +

@@ -153,8 +153,8 @@ class User extends Authenticatable
         ];
 
         return self::whereIn('department', $departments)
-                   ->whereNotIn('role_as', $supervisorRoles)
-                   ->get();
+            ->whereNotIn('role_as', $supervisorRoles)
+            ->get();
     }
 
 
@@ -196,9 +196,9 @@ class User extends Authenticatable
     }
 
 
-    public function employeeAttendance ()
+    public function employeeAttendance()
     {
-        return $this->hasMany(EmployeeAttendance::class, 'users_id' , 'id');
+        return $this->hasMany(EmployeeAttendance::class, 'users_id', 'id');
     }
 
     public function editAttendance()
@@ -231,12 +231,12 @@ class User extends Authenticatable
         return $this->hasMany(BankInformation::class, 'users_id', 'id');
     }
 
-    public function employmentRecord (): HasMany
+    public function employmentRecord(): HasMany
     {
         return $this->hasMany(EmploymentRecord::class, 'users_id', 'id');
     }
 
-    public function employmentSalary (): HasMany
+    public function employmentSalary(): HasMany
     {
         return $this->hasMany(EmployementSalary::class, 'users_id', 'id');
     }
@@ -281,9 +281,9 @@ class User extends Authenticatable
         return $this->hasMany(User::class, 'reporting_to');
     }
 
-    public function announcement ()
+    public function announcement()
     {
-        return $this->hasMany(Announcement::class, 'users_id' , 'id');
+        return $this->hasMany(Announcement::class, 'users_id', 'id');
     }
 
     public function postedBy()
@@ -303,27 +303,27 @@ class User extends Authenticatable
 
     public function otrequest()
     {
-        return $this->hasMany(OvertimeRequest::class, 'users_id' , 'id');
+        return $this->hasMany(OvertimeRequest::class, 'users_id', 'id');
     }
 
-    public function otcredits ()
+    public function otcredits()
     {
-        return $this->hasMany(OvertimeCredits::class, 'users_id' , 'id');
+        return $this->hasMany(OvertimeCredits::class, 'users_id', 'id');
     }
 
-    public function attendanceCredits ()
+    public function attendanceCredits()
     {
-        return $this->hasMany(AttendanceCredit::class, 'user_id' , 'id');
+        return $this->hasMany(AttendanceCredit::class, 'user_id', 'id');
     }
 
     public function userDeductions()
     {
-        return $this->hasMany(UserDeduction::class, 'users_id' , 'id');
+        return $this->hasMany(UserDeduction::class, 'users_id', 'id');
     }
 
     public function userEarnings()
     {
-        return $this->hasMany(UserEarning::class, 'users_id' , 'id');
+        return $this->hasMany(UserEarning::class, 'users_id', 'id');
     }
 
     public function userAssets()
@@ -333,12 +333,12 @@ class User extends Authenticatable
 
     public function loans()
     {
-        return $this->hasMany(Loan::class, 'users_id' , 'id');
+        return $this->hasMany(Loan::class, 'users_id', 'id');
     }
 
     public function leaveCredits()
     {
-        return $this->hasMany(LeaveCredit::class, 'user_id' , 'id');
+        return $this->hasMany(LeaveCredit::class, 'user_id', 'id');
     }
 
     public function salaryRecords()
@@ -368,7 +368,7 @@ class User extends Authenticatable
 
     public function memos()
     {
-        return $this->hasMany(Memo::class, 'users_id' , 'id');
+        return $this->hasMany(Memo::class, 'users_id', 'id');
     }
 
     public function createdLocationSetting()
@@ -516,7 +516,6 @@ class User extends Authenticatable
 
             Log::info("User is outside all geofences and temporary radius.");
             return response()->json(['status' => 'error', 'message' => 'You are outside all assigned geofence areas.']);
-
         } catch (\Exception $e) {
             Log::error('Check-in Error: ' . $e->getMessage(), ['exception' => $e]);
             return response()->json(['status' => 'error', 'message' => 'An unexpected error occurred. Please try again later.']);
@@ -540,107 +539,107 @@ class User extends Authenticatable
     }
 
     public function breakIn()
-{
-    $now = Carbon::now('Asia/Manila');
-    $dateToday = $now->toDateString();
-    $dateYesterday = $now->copy()->subDay()->toDateString();
+    {
+        $now = Carbon::now('Asia/Manila');
+        $dateToday = $now->toDateString();
+        $dateYesterday = $now->copy()->subDay()->toDateString();
 
-    // Look for attendance records that may have started yesterday and continued into today
-    $breakin = $this->employeeAttendance()
-        ->whereIn('date', [$dateYesterday, $dateToday])
-        ->whereNull('breakIn')
-        ->latest('date')
-        ->first();
+        // Look for attendance records that may have started yesterday and continued into today
+        $breakin = $this->employeeAttendance()
+            ->whereIn('date', [$dateYesterday, $dateToday])
+            ->whereNull('breakIn')
+            ->latest('date')
+            ->first();
 
-    if (!$breakin) {
-        return back()->with('error', 'You have already taken a break or have not timed in yet.');
-    }
+        if (!$breakin) {
+            return back()->with('error', 'You have already taken a break or have not timed in yet.');
+        }
 
-    // Check if the user has already timed out
-    $timeout = $this->employeeAttendance()
-        ->whereIn('date', [$dateYesterday, $dateToday])
-        ->whereNotNull('timeOut')
-        ->latest('date')
-        ->first();
+        // Check if the user has already timed out
+        $timeout = $this->employeeAttendance()
+            ->whereIn('date', [$dateYesterday, $dateToday])
+            ->whereNotNull('timeOut')
+            ->latest('date')
+            ->first();
 
-    if ($timeout) {
-        return back()->with('error', 'You have already timed out.');
-    }
+        if ($timeout) {
+            return back()->with('error', 'You have already timed out.');
+        }
 
-    $breakInTime = $now;
-    $breakEndTime = $breakInTime->copy()->addHour(); // Add 1 hour to calculate break end time
+        $breakInTime = $now;
+        $breakEndTime = $breakInTime->copy()->addHour(); // Add 1 hour to calculate break end time
 
-    $breakin->update([
-        'breakIn' => $breakInTime->format('h:i:s A'),
-        'breakEnd' => $breakEndTime->format('h:i:s A'),
-    ]);
-
-    return back()->with('success', 'You have successfully started your break.');
-}
-
-
-public function breakOut()
-{
-    $now = Carbon::now('Asia/Manila');
-    $dateToday = $now->toDateString();
-    $dateYesterday = $now->copy()->subDay()->toDateString();
-
-    // Check if the user has already timed out
-    $timeout = $this->employeeAttendance()
-        ->whereIn('date', [$dateYesterday, $dateToday])
-        ->whereNotNull('timeOut')
-        ->latest('date')
-        ->first();
-
-    if ($timeout) {
-        return back()->with('error', 'You have already timed out.');
-    }
-
-    $breakout = $this->employeeAttendance()
-        ->whereIn('date', [$dateYesterday, $dateToday])
-        ->whereNotNull('breakIn')
-        ->whereNull('breakOut')
-        ->latest('date')
-        ->first();
-
-    if (!$breakout) {
-        return back()->with('error', 'You have not taken a break yet or have already returned.');
-    }
-
-    $breakInTime = Carbon::parse($breakout->breakIn);
-    $breakOutTime = $now;
-    $diffInMinutes = $breakInTime->diffInMinutes($breakOutTime);
-    $breakLateFormat = null;
-
-    // Check if break time exceeded 60 minutes
-    if ($diffInMinutes > 60) {
-        $exceededMinutes = $diffInMinutes - 60;
-        $breakLateFormat = CarbonInterval::minutes($exceededMinutes)->cascade()->format('%H:%I:%S');
-        $breakout->update([
-            'breakLate' => $breakLateFormat,
+        $breakin->update([
+            'breakIn' => $breakInTime->format('h:i:s A'),
+            'breakEnd' => $breakEndTime->format('h:i:s A'),
         ]);
+
+        return back()->with('success', 'You have successfully started your break.');
     }
 
-    $breakEndTime = Carbon::parse($breakout->breakEnd);
-    if ($breakOutTime->greaterThan($breakEndTime)) {
-        $exceededMinutes = $breakOutTime->diffInMinutes($breakEndTime);
-        $breakLateFormat = CarbonInterval::minutes($exceededMinutes)->cascade()->format('%H:%I:%S');
+
+    public function breakOut()
+    {
+        $now = Carbon::now('Asia/Manila');
+        $dateToday = $now->toDateString();
+        $dateYesterday = $now->copy()->subDay()->toDateString();
+
+        // Check if the user has already timed out
+        $timeout = $this->employeeAttendance()
+            ->whereIn('date', [$dateYesterday, $dateToday])
+            ->whereNotNull('timeOut')
+            ->latest('date')
+            ->first();
+
+        if ($timeout) {
+            return back()->with('error', 'You have already timed out.');
+        }
+
+        $breakout = $this->employeeAttendance()
+            ->whereIn('date', [$dateYesterday, $dateToday])
+            ->whereNotNull('breakIn')
+            ->whereNull('breakOut')
+            ->latest('date')
+            ->first();
+
+        if (!$breakout) {
+            return back()->with('error', 'You have not taken a break yet or have already returned.');
+        }
+
+        $breakInTime = Carbon::parse($breakout->breakIn);
+        $breakOutTime = $now;
+        $diffInMinutes = $breakInTime->diffInMinutes($breakOutTime);
+        $breakLateFormat = null;
+
+        // Check if break time exceeded 60 minutes
+        if ($diffInMinutes > 60) {
+            $exceededMinutes = $diffInMinutes - 60;
+            $breakLateFormat = CarbonInterval::minutes($exceededMinutes)->cascade()->format('%H:%I:%S');
+            $breakout->update([
+                'breakLate' => $breakLateFormat,
+            ]);
+        }
+
+        $breakEndTime = Carbon::parse($breakout->breakEnd);
+        if ($breakOutTime->greaterThan($breakEndTime)) {
+            $exceededMinutes = $breakOutTime->diffInMinutes($breakEndTime);
+            $breakLateFormat = CarbonInterval::minutes($exceededMinutes)->cascade()->format('%H:%I:%S');
+            $breakout->update([
+                'breakLate' => $breakLateFormat,
+            ]);
+        }
+
         $breakout->update([
-            'breakLate' => $breakLateFormat,
+            'breakOut' => $now->format('h:i:s A'),
         ]);
+
+        $message = 'Welcome Back!';
+        if ($breakLateFormat) {
+            $message .= ' You were late by ' . $breakLateFormat . ' (HH:MM:SS).';
+        }
+
+        return back()->with('success', $message);
     }
-
-    $breakout->update([
-        'breakOut' => $now->format('h:i:s A'),
-    ]);
-
-    $message = 'Welcome Back!';
-    if ($breakLateFormat) {
-        $message .= ' You were late by ' . $breakLateFormat . ' (HH:MM:SS).';
-    }
-
-    return back()->with('success', $message);
-}
 
     // public function checkOut()
     // {
@@ -726,11 +725,12 @@ public function breakOut()
 
             // Parse shift start and end times
             $shiftStart = Carbon::parse($timeIn->timeIn, 'Asia/Manila');
-            $shiftEnd = Carbon::parse($timeOut, 'Asia/Manila');
+            $shiftEnd = Carbon::parse($timeIn->shiftOver, 'Asia/Manila'); // Assuming 'shiftOver' is the shift end time
 
             // Adjust timeOut if it's past midnight (i.e., next day)
-            if ($shiftEnd->lt($shiftStart)) {
-                $shiftEnd->addDay();
+            $shiftOut = Carbon::parse($timeOut, 'Asia/Manila');
+            if ($shiftOut->lt($shiftStart)) {
+                $shiftOut->addDay();
             }
 
             // Define night shift period
@@ -741,10 +741,10 @@ public function breakOut()
             $night_diff_seconds = 0;
 
             // Ensure shift intersects with the night shift period
-            if ($shiftStart <= $nightShiftEndNextDay && $shiftEnd >= $nightShiftStartToday) {
+            if ($shiftStart <= $nightShiftEndNextDay && $shiftOut >= $nightShiftStartToday) {
                 // Determine the actual start of the night differential within the shift
                 $nightStart = $shiftStart->max($nightShiftStartToday);
-                $nightEnd = $shiftEnd->min($nightShiftEndNextDay);
+                $nightEnd = $shiftOut->min($nightShiftEndNextDay);
 
                 // Calculate the duration of the overlap in seconds
                 $night_diff_seconds = $nightEnd->diffInSeconds($nightStart);
@@ -756,19 +756,26 @@ public function breakOut()
             $seconds = $night_diff_seconds % 60;
             $night_diff_hours = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
 
-            // Save night_diff_hours to the database
+            // Check if the timeOut is earlier than shiftEnd (Undertime)
+            $status = 'On Time'; // Default status
+            if ($shiftOut->lt($shiftEnd)) {
+                $status = 'Undertime';
+            }
+
+            // Save the timeOut and update the status
             $timeIn->update([
                 'timeOut' => $timeOut,
                 'night_diff_hours' => $night_diff_hours,
+                'status' => $status, // Update the status to "Undertime" if timed out earlier than shift end
             ]);
 
             return back()->with('success', 'You have successfully timed out. Thank you for your hard work!');
-
         } catch (Exception $e) {
             Log::error('Check-out Error: ' . $e->getMessage(), ['exception' => $e]);
             return back()->with('error', 'An unexpected error occurred. Please try again later.');
         }
     }
+
 
     // **Make the api Clockout**
     public function clockoutt()
@@ -834,7 +841,6 @@ public function breakOut()
             ]);
 
             return response()->json(['status' => 'success', 'message' => 'You have successfully timed out. Thank you for your hard work!']);
-
         } catch (Exception $e) {
             Log::error('Check-out Error: ' . $e->getMessage(), ['exception' => $e]);
             return response()->json(['status' => 'error', 'message' => 'An unexpected error occurred. Please try again later.']);
@@ -885,7 +891,4 @@ public function breakOut()
             $admin->notify(new MissedLogoutNotification($user, $date));
         }
     }
-
-
-
 }

@@ -1407,8 +1407,9 @@ class PayrollController extends Controller
     // ** View Payslip ** //
     public function viewPayslip($id)
     {
-        $view = SalaryTable::with('user')->findOrFail($id);
-    
+        $view = SalaryTable::with(['user.bankInfo'])->findOrFail($id);
+      
+
         // Decode JSON columns
         $earnings = json_decode($view->earnings, true);
         $loans = json_decode($view->loans, true);
@@ -1439,7 +1440,8 @@ class PayrollController extends Controller
             'loans', 
             'deductions', 
             'taxableEarnings', 
-            'nonTaxableEarnings'
+            'nonTaxableEarnings',
+            
         ));
     }
     

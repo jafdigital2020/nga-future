@@ -1109,14 +1109,41 @@ class PayrollController extends Controller
    
    public function viewPayslip($id)
    {
-        $view = SalaryTable::with('user')->findOrFail($id);
-        
-        // Decode JSON columns
-        $earnings = json_decode($view->earnings, true);
-        $loans = json_decode($view->loans, true);
-        $deductions = json_decode($view->deductions, true);
+    $view = SalaryTable::with(['user.bankInfo'])->findOrFail($id);
+      
+    // Decode JSON columns
+    $earnings = json_decode($view->earnings, true);
+    $loans = json_decode($view->loans, true);
+    $deductions = json_decode($view->deductions, true);
 
-       return view('hr.payroll.payslipview', compact('view'));
+    // Separate taxable and non-taxable earnings
+    $taxableEarnings = [];
+    $nonTaxableEarnings = [];
+
+    if (!empty($earnings)) {
+        foreach ($earnings as $earning) {
+            // Fetch tax_type from EarningList using earning_id
+            $earningDetails = EarningList::find($earning['earning_id']);
+            $taxType = $earningDetails->tax_type ?? null;
+
+            // Separate based on tax_type
+            if ($taxType === 'taxable') {
+                $taxableEarnings[] = array_merge($earning, ['tax_type' => $taxType]);
+            } elseif ($taxType === 'non-taxable') {
+                $nonTaxableEarnings[] = array_merge($earning, ['tax_type' => $taxType]);
+            }
+        }
+    }
+
+       return view('hr.payroll.payslipview', compact(
+        'view', 
+        'earnings', 
+        'loans', 
+        'deductions', 
+        'taxableEarnings', 
+        'nonTaxableEarnings',
+        
+    ));
    }
 
    public function editPayslip($id)

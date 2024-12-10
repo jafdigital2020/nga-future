@@ -188,18 +188,20 @@
                             <td>{{ $attendance->timeOut }}</td>
                             <td>
                                 <span class="
-                                        {{ $attendance->status == 'Late' ? 'bg-danger' : 
-                                        ($attendance->status == 'On Time' ? 'bg-success' : 
-                                        ($attendance->status == 'Edited' ? 'bg-warning' : '')) }}
-                                    " style="
-                                        padding: 5px 10px;
-                                        border-radius: 5px;
-                                        font-size: 12px;
-                                        font-weight: bold;
-                                        color: white;
-                                    ">
-                                    {{ $attendance->status }}
-                                </span>
+                                {{ $attendance->status == 'Late' ? 'bg-danger' : 
+                                ($attendance->status == 'On Time' ? 'bg-success' : 
+                                ($attendance->status == 'Edited' ? 'bg-warning' : 
+                                ($attendance->status == 'Undertime' ? 'bg-info' : ''))) }}
+                            " style="
+                                padding: 5px 10px;
+                                border-radius: 5px;
+                                font-size: 12px;
+                                font-weight: bold;
+                                color: white;
+                            ">
+                            {{ $attendance->status }}
+                        </span>
+                        
                             </td>
                             <td>
                                 <a href="#" class="address-link" data-latitude="{{ $attendance->latitude }}"
