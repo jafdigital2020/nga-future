@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Exception;
 use App\Models\User;
 use App\Models\EarningList;
 use App\Models\UserEarning;
@@ -106,7 +107,8 @@ class EarningController extends Controller
             $earning->amount = $request->input('amounte');
             $earning->type = $request->input('typee');
             $earning->inclusion_limit = $request->input('inclusion_limite');
-            $earning->is_every_payroll = $reqiest->input('is_every_payrolle');
+            $earning->is_every_payroll = $request->input('is_every_payrolle');
+            $earning->tax_type = $request->input('tax_type');
             $earning->save();
 
             return redirect()->back()->with('success', 'Earning updated successfully.');

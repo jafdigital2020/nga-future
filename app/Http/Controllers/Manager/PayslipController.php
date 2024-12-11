@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Salary;
 use App\Models\Payroll;
+use App\Models\EarningList;
 use Illuminate\Http\Request;
 use App\Models\EmployeeSalary;
 use App\Models\ApprovedAttendance;
@@ -22,36 +23,36 @@ class PayslipController extends Controller
     {
         $cutoffPeriod = $request->input('cutoff_period');
         $selectedYear = $request->input('year', now()->year);
-    
+
         $data = Payroll::query();
-    
+
         // Filter by authenticated user
         $data->where('users_id', auth()->id());
-    
+
         // Add filter for year if provided
         if (!empty($selectedYear)) {
             $data->where('year', $selectedYear);
         }
-    
+
         // Add filter for cutoff_period if provided
         if (!empty($cutoffPeriod)) {
             $data->where('cut_off', $cutoffPeriod);
         }
-    
+
         // Add filter for status being 'Payslip'
         $data->where('status', 'Payslip');
-    
+
         // Get the filtered data
         $payslip = $data->get();
-    
+
         return view('manager.payslip.index', compact('payslip', 'cutoffPeriod', 'selectedYear'));
     }
-    
+
     private function calculateCurrentCutoff($date)
     {
         $day = $date->day;
         $month = $date->month;
-        
+
         // Define cut-off periods with start and end dates
         $cutoffs = [
             0 => [26, 12, 10, 1],
@@ -79,26 +80,26 @@ class PayslipController extends Controller
             22 => [26, 11, 10, 12],
             23 => [11, 12, 25, 12],
         ];
-    
+
         // Determine the current cutoff period
         foreach ($cutoffs as $index => $cutoff) {
             [$startDay, $startMonth, $endDay, $endMonth] = $cutoff;
             $startDate = now()->setMonth($startMonth)->setDay($startDay);
             $endDate = now()->setMonth($endMonth)->setDay($endDay);
-    
+
             if ($startMonth > $endMonth) {
                 // Adjust the end year for December to January case
                 $endDate = $endDate->addYear();
             }
-    
+
             if ($date->between($startDate, $endDate)) {
                 return $index;
             }
         }
-    
+
         return 0; // Default to 0 if no match found
     }
-    
+
     private function getCutoffPeriodDates($cutoffPeriod, $year)
     {
         $cutoffs = [
@@ -127,31 +128,61 @@ class PayslipController extends Controller
             22 => ['start' => '11-26', 'end' => '12-10'],
             23 => ['start' => '12-11', 'end' => '12-25'],
         ];
-    
+
         $startDate = Carbon::createFromFormat('m-d', $cutoffs[$cutoffPeriod]['start'])->year($year);
         $endDate = Carbon::createFromFormat('m-d', $cutoffs[$cutoffPeriod]['end'])->year($year);
-    
+
         // Adjust the end year for December to January case
         if ($cutoffs[$cutoffPeriod]['start'] > $cutoffs[$cutoffPeriod]['end']) {
             $endDate = $endDate->addYear();
         }
-    
+
         return [
             'start' => $startDate,
             'end' => $endDate
         ];
     }
-    
- 
+
+
     public function viewPayslip($id)
     {
         $view = Payroll::findOrFail($id);
- 
-        return view('manager.payslip.view', compact('view'));
+
+        // Decode JSON columns
+        $earnings = json_decode($view->earnings, true);
+        $loans = json_decode($view->loans, true);
+        $deductions = json_decode($view->deductions, true);
+
+        // Separate taxable and non-taxable earnings
+        $taxableEarnings = [];
+        $nonTaxableEarnings = [];
+
+        if (!empty($earnings)) {
+            foreach ($earnings as $earning) {
+                // Fetch tax_type from EarningList using earning_id
+                $earningDetails = EarningList::find($earning['earning_id']);
+                $taxType = $earningDetails->tax_type ?? null;
+
+                // Separate based on tax_type
+                if ($taxType === 'taxable') {
+                    $taxableEarnings[] = array_merge($earning, ['tax_type' => $taxType]);
+                } elseif ($taxType === 'non-taxable') {
+                    $nonTaxableEarnings[] = array_merge($earning, ['tax_type' => $taxType]);
+                }
+            }
+        }
+        return view('manager.payslip.view', compact(
+            'view', 
+            'earnings', 
+            'loans', 
+            'deductions', 
+            'taxableEarnings', 
+            'nonTaxableEarnings'
+        ));
     }
- 
+
     public function download()
     {
-     return view('manager.payslip.pdf');
+        return view('manager.payslip.pdf');
     }
 }

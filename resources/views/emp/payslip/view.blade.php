@@ -136,7 +136,7 @@
                                     </ul>
 
                                 </div>
-                                <div class="col-sm-6 m-b-20">
+                                <div class="col-sm-6 m-b-20" style="margin-top: 70px;">
                                     <div class="invoice-details">
                                         <h3 class="text-uppercase">Payslip #{{ $view->id }}</h3>
                                         <ul class="list-unstyled">
@@ -189,33 +189,57 @@
                                     <thead>
                                         <tr>
                                             <th>Description</th>
-
                                             <th>Amount</th>
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <tr>
+                                            <td>Basic Pay</td>
+                                            <td>₱{{ number_format($view->basic_pay, 2) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Gross Pay</td>
+                                            <td>₱{{ number_format($view->gross_pay, 2) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Special Holiday</td>
+                                            <td>₱{{ number_format($view->special_holiday_pay, 2) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Regular Holiday</td>
+                                            <td>₱{{ number_format($view->regular_holiday_pay, 2) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Overtime Pay</td>
+                                            <td>₱{{ number_format($view->overtimeHours, 2) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Paid Leave</td>
+                                            <td>₱{{ number_format($view->paidLeave, 2) }}</td>
+                                        </tr>
+                            
                                         @php
-                                            $totalTaxable = 0; // Initialize total for taxable earnings
+                                            $totalTaxable = $view->basic_pay + $view->gross_pay + $view->special_holiday_pay + $view->regular_holiday_pay + $view->overtimeHours + $view->paidLeave; // Initialize total for taxable earnings
                                         @endphp
-
+                            
                                         @foreach ($taxableEarnings as $earning)
                                             <tr>
                                                 <td>{{ $earning['name'] }}</td>
-
-                                                <td>{{ number_format($earning['amount'], 2) }}</td>
+                                                <td>₱{{ number_format($earning['amount'], 2) }}</td>
                                             </tr>
                                             @php
                                                 $totalTaxable += $earning['amount']; // Sum up taxable earnings
                                             @endphp
                                         @endforeach
-
+                            
                                         <tr class="total">
                                             <td colspan="1"><strong>Total</strong></td>
-                                            <td><strong>{{ number_format($totalTaxable, 2) }}</strong></td>
+                                            <td><strong>₱{{ number_format($totalTaxable, 2) }}</strong></td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
+                            
 
                             <!-- Non-Taxable Earnings -->
                             <div class="section">
@@ -228,6 +252,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+
                                         @php $nonTaxableTotal = 0; @endphp
                                         @if (!empty($nonTaxableEarnings))
                                             @foreach ($nonTaxableEarnings as $earning)
@@ -242,6 +267,7 @@
                                                 <td colspan="2">No non-taxable earnings available.</td>
                                             </tr>
                                         @endif
+
                                         <tr class="total">
                                             <td><strong>Total</strong></td>
                                             <td><strong>{{ number_format($nonTaxableTotal, 2) }}</strong></td>
@@ -249,9 +275,6 @@
                                     </tbody>
                                 </table>
                             </div>
-
-
-
                             <!-- Deductions -->
                             <div class="section">
                                 <h2>Deductions</h2>
@@ -303,6 +326,44 @@
                                     </table>
                                 </div>
                             @endif
+
+                            <div class="section">
+                                <h2>Payment Methods</h2>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Bank Name</th>
+                                            <th>Account Name</th>
+                                            <th>Account Number</th>
+                                            <th>Net Pay</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>{{ $view->user->bankInfo->first()?->bankName ?? 'N/A' }}</td>
+                                            <td>{{ $view->user->bankInfo->first()?->bankAccName ?? 'N/A' }}</td>
+                                            <td>{{ $view->user->bankInfo->first()?->bankAccNumber ?? 'N/A' }}</td>
+                                            <td>₱{{ number_format($view->net_pay, 2) }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="validation-note"
+                                        style="margin-top: 30px; text-align: center; font-size: 14px; color: #555;">
+                                        <p
+                                            style="border-top: 1px solid #ddd; padding-top: 10px; line-height: 1.6; padding-left:100px; padding-right:100px;">
+                                            This payslip is an official document issued by
+                                            <strong>{{ $companySettings->company ?? 'the company' }}</strong>
+                                            and is considered valid without the need for a manual signature.
+                                            Should you require further proof of income, kindly reach out to the HR or
+                                            Accounting department.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
