@@ -10,7 +10,8 @@ use App\Models\PersonalInformation;
 class InformationController extends Controller
 {
     // <<<<<<<<< --- Profile Information --- >>>>>>>>>>
-    public function getProfileInformation($id){
+    public function getProfileInformation($id)
+    {
 
         $data = User::where('id', $id)->first();
 
@@ -51,7 +52,8 @@ class InformationController extends Controller
 
 
     // <<<<<<<<< --- Additional Information --- >>>>>>>>>>
-    public function getAdditionalInformation($id){
+    public function getAdditionalInformation($id)
+    {
 
         $data = PersonalInformation::where('users_id', $id)->first();
 
@@ -61,12 +63,12 @@ class InformationController extends Controller
         ], 200);
     }
 
-    public function createupdateAdditionalInformation($id, Request $request){
+    public function createupdateAdditionalInformation($id, Request $request)
+    {
 
         $info = PersonalInformation::where('users_id', $id)->first();
 
-        if($info)
-        {
+        if ($info) {
             $info->religion = $request->input('religion');
             $info->education = $request->input('education');
             $info->nationality = $request->input('nationality');
@@ -77,9 +79,9 @@ class InformationController extends Controller
             $info->save();
 
             return response()->json([
-            'status' => 'success',
-            'message' => 'Personal Information Updated',
-            'data' => $info
+                'status' => 'success',
+                'message' => 'Personal Information Updated',
+                'data' => $info
             ], 200);
 
         } else {
