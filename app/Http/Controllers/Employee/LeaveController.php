@@ -169,7 +169,7 @@ class LeaveController extends Controller
         // Validation rules
         $validator = Validator::make($request->all(), [
             'type' => 'required|exists:leave_credits,leave_type_id',
-            'total_days' => 'required|integer|min:1',
+            'total_days' => 'required|numeric|min:0.5',
             'start_date' => 'required|date|after_or_equal:today',
             'end_date' => 'required|date|after_or_equal:start_date',
             'reason' => 'required|string|max:255',
@@ -178,8 +178,8 @@ class LeaveController extends Controller
             'type.required' => 'Please select a leave type.',
             'type.exists' => 'The selected leave type is invalid.',
             'total_days.required' => 'Please specify the total number of days.',
-            'total_days.integer' => 'Total days must be an integer.',
-            'total_days.min' => 'Total days must be at least 1.',
+            'total_days.numeric' => 'Total days must be an numeric.',
+            'total_days.min' => 'Total days must be at least 0.5.',
             'start_date.required' => 'Please select a start date.',
             'start_date.date' => 'The start date is not a valid date.',
             'start_date.after_or_equal' => 'The start date must be today or a future date.',
@@ -276,6 +276,11 @@ class LeaveController extends Controller
         $leaveRequest->leave_type_id = $leaveTypeId;
         $leaveRequest->status = 'Pending';
         $leaveRequest->attached_file = $filePath;
+        // Check if the leave request is half day
+        if ($request->has('halfday') && $request->halfday == true) {
+            $leaveRequest->is_half_day = true;
+            $leaveRequest->half_day_type = $request->halfday_type; // Set the selected half (1st or 2nd)
+        }
         $leaveRequest->save();
 
         // Notify supervisors and HR
@@ -298,172 +303,171 @@ class LeaveController extends Controller
     }
 
 
-//    public function update(Request $request, $id)
-//    {
-//        try {
-//            // Validate the request inputs
-//            $request->validate([
-//                'typee' => 'required|exists:leave_types,id', // Ensure leave type ID exists in the leave_types table
-//                'dayse' => 'required|integer|min:1', // Ensure days are provided and is a positive integer
-//                'start_datee' => 'required|date|after_or_equal:today', // Ensure start date is today or later
-//                'end_datee' => 'required|date|after_or_equal:start_datee', // Ensure end date is after the start date
-//                'reasone' => 'nullable|string|max:255', // Optional reason
-//            ]);
+    //    public function update(Request $request, $id)
+    //    {
+    //        try {
+    //            // Validate the request inputs
+    //            $request->validate([
+    //                'typee' => 'required|exists:leave_types,id', // Ensure leave type ID exists in the leave_types table
+    //                'dayse' => 'required|integer|min:1', // Ensure days are provided and is a positive integer
+    //                'start_datee' => 'required|date|after_or_equal:today', // Ensure start date is today or later
+    //                'end_datee' => 'required|date|after_or_equal:start_datee', // Ensure end date is after the start date
+    //                'reasone' => 'nullable|string|max:255', // Optional reason
+    //            ]);
 
-//            $leave = LeaveRequest::findOrFail($id);
+    //            $leave = LeaveRequest::findOrFail($id);
 
-//            // Prevent editing approved leave requests
-//            if ($leave->status == 'Approved') {
-//                Alert::error('This leave request has already been approved and cannot be edited.');
-//                return redirect()->back();
-//            }
+    //            // Prevent editing approved leave requests
+    //            if ($leave->status == 'Approved') {
+    //                Alert::error('This leave request has already been approved and cannot be edited.');
+    //                return redirect()->back();
+    //            }
 
-//            $user = auth()->user();
-//            $leaveTypeId = $request->input('typee');
-//            $requestedDays = $request->input('dayse');
-//            $startDate = $request->input('start_datee');
-//            $endDate = $request->input('end_datee');
+    //            $user = auth()->user();
+    //            $leaveTypeId = $request->input('typee');
+    //            $requestedDays = $request->input('dayse');
+    //            $startDate = $request->input('start_datee');
+    //            $endDate = $request->input('end_datee');
 
-//            // Fetch the leave credit record for this user and leave type
-//            $leaveCredit = LeaveCredit::where('user_id', $user->id)
-//                ->where('leave_type_id', $leaveTypeId)
-//                ->first();
+    //            // Fetch the leave credit record for this user and leave type
+    //            $leaveCredit = LeaveCredit::where('user_id', $user->id)
+    //                ->where('leave_type_id', $leaveTypeId)
+    //                ->first();
 
-//            if (!$leaveCredit || $leaveCredit->remaining_credits < $requestedDays) {
-//                Alert::error('Insufficient leave balance for the selected leave type');
-//                return redirect()->back();
-//            }
+    //            if (!$leaveCredit || $leaveCredit->remaining_credits < $requestedDays) {
+    //                Alert::error('Insufficient leave balance for the selected leave type');
+    //                return redirect()->back();
+    //            }
 
-//            // Check for overlapping leave requests
-//            $overlappingLeave = LeaveRequest::where('users_id', $user->id)
-//                ->where('id', '!=', $id) // Exclude the current leave request
-//                ->where(function ($query) use ($startDate, $endDate) {
-//                    $query->whereBetween('start_date', [$startDate, $endDate])
-//                        ->orWhereBetween('end_date', [$startDate, $endDate])
-//                        ->orWhereRaw('? BETWEEN start_date AND end_date', [$startDate])
-//                        ->orWhereRaw('? BETWEEN start_date AND end_date', [$endDate]);
-//                })
-//                ->exists();
+    //            // Check for overlapping leave requests
+    //            $overlappingLeave = LeaveRequest::where('users_id', $user->id)
+    //                ->where('id', '!=', $id) // Exclude the current leave request
+    //                ->where(function ($query) use ($startDate, $endDate) {
+    //                    $query->whereBetween('start_date', [$startDate, $endDate])
+    //                        ->orWhereBetween('end_date', [$startDate, $endDate])
+    //                        ->orWhereRaw('? BETWEEN start_date AND end_date', [$startDate])
+    //                        ->orWhereRaw('? BETWEEN start_date AND end_date', [$endDate]);
+    //                })
+    //                ->exists();
 
-//            if ($overlappingLeave) {
-//                Alert::error('You already have a leave request within the selected dates');
-//                return redirect()->back();
-//            }
+    //            if ($overlappingLeave) {
+    //                Alert::error('You already have a leave request within the selected dates');
+    //                return redirect()->back();
+    //            }
 
-//            // Update the leave request details
-//            $leave->type = $leaveCredit->leaveType->leaveType; // Update to the leave type name if needed
-//            $leave->start_date = $startDate;
-//            $leave->end_date = $endDate;
-//            $leave->days = $requestedDays;
-//            $leave->reason = $request->input('reasone');
-//            $leave->save();
+    //            // Update the leave request details
+    //            $leave->type = $leaveCredit->leaveType->leaveType; // Update to the leave type name if needed
+    //            $leave->start_date = $startDate;
+    //            $leave->end_date = $endDate;
+    //            $leave->days = $requestedDays;
+    //            $leave->reason = $request->input('reasone');
+    //            $leave->save();
 
-//            Alert::success('Leave request updated successfully');
-//            return redirect()->back();
+    //            Alert::success('Leave request updated successfully');
+    //            return redirect()->back();
 
-//        } catch (\Exception $e) {
-//            // Handle any exceptions that may occur
-//            Alert::error('An error occurred while updating the leave request: ' . $e->getMessage());
-//            return redirect()->back();
-//        }
-//    }
+    //        } catch (\Exception $e) {
+    //            // Handle any exceptions that may occur
+    //            Alert::error('An error occurred while updating the leave request: ' . $e->getMessage());
+    //            return redirect()->back();
+    //        }
+    //    }
 
-public function update(Request $request, $id)
-{
-    try {
-        // Validate the request inputs
-        $request->validate([
-            'typee' => 'required|exists:leave_types,id', // Ensure leave type ID exists in the leave_types table
-            'dayse' => 'required|integer|min:1', // Ensure days are provided and is a positive integer
-            'start_datee' => 'required|date|after_or_equal:today', // Ensure start date is today or later
-            'end_datee' => 'required|date|after_or_equal:start_datee', // Ensure end date is after the start date
-            'reasone' => 'nullable|string|max:255', // Optional reason
-        ]);
+    public function update(Request $request, $id)
+    {
+        try {
+            // Validate the request inputs
+            $request->validate([
+                'typee' => 'required|exists:leave_types,id', // Ensure leave type ID exists in the leave_types table
+                'dayse' => 'required|integer|min:1', // Ensure days are provided and is a positive integer
+                'start_datee' => 'required|date|after_or_equal:today', // Ensure start date is today or later
+                'end_datee' => 'required|date|after_or_equal:start_datee', // Ensure end date is after the start date
+                'reasone' => 'nullable|string|max:255', // Optional reason
+            ]);
 
-        $leave = LeaveRequest::findOrFail($id);
+            $leave = LeaveRequest::findOrFail($id);
 
-        // Prevent editing approved leave requests
-        if ($leave->status == 'Approved') {
-            Alert::error('This leave request has already been approved and cannot be edited.');
-            return redirect()->back();
-        }
-
-        $user = auth()->user();
-        $leaveTypeId = $request->input('typee');
-        $requestedDays = $request->input('dayse');
-        $startDate = Carbon::parse($request->input('start_datee'));
-        $endDate = Carbon::parse($request->input('end_datee'));
-        $today = Carbon::now('Asia/Manila');
-
-        // Fetch the leave type to check restriction_days
-        $leaveType = LeaveType::find($leaveTypeId);
-
-        if (!$leaveType) {
-            Alert::error('Leave type not found.');
-            return redirect()->back();
-        }
-
-        // Check the restriction_days for this leave type
-        $restrictionDays = $leaveType->restriction_days;
-
-        if ($restrictionDays > 0) {
-            $minStartDate = $today->addDays($restrictionDays)->startOfDay();
-
-            if ($startDate->lt($minStartDate)) {
-                return redirect()->back()->with('error', "You can only request this leave type {$restrictionDays} days in advance.");
+            // Prevent editing approved leave requests
+            if ($leave->status == 'Approved') {
+                Alert::error('This leave request has already been approved and cannot be edited.');
+                return redirect()->back();
             }
-        } else {
-            // If restriction_days is 0, allow requests starting today
-            $minStartDate = $today->startOfDay();
 
-            if ($startDate->lt($minStartDate)) {
-                return redirect()->back()->with('error', 'The start date cannot be in the past.');
+            $user = auth()->user();
+            $leaveTypeId = $request->input('typee');
+            $requestedDays = $request->input('dayse');
+            $startDate = Carbon::parse($request->input('start_datee'));
+            $endDate = Carbon::parse($request->input('end_datee'));
+            $today = Carbon::now('Asia/Manila');
+
+            // Fetch the leave type to check restriction_days
+            $leaveType = LeaveType::find($leaveTypeId);
+
+            if (!$leaveType) {
+                Alert::error('Leave type not found.');
+                return redirect()->back();
             }
-        }
 
-        // Fetch the leave credit record for this user and leave type
-        $leaveCredit = LeaveCredit::where('user_id', $user->id)
-            ->where('leave_type_id', $leaveTypeId)
-            ->first();
+            // Check the restriction_days for this leave type
+            $restrictionDays = $leaveType->restriction_days;
 
-        if (!$leaveCredit || $leaveCredit->remaining_credits < $requestedDays) {
-            Alert::error('Insufficient leave balance for the selected leave type.');
+            if ($restrictionDays > 0) {
+                $minStartDate = $today->addDays($restrictionDays)->startOfDay();
+
+                if ($startDate->lt($minStartDate)) {
+                    return redirect()->back()->with('error', "You can only request this leave type {$restrictionDays} days in advance.");
+                }
+            } else {
+                // If restriction_days is 0, allow requests starting today
+                $minStartDate = $today->startOfDay();
+
+                if ($startDate->lt($minStartDate)) {
+                    return redirect()->back()->with('error', 'The start date cannot be in the past.');
+                }
+            }
+
+            // Fetch the leave credit record for this user and leave type
+            $leaveCredit = LeaveCredit::where('user_id', $user->id)
+                ->where('leave_type_id', $leaveTypeId)
+                ->first();
+
+            if (!$leaveCredit || $leaveCredit->remaining_credits < $requestedDays) {
+                Alert::error('Insufficient leave balance for the selected leave type.');
+                return redirect()->back();
+            }
+
+            // Check for overlapping leave requests
+            $overlappingLeave = LeaveRequest::where('users_id', $user->id)
+                ->where('id', '!=', $id) // Exclude the current leave request
+                ->where(function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('start_date', [$startDate, $endDate])
+                        ->orWhereBetween('end_date', [$startDate, $endDate])
+                        ->orWhereRaw('? BETWEEN start_date AND end_date', [$startDate])
+                        ->orWhereRaw('? BETWEEN start_date AND end_date', [$endDate]);
+                })
+                ->exists();
+
+            if ($overlappingLeave) {
+                Alert::error('You already have a leave request within the selected dates.');
+                return redirect()->back();
+            }
+
+            // Update the leave request details
+            $leave->type = $leaveTypeId; // Update to the leave type name if needed
+            $leave->start_date = $startDate;
+            $leave->end_date = $endDate;
+            $leave->days = $requestedDays;
+            $leave->reason = $request->input('reasone');
+            $leave->save();
+
+            Alert::success('Leave request updated successfully.');
+            return redirect()->back();
+        } catch (\Exception $e) {
+            // Handle any exceptions that may occur
+            Alert::error('An error occurred while updating the leave request: ' . $e->getMessage());
             return redirect()->back();
         }
-
-        // Check for overlapping leave requests
-        $overlappingLeave = LeaveRequest::where('users_id', $user->id)
-            ->where('id', '!=', $id) // Exclude the current leave request
-            ->where(function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('start_date', [$startDate, $endDate])
-                    ->orWhereBetween('end_date', [$startDate, $endDate])
-                    ->orWhereRaw('? BETWEEN start_date AND end_date', [$startDate])
-                    ->orWhereRaw('? BETWEEN start_date AND end_date', [$endDate]);
-            })
-            ->exists();
-
-        if ($overlappingLeave) {
-            Alert::error('You already have a leave request within the selected dates.');
-            return redirect()->back();
-        }
-
-        // Update the leave request details
-        $leave->type = $leaveTypeId; // Update to the leave type name if needed
-        $leave->start_date = $startDate;
-        $leave->end_date = $endDate;
-        $leave->days = $requestedDays;
-        $leave->reason = $request->input('reasone');
-        $leave->save();
-
-        Alert::success('Leave request updated successfully.');
-        return redirect()->back();
-
-    } catch (\Exception $e) {
-        // Handle any exceptions that may occur
-        Alert::error('An error occurred while updating the leave request: ' . $e->getMessage());
-        return redirect()->back();
     }
-}
 
 
     public function destroy($id)

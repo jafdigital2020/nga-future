@@ -102,23 +102,30 @@ class LoginController extends Controller
 
     protected function authenticated(Request $request, $user)
     {
-        if (Auth::user()->role_as == '1') { // 1 ADMIN
+        // Check if the user is inactive
+        if ($user->status !== 'active') {
+            Auth::logout(); // Log the user out
+            return redirect('/login')->withErrors(['account' => 'Your account is inactive. Please contact HR for assistance.']);
+        }
+    
+        // Redirect based on the user's role
+        if ($user->role_as == '1') { // 1 ADMIN
             return redirect('admin/dashboard')->with('status', 'Welcome to One JAF Admin');
-        } elseif (Auth::user()->role_as == '2') { // 2 HR
+        } elseif ($user->role_as == '2') { // 2 HR
             return redirect('hr/dashboard')->with('status', 'Welcome to One JAF HR');
-        } elseif (Auth::user()->role_as == '3') { // 3 Employee
+        } elseif ($user->role_as == '3') { // 3 Employee
             return redirect('emp/dashboard')->with('status', 'Welcome To One JAF');
-        } elseif (Auth::user()->role_as == '4') { // 4 Operations Manager
+        } elseif ($user->role_as == '4') { // 4 Operations Manager
             return redirect('manager/dashboard')->with('status', 'Welcome To One JAF');
-        } elseif (Auth::user()->role_as == '5') { // 5 IT Manager
+        } elseif ($user->role_as == '5') { // 5 IT Manager
             return redirect('manager/dashboard')->with('status', 'Welcome To One JAF');
-        } elseif (Auth::user()->role_as == '6') { // 6 Marketing Manager
+        } elseif ($user->role_as == '6') { // 6 Marketing Manager
             return redirect('manager/dashboard')->with('status', 'Welcome To One JAF');
-
         } else { // Redirect all other roles to /
             return redirect('/')->with('status', 'Please coordinate with our HR department to access your account. Thank you.');
         }
     }
+    
 
     /**
      * Create a new controller instance.

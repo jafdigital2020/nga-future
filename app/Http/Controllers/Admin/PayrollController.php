@@ -939,6 +939,15 @@ class PayrollController extends Controller
         return redirect()->back();
     }
 
+    public function approveAttendanceDecline($id)
+    {
+        $approved = ApprovedAttendance::findOrFail($id);
+        $approved->status = 'Declined';
+        $approved->save();
+
+        return redirect()->back()->with('success', 'Attendance status changed to declined.');
+    }
+
     public function payslip(Request $request, $id)
     {
 

@@ -488,7 +488,7 @@
             <div class="modal-body">
                 <div class="form-header">
                     <h3>Delete Leave</h3>
-                    <p>Are you sure you want to cancel this leave?</p>
+                    <p>Are you sure you want to delete this request? Please note that if this leave has been approved, the credits will not be restored unless the leave is declined.</p>
                 </div>
                 <div class="modal-btn delete-action">
                     <div class="row">

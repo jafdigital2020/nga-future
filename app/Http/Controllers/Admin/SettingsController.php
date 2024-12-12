@@ -380,7 +380,7 @@ class SettingsController extends Controller
             $request->validate([
                 'leaveType' => 'required|string|max:255',
                 'leaveDays' => 'required|integer|min:1',
-                'restriction_days' => 'required|integer|min:1',
+                'restriction_days' => 'required|integer|min:0',
                 'is_paid' => 'required|boolean',
             ]);
 

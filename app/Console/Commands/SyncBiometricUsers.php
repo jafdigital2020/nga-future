@@ -26,18 +26,22 @@ class SyncBiometricUsers extends Command
                 continue;
             }
 
-            $deviceUsers = $zk->getUsers();
+            // Fetch users from the device
+            $deviceUsers = $zk->getUser(); // Correct method to fetch users
             $zk->disconnect();
 
             foreach ($deviceUsers as $deviceUser) {
-                $user = User::where('name', $deviceUser['name'])->first();
-
+                // Hinahanap ang user gamit ang empNumber
+                $user = User::where('empNumber', $deviceUser['userid'])->first();
+            
                 if ($user) {
+                    // Sync sa pivot table gamit ang empNumber
                     $user->devices()->syncWithoutDetaching([
                         $device->id => ['biometric_user_id' => $deviceUser['userid']],
                     ]);
-                    $this->info("Synced biometric ID {$deviceUser['userid']} for user {$user->name}");
+                    $this->info("Synced biometric ID {$deviceUser['userid']} for user {$user->empNumber}");
                 } else {
+                    // Kapag walang match na user
                     $this->warn("No match found for biometric ID {$deviceUser['userid']}.");
                 }
             }
@@ -45,4 +49,5 @@ class SyncBiometricUsers extends Command
 
         $this->info('User synchronization completed!');
     }
+    
 }

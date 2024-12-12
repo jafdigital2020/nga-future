@@ -38,6 +38,9 @@ class EmployeeAttendance extends Model
         'reason',
         'approved_by',
         'night_diff_hours',
+        'clock_out_latitude',
+        'clock_out_longitude',
+        'clock_out_image_path',
     ];
 
     public function employeeSalary()

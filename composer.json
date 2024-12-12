@@ -16,6 +16,7 @@
         "laravel/tinker": "^2.5",
         "laravel/ui": "^3.4",
         "mckenziearts/laravel-notify": "^2.3",
+        "rats/zkteco": "^002.0",
         "realrashid/sweet-alert": "^6.0"
     },
     "require-dev": {

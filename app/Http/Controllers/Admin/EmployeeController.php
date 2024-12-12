@@ -216,35 +216,35 @@ class EmployeeController extends Controller
         }
     }
 
-    // public function delete_function(Request $request)
-    // {
-    //     // Get the employee ID from the request
-    //     $userId = $request->input('emp_delete_id');
-
-    //     // Find the user by ID
-    //     $data = User::find($userId);
-
-    //     // Check if the user exists
-    //     if ($data) {
-    //         // Update the user's status to 'inactive'
-    //         $data->update([
-    //             'status' => 'inactive', // Assuming you have a 'status' field
-    //         ]);
-
-    //         // Return success message
-    //         return redirect()->back()->with('success', 'User status updated to inactive successfully!');
-    //     } else {
-    //         // Return error if user is not found
-    //         return redirect()->back()->with('error', 'User not found.');
-    //     }
-    // }
-
     public function delete_function(Request $request)
     {
-        $data = User::find($request->emp_delete_id);
-        $data->delete();
-        return redirect()->back()->with('success', 'User deleted successfully!');
+        // Get the employee ID from the request
+        $userId = $request->input('emp_delete_id');
+
+        // Find the user by ID
+        $data = User::find($userId);
+
+        // Check if the user exists
+        if ($data) {
+            // Update the user's status to 'inactive'
+            $data->update([
+                'status' => 'inactive', // Assuming you have a 'status' field
+            ]);
+
+            // Return success message
+            return redirect()->back()->with('success', 'User status updated to inactive successfully!');
+        } else {
+            // Return error if user is not found
+            return redirect()->back()->with('error', 'User not found.');
+        }
     }
+
+    // public function delete_function(Request $request)
+    // {
+    //     $data = User::find($request->emp_delete_id);
+    //     $data->delete();
+    //     return redirect()->back()->with('success', 'User deleted successfully!');
+    // }
 
     public function edit($user_id)
     {

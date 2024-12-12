@@ -223,47 +223,44 @@ class AdminLeaveController extends Controller
         $user = $leave->user;
         $currentUser = auth()->user();
         $requestedDays = $leave->days;
-
+    
         // Check if the current user is trying to approve their own leave request
-
-
         if ($currentUser->id == $user->id) {
             Alert::error('You cannot approve your own leave request');
             return redirect()->back();
         }
-
+    
         // Find the leave credit associated with the leave type
         $leaveCredit = LeaveCredit::where('user_id', $user->id)
             ->where('leave_type_id', $leave->leave_type_id)
             ->first();
-
+    
         if (!$leaveCredit) {
             Alert::error('Leave type not found for the user');
             return redirect()->back();
         }
-
+    
         // Check remaining leave balance
         if ($leaveCredit->remaining_credits < $requestedDays) {
             Alert::error('Insufficient leave balance for this leave type');
             return redirect()->back();
         }
-
+    
         // Deduct the requested days from the remaining credits
         $leaveCredit->remaining_credits -= $requestedDays;
         $leaveCredit->save();
-
+    
         // Update the leave request status
         $leave->status = 'Approved';
         $leave->approved_by = $currentUser->id;
         $leave->save();
-
+    
         // Send a notification to the employee who requested the leave
         $user->notify(new RequestApprovedNotification($leave));
-
+    
         return redirect()->back()->with('success', 'Leave request approved');
     }
-
-
+    
     public function decline($id)
     {
         $leave = LeaveRequest::findOrFail($id);
@@ -373,10 +370,10 @@ class AdminLeaveController extends Controller
     {
         $leave = LeaveRequest::findOrFail($id);
 
-        if ($leave->status == 'Approved') {
-            Alert::error('This leave request has already been approved and cannot be deleted.');
-            return redirect()->back();
-        }
+        // if ($leave->status == 'Approved') {
+        //     Alert::error('This leave request has already been approved and cannot be deleted.');
+        //     return redirect()->back();
+        // }
 
         $leave->delete();
 

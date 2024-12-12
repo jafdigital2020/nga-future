@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Carbon\Carbon;
 use App\Models\User;
 use Rats\Zkteco\Lib\ZKTeco;
 use App\Models\BiometricDevice;
@@ -14,30 +15,37 @@ class FetchAttendance extends Command
     protected $signature = 'attendance:fetch';
     protected $description = 'Fetch attendance logs from biometric devices';
 
-    public function handle()
-    {
-        $devices = BiometricDevice::all();
+public function handle()
+{
+    $devices = BiometricDevice::all();
 
-        foreach ($devices as $device) {
-            $this->info("Connecting to device: {$device->device_name}");
-            Log::info("Attempting to connect to device: {$device->device_name} (IP: {$device->ip_address}, Port: {$device->port})");
+    // Get today's date
+    $today = Carbon::today(); // Current date (without time)
 
-            try {
-                $zk = new ZKTeco($device->ip_address, $device->port);
+    foreach ($devices as $device) {
+        $this->info("Connecting to device: {$device->device_name}");
+        Log::info("Attempting to connect to device: {$device->device_name} (IP: {$device->ip_address}, Port: {$device->port})");
 
-                if (!$zk->connect()) {
-                    $this->warn("Failed to connect to device: {$device->device_name}");
-                    Log::error("Failed to connect to device: {$device->device_name} (IP: {$device->ip_address})");
-                    continue;
-                }
+        try {
+            $zk = new ZKTeco($device->ip_address, $device->port);
 
-                Log::info("Successfully connected to device: {$device->device_name}");
-                $logs = $zk->getAttendance();
-                $zk->disconnect();
+            if (!$zk->connect()) {
+                $this->warn("Failed to connect to device: {$device->device_name}");
+                Log::error("Failed to connect to device: {$device->device_name} (IP: {$device->ip_address})");
+                continue;
+            }
 
-                Log::info("Fetched " . count($logs) . " attendance logs from device: {$device->device_name}");
+            Log::info("Successfully connected to device: {$device->device_name}");
+            $logs = $zk->getAttendance();
+            $zk->disconnect();
 
-                foreach ($logs as $log) {
+            Log::info("Fetched " . count($logs) . " attendance logs from device: {$device->device_name}");
+
+            foreach ($logs as $log) {
+                // Filter logs to only include those from today
+                $logDate = Carbon::parse($log['timestamp'])->toDateString();
+
+                if ($logDate === $today->toDateString()) {  // Only process logs for today
                     Log::debug("Processing log: " . json_encode($log));
 
                     $user = User::whereHas('devices', function ($query) use ($log, $device) {
@@ -63,13 +71,15 @@ class FetchAttendance extends Command
                         Log::warning("No matching user found for biometric ID: {$log['userid']} on device: {$device->device_name}");
                     }
                 }
-            } catch (\Exception $e) {
-                $this->error("Error occurred while processing device: {$device->device_name}");
-                Log::error("Exception on device: {$device->device_name} - " . $e->getMessage());
             }
+        } catch (\Exception $e) {
+            $this->error("Error occurred while processing device: {$device->device_name}");
+            Log::error("Exception on device: {$device->device_name} - " . $e->getMessage());
         }
-
-        $this->info('Attendance fetching completed!');
-        Log::info('Attendance fetching process completed.');
     }
+
+    $this->info('Attendance fetching completed!');
+    Log::info('Attendance fetching process completed.');
+}
+
 }

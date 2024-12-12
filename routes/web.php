@@ -95,6 +95,7 @@ Route::prefix('admin')->middleware(['auth','isAdmin','sessionTimeout'])->group(f
     Route::post('/timesheet/approve/{id}', [App\Http\Controllers\Admin\AttendanceReportController::class, 'updateAttendance'])->name('adminTimesheet.updateAttendance');
     Route::delete('/timesheet/delete/{id}', [App\Http\Controllers\Admin\AttendanceReportController::class, 'destroyAttendance'])->name('admin.deleteAttendance');
     Route::get('/timesheet/view/{id}', [App\Http\Controllers\Admin\AttendanceReportController::class, 'viewTimesheet'])->name('admin.timesheetView');
+    Route::post('/timesheet/declined/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'approveAttendanceDecline'])->name('admin.approveAttendanceDecline');
 
     // Create(ApproveTimesheet) Payroll
     Route::get('payroll/preview/{id}', [App\Http\Controllers\Admin\PayrollController::class, 'previewPayroll'])->name('payroll.preview');
@@ -280,12 +281,13 @@ Route::prefix('emp')->middleware(['auth','isEmployee', 'sessionTimeout'])->group
     Route::get('/dashboard', [App\Http\Controllers\Employee\DashboardController::class, 'index'])->name('main.emp');
     Route::get('/dashboard/get-data', [\App\Http\Controllers\Employee\DashboardController::class, 'getUserAttendance'])->name('attendance.get');
     Route::post('dashboard', [App\Http\Controllers\Employee\DashboardController::class, 'store']);
-    Route::put('dashboard/', [App\Http\Controllers\Employee\DashboardController::class, 'update']);
+    Route::post('dashboard/clockout', [App\Http\Controllers\Employee\DashboardController::class, 'update']);
     Route::put('dashboard/breakin', [App\Http\Controllers\Employee\DashboardController::class, 'breakIn']);
     Route::put('dashboard/breakout', [App\Http\Controllers\Employee\DashboardController::class, 'breakOut']);
     Route::post('dashboard/startbreak', [App\Http\Controllers\Employee\DashboardController::class, 'startBreak'])->name('emp.startBreak');
     Route::post('dashboard/endbreak', [App\Http\Controllers\Employee\DashboardController::class, 'endBreak'])->name('emp.endBreak');
     Route::get('attendance/report', [App\Http\Controllers\Employee\DashboardController::class, 'report'])->name('report.index');
+
     // Profile
     Route::get('profile', [\App\Http\Controllers\Employee\ProfileController::class, 'index'])->name('emp.profile');
     Route::post('profile', [\App\Http\Controllers\Employee\ProfileController::class, 'update'])->name('emp.update');

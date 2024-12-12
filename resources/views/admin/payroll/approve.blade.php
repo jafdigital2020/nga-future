@@ -271,6 +271,11 @@
                                         <a class="dropdown-item delete-attendance" href="#" data-id="{{ $app->id }}">
                                             <i class="fa fa-trash-o m-r-5"></i> Delete
                                         </a>
+                                        <form action="{{ route('admin.approveAttendanceDecline', $app->id )}}" method="POST">
+                                            @csrf
+                                            <button class="dropdown-item" type="submit"><i class="fa fa-ban" aria-hidden="true"></i>  Decline</button>
+                                        </form>
+                                     
                                     </div>
                                 </div>
                             </td>

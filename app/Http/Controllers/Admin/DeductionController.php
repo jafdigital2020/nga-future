@@ -127,12 +127,15 @@ class DeductionController extends Controller
     public function userDeductionsIndex(Request $request)
     {
         // Fetch all users, deductions, and distinct departments
-        $users = User::all();  
+        $users = User::where('status', 'active')->get();  
         $deductions = DeductionList::all();  
         $departments = User::distinct()->pluck('department');  
     
         // Initialize the query to fetch UserDeduction data
-        $data = UserDeduction::with(['user', 'deductionList']);
+        $data = UserDeduction::with(['user', 'deductionList'])
+        ->whereHas('user', function ($query) {
+            $query->where('status', 'active'); // Include only active users
+        });
     
         // Apply department filter if provided
         $department = $request->input('department');

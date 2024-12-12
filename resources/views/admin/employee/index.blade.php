@@ -135,8 +135,7 @@
                                                 class="fa fa-pencil m-r-5"></i> Edit</a> -->
 
                                         <button type="button" data-toggle="modal" data-target="#delete_user"
-                                            class="dropdown-item deleteBtn" value="{{ $employee->id }}"><i
-                                                class="fa fa-trash-o m-r-5"></i>Delete</button>
+                                            class="dropdown-item deleteBtn" value="{{ $employee->id }}"><i class="fa-solid fa-ban"></i> Deactivate</button>
                                     </div>
                                 </div>
                             </td>
@@ -161,13 +160,13 @@
                 <div class="modal-body">
                     <div class="form-header">
                         <h3>Deactivate User</h3>
-                        <p>Are you sure you want to delete this user?</p>
+                        <p>Are you sure you want to deactivate this user?</p>
                     </div>
                     <div class="modal-btn delete-action">
                         <div class="row">
                             <div class="col-5">
                                 <input type="hidden" name="emp_delete_id" id="emp_id">
-                                <button class="btn add-btn" type="submit">Delete</button>
+                                <button class="btn add-btn" type="submit">Deactivate</button>
                             </div>
                             <div class="col-6">
                                 <a href="javascript:void(0);" data-dismiss="modal" class="btn add-btn">Cancel</a>
