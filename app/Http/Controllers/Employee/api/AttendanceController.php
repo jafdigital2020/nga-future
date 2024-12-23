@@ -33,28 +33,120 @@ use App\Notifications\AttendanceSubmissionNotification;
 class AttendanceController extends Controller
 {
 
-    public function getattendance(Request $request)
+    public function getTodayAttendance(Request $request)
     {
+        try {
+            $currentDate = Carbon::now('Asia/Manila')->toDateString();
 
-        $currentDate = Carbon::now('Asia/Manila')->toDateString();
+            // AuthBearer Token Needed
+            $user = auth()->user();
 
-        $userId = $request->input('user_id');
-        $data = EmployeeAttendance::where('users_id', $userId)
-            ->whereDate('created_at', $currentDate)
-            ->get();
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Unauthorized access. Please log in.'
+                ], 401);
+            }
 
-        if ($data === null || $data->isEmpty()) {
+            $data = $user->employeeAttendance()
+                ->whereDate('date', $currentDate)
+                ->orderBy('timeIn', 'asc')
+                ->get();
+
+            if ($data === null || $data->isEmpty()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'You have not timed in today'
+                ], 200);
+            }
+
             return response()->json([
                 'status' => 'success',
-                'message' => 'You have not timed in today'
+                'data' => $data
             ], 200);
+        } catch (Exception $e) {
+            Log::error('Get Today Attendance Error: ' . $e->getMessage(), ['exception' => $e]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An unexpected error occurred. Please try again later.',
+                'error' => $e
+            ], 500);
         }
+    }
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $data
-        ], 200);
+    public function getDayAttendance(Request $request)
+    {
+        try {
+            $selectedDate = $request->input('date');
 
+            // AuthBearer Token Needed
+            $user = auth()->user();
+
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Unauthorized access. Please log in.'
+                ], 401);
+            }
+
+            $data = $user->employeeAttendance()
+                ->whereDate('date', $selectedDate)
+                ->orderBy('timeIn', 'asc')
+                ->get();
+
+            if ($data === null || $data->isEmpty()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'You have do not have record for this day'
+                ], 200);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $data
+            ], 200);
+        } catch (Exception $e) {
+            Log::error('Get Today Attendance Error: ' . $e->getMessage(), ['exception' => $e]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An unexpected error occurred. Please try again later.',
+                'error' => $e
+            ], 500);
+        }
+    }
+
+    public function getMonthlyAttendance(Request $request)
+    {
+        try {
+            $currentMonth = Carbon::now('Asia/Manila')->format('Y-m');
+
+            // AuthBearer Token Needed
+            $user = auth()->user();
+
+            $data = $user->employeeAttendance()
+                ->where('date', 'like', "$currentMonth%")
+                ->orderBy('date', 'asc')
+                ->get();
+
+            if ($data === null || $data->isEmpty()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'No attendance records found for this month'
+                ], 200);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $data
+            ], 200);
+        } catch (Exception $e) {
+            Log::error('Get Monthly Attendance Error: ' . $e->getMessage(), ['exception' => $e]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An unexpected error occurred. Please try again later.',
+                'error' => $e
+            ], 500);
+        }
     }
 
     // ** Clock In ** //
@@ -298,6 +390,56 @@ class AttendanceController extends Controller
                 'status' => 'error',
                 'message' => 'An error occurred while starting the break.'
             ], 500);
+        }
+    }
+
+    public function startBreak(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            $currentDate = Carbon::now('Asia/Manila')->toDateString();
+
+            // Get the attendance record for today
+            $attendance = EmployeeAttendance::where('users_id', $user->id)
+                ->where('date', $currentDate)
+                ->first();
+
+            if (!$attendance) {
+                return redirect()->back()->with('error', 'Attendance record not found for today.');
+            }
+
+            // Check if the user has already timed out
+            if ($attendance->timeOut !== null) {
+                return redirect()->back()->with('error', 'You cannot take a 15-minute break after clocking out.');
+            }
+
+            // Get the max number of breaks allowed from settings
+            $maxBreaks = BreakSettings::first()->max_breaks;
+
+            // Decode the current breaks array or initialize it
+            $breaks = $attendance->breaks ? json_decode($attendance->breaks, true) : [];
+
+            // Check if there's an ongoing break (end is null)
+            foreach ($breaks as $break) {
+                if ($break['end'] === null) {
+                    return redirect()->back()->with('error', 'You already have an ongoing 15-minute break.');
+                }
+            }
+
+            // Check if the max number of breaks is already reached
+            if (count($breaks) >= $maxBreaks) {
+                return redirect()->back()->with('error', 'You have reached the maximum number of 15-minute breaks for today.');
+            }
+
+            // Add a new break with the start time in hh:mm:ss AM/PM format and no end time
+            $breaks[] = ['start' => Carbon::now('Asia/Manila')->format('h:i:s A'), 'end' => null];
+            $attendance->breaks = json_encode($breaks);
+            $attendance->save();
+
+            return redirect()->back()->with('success', '15-minute break started.');
+        } catch (\Exception $e) {
+            Log::error('Start Break Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while starting the break.');
         }
     }
 
