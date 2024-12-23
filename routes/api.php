@@ -36,7 +36,7 @@ Route::middleware(['auth:sanctum'])->prefix('clock')->group(function () {
     // Clock In
     Route::post('in', [DashboardController::class, 'store']);
     // Clock Out
-    Route::post('out', [DashboardController::class, 'clockout']);
+    Route::post('out', [DashboardController::class, 'update']);
     //breaks
     Route::post('breakout15m', [AttendanceController::class, 'startBreak15m']);
     Route::post('breakin15m', [AttendanceController::class, 'endBreak15m']);

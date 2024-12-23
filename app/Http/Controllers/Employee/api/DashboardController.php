@@ -381,6 +381,26 @@ class DashboardController extends Controller
                     ]);
                 }
 
+
+                if ($userGeofences->isEmpty()) {
+
+                    $attendance->update([
+                        'timeOut' => $timeOut->format('h:i:s A'),
+                    ]);
+
+                    // Get User Attendance Data
+                    $data = $user->employeeAttendance()
+                    ->whereDate('date', $currentDate)
+                    ->orderBy('timeIn', 'asc')
+                    ->get();
+
+                    return response()->json([
+                        'status' => 'success',
+                        'message' => 'You dont have assigned geofence. Success clock-out.',
+                        'data' => $data
+                    ]);
+                }
+
                 Log::warning('User outside assigned geofence.', [
                     'user_id' => $user->id,
                     'latitude' => $latitude,
