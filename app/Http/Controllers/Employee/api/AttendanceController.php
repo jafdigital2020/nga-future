@@ -119,13 +119,13 @@ class AttendanceController extends Controller
     public function getMonthlyAttendance(Request $request)
     {
         try {
-            $currentMonth = Carbon::now('Asia/Manila')->format('Y-m');
+            $currentMonthYear = $request->input('monthYear', Carbon::now('Asia/Manila')->format('Y-m'));
 
             // AuthBearer Token Needed
             $user = auth()->user();
 
             $data = $user->employeeAttendance()
-                ->where('date', 'like', "$currentMonth%")
+                ->where('date', 'like', "$currentMonthYear%")
                 ->orderBy('date', 'asc')
                 ->get();
 
