@@ -298,6 +298,8 @@
                                         <i class="fa fa-dot-circle-o text-purple"></i> New
                                         @elseif($leave->status == 'Pending')
                                         <i class="fa fa-dot-circle-o text-info"></i> Pending
+                                        @elseif($leave->status == 'Pre-Approved')
+                                        <i class="fa fa-dot-circle-o text-warning"></i> Pre-Approved
                                         @elseif($leave->status == 'Approved')
                                         <i class="fa fa-dot-circle-o text-success"></i> Approved
                                         @elseif($leave->status == 'Declined')
@@ -411,6 +413,8 @@
                                                 <i class="fa fa-dot-circle-o text-purple"></i> New
                                                 @elseif($ot->status == 'Pending')
                                                 <i class="fa fa-dot-circle-o text-info"></i> Pending
+                                                @elseif($ot->status == 'Pre-Approved')
+                                                <i class="fa fa-dot-circle-o text-warning"></i> Pre-Approved
                                                 @elseif($ot->status == 'Approved')
                                                 <i class="fa fa-dot-circle-o text-success"></i> Approved
                                                 @elseif($ot->status == 'Rejected')
@@ -503,6 +507,8 @@
                                                 <i class="fa fa-dot-circle-o text-purple"></i> New
                                                 @elseif($req->status_code == 'Pending')
                                                 <i class="fa fa-dot-circle-o text-info"></i> Pending
+                                                @elseif($req->status_code == 'Pre-Approved')
+                                                <i class="fa fa-dot-circle-o text-warning"></i> Pre-Approved
                                                 @elseif($req->status_code == 'Approved')
                                                 <i class="fa fa-dot-circle-o text-success"></i> Approved
                                                 @elseif($req->status_code == 'Declined')

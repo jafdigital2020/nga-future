@@ -30,7 +30,7 @@
                 <div class="form-group row">
                     <label class="col-lg-3 col-form-label">Payslip Logo</label>
                     <div class="col-lg-7">
-                        <input type="file" class="form-control" name="logo" id="logo" required>
+                        <input type="file" class="form-control" name="logo" id="logo" >
                         <span class="form-text text-muted">Recommended image size is 150px x 150px</span>
                     </div>
                     <div class="col-lg-2">

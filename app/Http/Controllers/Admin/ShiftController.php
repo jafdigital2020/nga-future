@@ -206,7 +206,7 @@ class ShiftController extends Controller
             $isRecurring = $request->recurring ? true : false;
 
             // Get selected weekdays from checkboxes
-            $selectedDays = $request->input('days'); // e.g., ['monday', 'tuesday', 'wednesday']
+            $selectedDays = $request->input('days'); 
 
             // Loop through each user
             foreach ($request->users_id as $userId) {

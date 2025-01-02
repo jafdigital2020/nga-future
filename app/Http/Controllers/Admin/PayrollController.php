@@ -277,6 +277,8 @@ class PayrollController extends Controller
             $regularHours = $totalHoursDecimal - ($regularHolidayHours + $specialHolidayHours);
             $regularPay = $regularHours * $hourlyRate;
 
+            
+
             // Fetch Deductions
             $userDeductions = UserDeduction::where('users_id', $user->id)
             ->where('active', 1)

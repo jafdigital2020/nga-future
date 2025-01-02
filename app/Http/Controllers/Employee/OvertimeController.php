@@ -273,6 +273,7 @@ class OvertimeController extends Controller
             $overtime->end_time = $request->input('end_time');
             $overtime->total_hours = $request->input('total_hours');
             $overtime->reason = $request->input('reason');
+            $overtime->offset_date = $request->input('offset_date');
 
             // Handle file upload if it exists
             if ($request->hasFile('attached_file')) {

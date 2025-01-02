@@ -113,7 +113,7 @@
                     <div class="form-group form-focus">
                         <div class="cal-icon">
                             <input type="text" class="datetimepicker form-control floating" name="date"
-                                value="{{ request('date') }}">
+                                value="{{ $selectedDate ?? date('Y-m-d') }}">
                         </div>
                         <label class="focus-label">Date</label>
                     </div>
@@ -160,8 +160,11 @@
                                 <th>Device</th>
                                 <th>Total Late</th>
                                 <th>Total Hours</th>
+                                <th>Clock In Image</th>
+                                <th>Clock Out Image</th>
                                 <th>Edited By</th>
-                                <!-- <th>Action</th> -->
+                                <th>Edit History</th>
+                                {{-- <th>Action</th> --}}
                             </tr>
                         </thead>
                         <tbody>
@@ -188,26 +191,27 @@
                                         <td>
                                             <span
                                                 class="
-                                    {{ $attendance->status == 'Late'
-                                        ? 'bg-danger'
-                                        : ($attendance->status == 'On Time'
-                                            ? 'bg-success'
-                                            : ($attendance->status == 'Edited'
-                                                ? 'bg-warning'
-                                                : ($attendance->status == 'Undertime'
-                                                    ? 'bg-danger'
-                                                    : ''))) }}"
+                                {{ $attendance->status == 'Late'
+                                    ? 'bg-danger'
+                                    : ($attendance->status == 'On Time'
+                                        ? 'bg-success'
+                                        : ($attendance->status == 'Edited'
+                                            ? 'bg-warning'
+                                            : ($attendance->status == 'Undertime'
+                                                ? 'bg-info'
+                                                : ''))) }}
+                            "
                                                 style="
-                                        padding: 5px 10px;
-                                        border-radius: 5px;
-                                        font-size: 12px;
-                                        font-weight: bold;
-                                        color: white;
-                                    ">
+                                padding: 5px 10px;
+                                border-radius: 5px;
+                                font-size: 12px;
+                                font-weight: bold;
+                                color: white;
+                            ">
                                                 {{ $attendance->status }}
                                             </span>
-                                        </td>
 
+                                        </td>
                                         <td>
                                             <a href="#" class="address-link"
                                                 data-latitude="{{ $attendance->latitude }}"
@@ -219,6 +223,24 @@
                                         <td>{{ $attendance->totalLate }}</td>
                                         <td>{{ $attendance->timeTotal }}</td>
                                         <td>
+                                            @if ($attendance->image_path)
+                                                <a href="{{ asset('storage/' . $attendance->image_path) }}"
+                                                    target="_blank">View
+                                                    Photo</a>
+                                            @else
+                                                No Photo
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($attendance->image_path)
+                                                <a href="{{ asset('storage/' . $attendance->clock_out_image_path) }}"
+                                                    target="_blank">View
+                                                    Photo</a>
+                                            @else
+                                                No Photo
+                                            @endif
+                                        </td>
+                                        <td>
                                             @if ($attendance->edited)
                                                 {{ $attendance->edited->fName ?? $attendance->edited->name }}
                                                 {{ $attendance->edited->lName ?? '' }}
@@ -226,28 +248,44 @@
                                                 Not Edited
                                             @endif
                                         </td>
+                                        <td>
+                                            @if ($attendance->editHistory->count() > 0)
+                                                <a href="#" class="bg-danger view-history"
+                                                    data-id="{{ $attendance->id }}"
+                                                    style="
+                                        padding: 8px 12px;
+                                        border-radius: 5px;
+                                        font-size: 12px;
+                                        font-weight: bold;
+                                        color: white;
+                                    "><i
+                                                        class="las la-history"></i>View History</a>
+                                            @else
+                                                No History
+                                            @endif
+                                        </td>
 
                                         <!-- <td class="text-right">
-                                    <div class="dropdown dropdown-action">
-                                        <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown"
-                                            aria-expanded="false"><i class="material-icons">more_vert</i></a>
-                                        <div class="dropdown-menu dropdown-menu-right">
-                                            <a class="dropdown-item edit-attendance" href="#"
-                                                data-id="{{ $attendance->id }}" data-date="{{ $attendance->date }}"
-                                                data-time_in="{{ $attendance->timeIn }}"
-                                                data-break_in="{{ $attendance->breakIn }}"
-                                                data-break_out="{{ $attendance->breakOut }}"
-                                                data-time_out="{{ $attendance->timeOut }}"
-                                                data-total_hours="{{ $attendance->totalHours }}"
-                                                data-total_late="{{ $attendance->totalLate }}"
-                                                data-device="{{ $attendance->device }}">
-                                                <i class="fa fa-pencil m-r-5"></i> Edit</a>
-                                            <a class="dropdown-item delete-attendance" href="#"
-                                                data-id="{{ $attendance->id }}">
-                                                <i class="fa fa-trash-o m-r-5"></i> Delete</a>
-                                        </div>
-                                    </div>
-                                </td> -->
+                                            <div class="dropdown dropdown-action">
+                                                <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown"
+                                                    aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                                                <div class="dropdown-menu dropdown-menu-right">
+                                                    <a class="dropdown-item edit-attendance" href="#"
+                                                        data-id="{{ $attendance->id }}" data-date="{{ $attendance->date }}"
+                                                        data-time_in="{{ $attendance->timeIn }}"
+                                                        data-break_in="{{ $attendance->breakIn }}"
+                                                        data-break_out="{{ $attendance->breakOut }}"
+                                                        data-time_out="{{ $attendance->timeOut }}"
+                                                        data-total_hours="{{ $attendance->totalHours }}"
+                                                        data-total_late="{{ $attendance->totalLate }}"
+                                                        data-device="{{ $attendance->device }}">
+                                                        <i class="fa fa-pencil m-r-5"></i> Edit</a>
+                                                    <a class="dropdown-item delete-attendance" href="#"
+                                                        data-id="{{ $attendance->id }}">
+                                                        <i class="fa fa-trash-o m-r-5"></i> Delete</a>
+                                                </div>
+                                            </div>
+                                        </td> -->
                                     </tr>
                                 @endforeach
                             @endforeach
@@ -290,71 +328,71 @@
 
     <!-- Edit attendance Modal -->
     <!-- <div id="edit_attendance" class="modal custom-modal fade" role="dialog">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit Attendance</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="editAttendanceForm" method="POST">
-                        @csrf
-                        <input type="hidden" name="attendance_id" id="attendance_id">
-                        <div class="form-group">
-                            <label>Date</label>
-                            <input class="form-control" type="text" name="date" id="date" readonly>
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Edit Attendance</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
                         </div>
-                        <div class="row">
-                            <div class="col-sm-6">
+                        <div class="modal-body">
+                            <form id="editAttendanceForm" method="POST">
+                                @csrf
+                                <input type="hidden" name="attendance_id" id="attendance_id">
                                 <div class="form-group">
-                                    <label>Time In <span class="text-danger">*</span></label>
-                                    <input class="form-control" type="text" name="timeIn" id="timeIn">
+                                    <label>Date</label>
+                                    <input class="form-control" type="text" name="date" id="date" readonly>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <div class="form-group">
+                                            <label>Time In <span class="text-danger">*</span></label>
+                                            <input class="form-control" type="text" name="timeIn" id="timeIn">
 
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="form-group">
+                                            <label>Time Out <span class="text-danger">*</span></label>
+                                            <input class="form-control" type="text" name="timeOut" id="timeOut">
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-sm-6">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <div class="form-group">
+                                            <label>Break Out<span class="text-danger">*</span></label>
+                                            <input class="form-control" type="text" name="breakIn" id="breakIn">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="form-group">
+                                            <label>Break In<span class="text-danger">*</span></label>
+                                            <input class="form-control" type="text" name="breakOut" id="breakOut">
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="form-group">
-                                    <label>Time Out <span class="text-danger">*</span></label>
-                                    <input class="form-control" type="text" name="timeOut" id="timeOut">
+                                    <label>Total Late</label>
+                                    <input class="form-control" type="text" name="totalLate" id="totalLate">
                                 </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label>Break Out<span class="text-danger">*</span></label>
-                                    <input class="form-control" type="text" name="breakIn" id="breakIn">
+                                    <label>Total Hours</label>
+                                    <input class="form-control" type="text" name="totalHours" id="totalHours">
                                 </div>
-                            </div>
-                            <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label>Break In<span class="text-danger">*</span></label>
-                                    <input class="form-control" type="text" name="breakOut" id="breakOut">
+                                    <label>Device</label>
+                                    <input class="form-control" type="text" name="device" id="device" readonly>
                                 </div>
-                            </div>
+                                <div class="submit-section">
+                                    <button type="submit" class="btn btn-primary submit-btn">Update</button>
+                                </div>
+                            </form>
                         </div>
-                        <div class="form-group">
-                            <label>Total Late</label>
-                            <input class="form-control" type="text" name="totalLate" id="totalLate">
-                        </div>
-                        <div class="form-group">
-                            <label>Total Hours</label>
-                            <input class="form-control" type="text" name="totalHours" id="totalHours">
-                        </div>
-                        <div class="form-group">
-                            <label>Device</label>
-                            <input class="form-control" type="text" name="device" id="device" readonly>
-                        </div>
-                        <div class="submit-section">
-                            <button type="submit" class="btn btn-primary submit-btn">Update</button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div> -->
+            </div> -->
     <!-- /Edit attendance Modal -->
 
     <!-- Delete Leave Modal -->

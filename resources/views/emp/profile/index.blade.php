@@ -6,17 +6,53 @@
 
     <!-- Page Header -->
     <div class="page-header">
-        <div class="row">
-            <div class="col-sm-12">
-                <h3 class="page-title">Employee Profile</h3>
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="page-title">Profile</h3>
                 <ul class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ url('emp/dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item active">Profile</li>
                 </ul>
             </div>
+            <div class="col-auto float-right ml-auto">
+                <a href="#" class="btn add-btn" data-toggle="modal" data-target="#access_code">
+                    Create Access Code</a>
+            </div>
         </div>
     </div>
     <!-- /Page Header -->
+
+    {{-- ACCESS CODE --}}
+    <div id="access_code" class="modal custom-modal fade" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create Access Code</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="accessCodeForm" method="POST" action="{{ route('emp.createAccessCode') }}">
+                        @csrf
+                        <div class="form-group">
+                            <label>Access Code <span class="text-danger">*</span></label>
+                            <input type="password" name="access_codes" id="access_codes" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm_access_code">Confirm Access Code</label>
+                            <input type="password" name="confirm_access_code" id="confirm_access_code"
+                                class="form-control" required>
+                        </div>
+                        <div class="submit-section">
+                            <button type="submit" class="btn btn-primary submit-btn"
+                                id="submitAccessCode">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="card mb-0">
         <div class="card-body">
@@ -27,9 +63,9 @@
                             <div class="profile-img">
                                 <a href="#" class="avatar">
                                     @if ($user->image)
-                                    <img src="{{ asset('images/' . $user->image) }}" alt="Profile Image" />
+                                        <img src="{{ asset('images/' . $user->image) }}" alt="Profile Image" />
                                     @else
-                                    <img src="{{ asset('images/default.png') }}" alt="Profile Image" />
+                                        <img src="{{ asset('images/default.png') }}" alt="Profile Image" />
                                     @endif
                                 </a>
                             </div>
@@ -45,31 +81,33 @@
                                         <div class="staff-id">Employee ID: {{ $user->empNumber }}</div>
                                         <div class="staff-id">Reporting to:
                                             <div class="avatar avatar-xs">
-                                                @if($supervisor && $supervisor->image &&
-                                                file_exists(public_path('images/' . $supervisor->image)))
-                                                <img src="{{ asset('images/' . $supervisor->image) }}" alt="">
+                                                @if ($supervisor && $supervisor->image && file_exists(public_path('images/' . $supervisor->image)))
+                                                    <img src="{{ asset('images/' . $supervisor->image) }}"
+                                                        alt="">
                                                 @else
-                                                <!-- Optionally, you can add a placeholder here -->
-                                                <img src="{{ asset('images/default.png') }}" alt="Default Avatar">
+                                                    <!-- Optionally, you can add a placeholder here -->
+                                                    <img src="{{ asset('images/default.png') }}" alt="Default Avatar">
                                                 @endif
                                             </div>
 
 
                                             @if ($supervisor === 'Management')
-                                            <strong>Management</strong>
+                                                <strong>Management</strong>
                                             @elseif ($supervisor)
-                                            <strong>
-                                                @if ($supervisor->fName || $supervisor->lName)
-                                                {{ $supervisor->fName }} {{ $supervisor->lName }}
-                                                @else
-                                                {{ $supervisor->name }}
-                                                @endif
-                                            </strong>
+                                                <strong>
+                                                    @if ($supervisor->fName || $supervisor->lName)
+                                                        {{ $supervisor->fName }} {{ $supervisor->lName }}
+                                                    @else
+                                                        {{ $supervisor->name }}
+                                                    @endif
+                                                </strong>
                                             @else
-                                            <strong>No supervisor assigned.</strong>
-                                            @endif</div>
+                                                <strong>No supervisor assigned.</strong>
+                                            @endif
+                                        </div>
                                         <div class="staff-msg">
-                                            <a class="btn btn-danger" href="{{ route('change.pass') }}"> Change Password
+                                            <a class="btn btn-danger" href="{{ route('change.pass') }}"> Change
+                                                Password
                                             </a>
                                         </div>
                                     </div>
@@ -142,37 +180,37 @@
                             <h3 class="card-title">Personal Informations <a href="#" class="edit-icon"
                                     data-toggle="modal" data-target="#personal_info_modal"><i
                                         class="fa fa-pencil"></i></a></h3>
-                            @if($user->personalInformation->isNotEmpty())
-                            @foreach($user->personalInformation as $info)
-                            <ul class="personal-info">
-                                <li>
-                                    <div class="title">Religion</div>
-                                    <div class="text">{{ $info->religion }}</div>
-                                </li>
-                                <li>
-                                    <div class="title">Education</div>
-                                    <div class="text">{{ $info->education }}</div>
-                                </li>
-                                <li>
-                                    <div class="title">Nationality</div>
-                                    <div class="text">{{ $info->nationality }}</div>
-                                </li>
-                                <li>
-                                    <div class="title">Marital status</div>
-                                    <div class="text">{{ $info->mStatus }}</div>
-                                </li>
-                                <li>
-                                    <div class="title">No. of children</div>
-                                    <div class="text">{{ $info->numChildren }}</div>
-                                </li>
-                                <li>
-                                    <div class="title">Personal Email</div>
-                                    <div class="text">{{ $info->personalEmail }}</div>
-                                </li>
-                            </ul>
-                            @endforeach
+                            @if ($user->personalInformation->isNotEmpty())
+                                @foreach ($user->personalInformation as $info)
+                                    <ul class="personal-info">
+                                        <li>
+                                            <div class="title">Religion</div>
+                                            <div class="text">{{ $info->religion }}</div>
+                                        </li>
+                                        <li>
+                                            <div class="title">Education</div>
+                                            <div class="text">{{ $info->education }}</div>
+                                        </li>
+                                        <li>
+                                            <div class="title">Nationality</div>
+                                            <div class="text">{{ $info->nationality }}</div>
+                                        </li>
+                                        <li>
+                                            <div class="title">Marital status</div>
+                                            <div class="text">{{ $info->mStatus }}</div>
+                                        </li>
+                                        <li>
+                                            <div class="title">No. of children</div>
+                                            <div class="text">{{ $info->numChildren }}</div>
+                                        </li>
+                                        <li>
+                                            <div class="title">Personal Email</div>
+                                            <div class="text">{{ $info->personalEmail }}</div>
+                                        </li>
+                                    </ul>
+                                @endforeach
                             @else
-                            <p>No Personal Info available.</p>
+                                <p>No Personal Info available.</p>
                             @endif
                         </div>
                     </div>
@@ -180,44 +218,45 @@
                 <div class="col-md-6 d-flex">
                     <div class="card profile-box flex-fill">
                         <div class="card-body">
-                            <h3 class="card-title">Emergency Contact <a href="#" class="edit-icon" data-toggle="modal"
-                                    data-target="#emergency_contact_modal"><i class="fa fa-pencil"></i></a></h3>
-                            @if($user->contactEmergency->isNotEmpty())
-                            <h5 class="section-title">Primary</h5>
-                            @foreach($user->contactEmergency as $contact)
-                            <ul class="personal-info">
-                                <li>
-                                    <div class="title">Name</div>
-                                    <div class="text">{{ $contact->primaryName }}</div>
-                                </li>
-                                <li>
-                                    <div class="title">Relationship</div>
-                                    <div class="text">{{ $contact->primaryRelation }}</div>
-                                </li>
-                                <li>
-                                    <div class="title">Phone </div>
-                                    <div class="text">{{ $contact->primaryPhone }}</div>
-                                </li>
-                            </ul>
-                            <hr>
-                            <h5 class="section-title">Secondary</h5>
-                            <ul class="personal-info">
-                                <li>
-                                    <div class="title">Name</div>
-                                    <div class="text">{{ $contact->secondName }}</div>
-                                </li>
-                                <li>
-                                    <div class="title">Relationship</div>
-                                    <div class="text">{{ $contact->secondRelation }}</div>
-                                </li>
-                                <li>
-                                    <div class="title">Phone </div>
-                                    <div class="text">{{ $contact->secondPhone }}</div>
-                                </li>
-                            </ul>
-                            @endforeach
+                            <h3 class="card-title">Emergency Contact <a href="#" class="edit-icon"
+                                    data-toggle="modal" data-target="#emergency_contact_modal"><i
+                                        class="fa fa-pencil"></i></a></h3>
+                            @if ($user->contactEmergency->isNotEmpty())
+                                <h5 class="section-title">Primary</h5>
+                                @foreach ($user->contactEmergency as $contact)
+                                    <ul class="personal-info">
+                                        <li>
+                                            <div class="title">Name</div>
+                                            <div class="text">{{ $contact->primaryName }}</div>
+                                        </li>
+                                        <li>
+                                            <div class="title">Relationship</div>
+                                            <div class="text">{{ $contact->primaryRelation }}</div>
+                                        </li>
+                                        <li>
+                                            <div class="title">Phone </div>
+                                            <div class="text">{{ $contact->primaryPhone }}</div>
+                                        </li>
+                                    </ul>
+                                    <hr>
+                                    <h5 class="section-title">Secondary</h5>
+                                    <ul class="personal-info">
+                                        <li>
+                                            <div class="title">Name</div>
+                                            <div class="text">{{ $contact->secondName }}</div>
+                                        </li>
+                                        <li>
+                                            <div class="title">Relationship</div>
+                                            <div class="text">{{ $contact->secondRelation }}</div>
+                                        </li>
+                                        <li>
+                                            <div class="title">Phone </div>
+                                            <div class="text">{{ $contact->secondPhone }}</div>
+                                        </li>
+                                    </ul>
+                                @endforeach
                             @else
-                            <p>No emergency contacts available.</p>
+                                <p>No emergency contacts available.</p>
                             @endif
                         </div>
                     </div>
@@ -255,26 +294,26 @@
                         <div class="card-body">
 
                             <h3 class="card-title">Bank Information</h3>
-                            @if($user->bankInfo->isNotEmpty())
-                            @foreach ($user->bankInfo as $bank)
-                            <ul class="personal-info">
-                                <li>
-                                    <div class="title">Bank name</div>
-                                    <div class="text">{{ $bank->bankName }}</div>
-                                </li>
-                                <li>
-                                    <div class="title">Bank Account Name</div>
-                                    <div class="text">{{ $bank->bankAccName }}</div>
-                                </li>
-                                <li>
-                                    <div class="title">Bank Account Number</div>
-                                    <div class="text">{{ $bank->bankAccNumber }}</div>
-                                </li>
+                            @if ($user->bankInfo->isNotEmpty())
+                                @foreach ($user->bankInfo as $bank)
+                                    <ul class="personal-info">
+                                        <li>
+                                            <div class="title">Bank name</div>
+                                            <div class="text">{{ $bank->bankName }}</div>
+                                        </li>
+                                        <li>
+                                            <div class="title">Bank Account Name</div>
+                                            <div class="text">{{ $bank->bankAccName }}</div>
+                                        </li>
+                                        <li>
+                                            <div class="title">Bank Account Number</div>
+                                            <div class="text">{{ $bank->bankAccNumber }}</div>
+                                        </li>
 
-                            </ul>
-                            @endforeach
+                                    </ul>
+                                @endforeach
                             @else
-                            <p>No bank details available.</p>
+                                <p>No bank details available.</p>
                             @endif
                         </div>
                     </div>
@@ -293,8 +332,8 @@
                                 <a aria-expanded="false" data-toggle="dropdown" class="action-icon dropdown-toggle"
                                     href="#"><i class="material-icons">more_vert</i></a>
                                 <div class="dropdown-menu dropdown-menu-right">
-                                    <a data-target="#edit_project" data-toggle="modal" href="#" class="dropdown-item"><i
-                                            class="fa fa-pencil m-r-5"></i> Edit</a>
+                                    <a data-target="#edit_project" data-toggle="modal" href="#"
+                                        class="dropdown-item"><i class="fa fa-pencil m-r-5"></i> Edit</a>
                                     <a data-target="#delete_project" data-toggle="modal" href="#"
                                         class="dropdown-item"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
                                 </div>
@@ -320,8 +359,8 @@
                                 <div>Project Leader :</div>
                                 <ul class="team-members">
                                     <li>
-                                        <a href="#" data-toggle="tooltip" title="Jeffery Lalor"><img alt=""
-                                                src="assets/img/profiles/avatar-16.jpg"></a>
+                                        <a href="#" data-toggle="tooltip" title="Jeffery Lalor"><img
+                                                alt="" src="assets/img/profiles/avatar-16.jpg"></a>
                                     </li>
                                 </ul>
                             </div>
@@ -333,16 +372,16 @@
                                                 src="assets/img/profiles/avatar-02.jpg"></a>
                                     </li>
                                     <li>
-                                        <a href="#" data-toggle="tooltip" title="Richard Miles"><img alt=""
-                                                src="assets/img/profiles/avatar-09.jpg"></a>
+                                        <a href="#" data-toggle="tooltip" title="Richard Miles"><img
+                                                alt="" src="assets/img/profiles/avatar-09.jpg"></a>
                                     </li>
                                     <li>
-                                        <a href="#" data-toggle="tooltip" title="John Smith"><img alt=""
-                                                src="assets/img/profiles/avatar-10.jpg"></a>
+                                        <a href="#" data-toggle="tooltip" title="John Smith"><img
+                                                alt="" src="assets/img/profiles/avatar-10.jpg"></a>
                                     </li>
                                     <li>
-                                        <a href="#" data-toggle="tooltip" title="Mike Litorus"><img alt=""
-                                                src="assets/img/profiles/avatar-05.jpg"></a>
+                                        <a href="#" data-toggle="tooltip" title="Mike Litorus"><img
+                                                alt="" src="assets/img/profiles/avatar-05.jpg"></a>
                                     </li>
                                     <li>
                                         <a href="#" class="all-users">+15</a>
@@ -365,8 +404,8 @@
                                 <a aria-expanded="false" data-toggle="dropdown" class="action-icon dropdown-toggle"
                                     href="#"><i class="material-icons">more_vert</i></a>
                                 <div class="dropdown-menu dropdown-menu-right">
-                                    <a data-target="#edit_project" data-toggle="modal" href="#" class="dropdown-item"><i
-                                            class="fa fa-pencil m-r-5"></i> Edit</a>
+                                    <a data-target="#edit_project" data-toggle="modal" href="#"
+                                        class="dropdown-item"><i class="fa fa-pencil m-r-5"></i> Edit</a>
                                     <a data-target="#delete_project" data-toggle="modal" href="#"
                                         class="dropdown-item"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
                                 </div>
@@ -392,8 +431,8 @@
                                 <div>Project Leader :</div>
                                 <ul class="team-members">
                                     <li>
-                                        <a href="#" data-toggle="tooltip" title="Jeffery Lalor"><img alt=""
-                                                src="assets/img/profiles/avatar-16.jpg"></a>
+                                        <a href="#" data-toggle="tooltip" title="Jeffery Lalor"><img
+                                                alt="" src="assets/img/profiles/avatar-16.jpg"></a>
                                     </li>
                                 </ul>
                             </div>
@@ -405,16 +444,16 @@
                                                 src="assets/img/profiles/avatar-02.jpg"></a>
                                     </li>
                                     <li>
-                                        <a href="#" data-toggle="tooltip" title="Richard Miles"><img alt=""
-                                                src="assets/img/profiles/avatar-09.jpg"></a>
+                                        <a href="#" data-toggle="tooltip" title="Richard Miles"><img
+                                                alt="" src="assets/img/profiles/avatar-09.jpg"></a>
                                     </li>
                                     <li>
-                                        <a href="#" data-toggle="tooltip" title="John Smith"><img alt=""
-                                                src="assets/img/profiles/avatar-10.jpg"></a>
+                                        <a href="#" data-toggle="tooltip" title="John Smith"><img
+                                                alt="" src="assets/img/profiles/avatar-10.jpg"></a>
                                     </li>
                                     <li>
-                                        <a href="#" data-toggle="tooltip" title="Mike Litorus"><img alt=""
-                                                src="assets/img/profiles/avatar-05.jpg"></a>
+                                        <a href="#" data-toggle="tooltip" title="Mike Litorus"><img
+                                                alt="" src="assets/img/profiles/avatar-05.jpg"></a>
                                     </li>
                                     <li>
                                         <a href="#" class="all-users">+15</a>
@@ -437,8 +476,8 @@
                                 <a aria-expanded="false" data-toggle="dropdown" class="action-icon dropdown-toggle"
                                     href="#"><i class="material-icons">more_vert</i></a>
                                 <div class="dropdown-menu dropdown-menu-right">
-                                    <a data-target="#edit_project" data-toggle="modal" href="#" class="dropdown-item"><i
-                                            class="fa fa-pencil m-r-5"></i> Edit</a>
+                                    <a data-target="#edit_project" data-toggle="modal" href="#"
+                                        class="dropdown-item"><i class="fa fa-pencil m-r-5"></i> Edit</a>
                                     <a data-target="#delete_project" data-toggle="modal" href="#"
                                         class="dropdown-item"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
                                 </div>
@@ -464,8 +503,8 @@
                                 <div>Project Leader :</div>
                                 <ul class="team-members">
                                     <li>
-                                        <a href="#" data-toggle="tooltip" title="Jeffery Lalor"><img alt=""
-                                                src="assets/img/profiles/avatar-16.jpg"></a>
+                                        <a href="#" data-toggle="tooltip" title="Jeffery Lalor"><img
+                                                alt="" src="assets/img/profiles/avatar-16.jpg"></a>
                                     </li>
                                 </ul>
                             </div>
@@ -477,16 +516,16 @@
                                                 src="assets/img/profiles/avatar-02.jpg"></a>
                                     </li>
                                     <li>
-                                        <a href="#" data-toggle="tooltip" title="Richard Miles"><img alt=""
-                                                src="assets/img/profiles/avatar-09.jpg"></a>
+                                        <a href="#" data-toggle="tooltip" title="Richard Miles"><img
+                                                alt="" src="assets/img/profiles/avatar-09.jpg"></a>
                                     </li>
                                     <li>
-                                        <a href="#" data-toggle="tooltip" title="John Smith"><img alt=""
-                                                src="assets/img/profiles/avatar-10.jpg"></a>
+                                        <a href="#" data-toggle="tooltip" title="John Smith"><img
+                                                alt="" src="assets/img/profiles/avatar-10.jpg"></a>
                                     </li>
                                     <li>
-                                        <a href="#" data-toggle="tooltip" title="Mike Litorus"><img alt=""
-                                                src="assets/img/profiles/avatar-05.jpg"></a>
+                                        <a href="#" data-toggle="tooltip" title="Mike Litorus"><img
+                                                alt="" src="assets/img/profiles/avatar-05.jpg"></a>
                                     </li>
                                     <li>
                                         <a href="#" class="all-users">+15</a>
@@ -509,8 +548,8 @@
                                 <a aria-expanded="false" data-toggle="dropdown" class="action-icon dropdown-toggle"
                                     href="#"><i class="material-icons">more_vert</i></a>
                                 <div class="dropdown-menu dropdown-menu-right">
-                                    <a data-target="#edit_project" data-toggle="modal" href="#" class="dropdown-item"><i
-                                            class="fa fa-pencil m-r-5"></i> Edit</a>
+                                    <a data-target="#edit_project" data-toggle="modal" href="#"
+                                        class="dropdown-item"><i class="fa fa-pencil m-r-5"></i> Edit</a>
                                     <a data-target="#delete_project" data-toggle="modal" href="#"
                                         class="dropdown-item"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
                                 </div>
@@ -536,8 +575,8 @@
                                 <div>Project Leader :</div>
                                 <ul class="team-members">
                                     <li>
-                                        <a href="#" data-toggle="tooltip" title="Jeffery Lalor"><img alt=""
-                                                src="assets/img/profiles/avatar-16.jpg"></a>
+                                        <a href="#" data-toggle="tooltip" title="Jeffery Lalor"><img
+                                                alt="" src="assets/img/profiles/avatar-16.jpg"></a>
                                     </li>
                                 </ul>
                             </div>
@@ -549,16 +588,16 @@
                                                 src="assets/img/profiles/avatar-02.jpg"></a>
                                     </li>
                                     <li>
-                                        <a href="#" data-toggle="tooltip" title="Richard Miles"><img alt=""
-                                                src="assets/img/profiles/avatar-09.jpg"></a>
+                                        <a href="#" data-toggle="tooltip" title="Richard Miles"><img
+                                                alt="" src="assets/img/profiles/avatar-09.jpg"></a>
                                     </li>
                                     <li>
-                                        <a href="#" data-toggle="tooltip" title="John Smith"><img alt=""
-                                                src="assets/img/profiles/avatar-10.jpg"></a>
+                                        <a href="#" data-toggle="tooltip" title="John Smith"><img
+                                                alt="" src="assets/img/profiles/avatar-10.jpg"></a>
                                     </li>
                                     <li>
-                                        <a href="#" data-toggle="tooltip" title="Mike Litorus"><img alt=""
-                                                src="assets/img/profiles/avatar-05.jpg"></a>
+                                        <a href="#" data-toggle="tooltip" title="Mike Litorus"><img
+                                                alt="" src="assets/img/profiles/avatar-05.jpg"></a>
                                     </li>
                                     <li>
                                         <a href="#" class="all-users">+15</a>
@@ -605,8 +644,8 @@
                                         <div class="input-group-prepend">
                                             <span class="input-group-text">$</span>
                                         </div>
-                                        <input type="text" class="form-control" placeholder="Type your salary amount"
-                                            value="0.00">
+                                        <input type="text" class="form-control"
+                                            placeholder="Type your salary amount" value="0.00">
                                     </div>
                                 </div>
                             </div>
@@ -816,11 +855,11 @@
                         <div class="col-md-12">
                             <div class="profile-img-wrap edit-img">
                                 @if ($user->image)
-                                <img class="inline-block" src="{{ asset('images/' . $user->image) }}" alt="Employee"
-                                    id="previewImage">
+                                    <img class="inline-block" src="{{ asset('images/' . $user->image) }}"
+                                        alt="Employee" id="previewImage">
                                 @else
-                                <img class="inline-block" src="{{ asset('images/default.png') }}" alt="Employee"
-                                    id="previewImage">
+                                    <img class="inline-block" src="{{ asset('images/default.png') }}" alt="Employee"
+                                        id="previewImage">
                                 @endif
                                 <div class="fileupload btn">
                                     <span class="btn-text">Edit</span>
@@ -858,8 +897,8 @@
                                 <div class="col-sm-3">
                                     <div class="form-group">
                                         <label for="suffix">Suffix</label>
-                                        <input type="text" name="suffix" id="suffix" value="{{ $user->suffix }}"
-                                            class="form-control" readonly />
+                                        <input type="text" name="suffix" id="suffix"
+                                            value="{{ $user->suffix }}" class="form-control" readonly />
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -910,7 +949,8 @@
                             <div class="form-group">
                                 <label>Address</label>
                                 <input type="text" class="form-control" value="{{ $user->completeAddress }}"
-                                    value="{{ $user->completeAddress }}" name="completeAddress" id="completeAddress">
+                                    value="{{ $user->completeAddress }}" name="completeAddress"
+                                    id="completeAddress">
                             </div>
                         </div>
 
@@ -944,7 +984,7 @@
                             <div class="form-group">
                                 <label>Religion</label>
                                 <input type="text" class="form-control" name="religion" id="religion"
-                                    value="{{ $info->religion ?? ''}}">
+                                    value="{{ $info->religion ?? '' }}">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -978,7 +1018,7 @@
                             <div class="form-group">
                                 <label>No. of children </label>
                                 <input class="form-control" type="text" name="numChildren" id="numChildren"
-                                    value="{{ $info->numChildren ?? ''}}">
+                                    value="{{ $info->numChildren ?? '' }}">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -1010,7 +1050,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="{{ url('hr/employee/update/mandates/'. $user->id) }}" method="POST"
+                <form action="{{ url('hr/employee/update/mandates/' . $user->id) }}" method="POST"
                     enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
@@ -1071,8 +1111,8 @@
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Name <span class="text-danger">*</span></label>
-                                        <input type="text" name="primaryName" id="primaryName" class="form-control"
-                                            required>
+                                        <input type="text" name="primaryName" id="primaryName"
+                                            class="form-control" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -1085,8 +1125,8 @@
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Phone <span class="text-danger">*</span></label>
-                                        <input class="form-control" name="primaryPhone" id="primaryPhone" type="text"
-                                            required>
+                                        <input class="form-control" name="primaryPhone" id="primaryPhone"
+                                            type="text" required>
                                     </div>
                                 </div>
                             </div>
@@ -1100,7 +1140,8 @@
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Name</label>
-                                        <input type="text" name="secondName" id="secondName" class="form-control">
+                                        <input type="text" name="secondName" id="secondName"
+                                            class="form-control">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -1113,7 +1154,8 @@
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Phone</label>
-                                        <input class="form-control" name="secondPhone" id="secondPhone" type="text">
+                                        <input class="form-control" name="secondPhone" id="secondPhone"
+                                            type="text">
                                     </div>
                                 </div>
                             </div>
@@ -1137,17 +1179,63 @@
 @section('scripts')
 
 <script>
-    document.getElementById("imageInput").addEventListener("change", function () {
+    document.getElementById("imageInput").addEventListener("change", function() {
         const file = this.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = function (event) {
+            reader.onload = function(event) {
                 document.getElementById("previewImage").setAttribute("src", event.target.result);
             };
             reader.readAsDataURL(file);
         }
     });
+</script>
 
+<script>
+    $('#accessCodeForm').on('submit', function(e) {
+        e.preventDefault(); // Prevent default form submission
+
+        var accessCode = $('#access_codes').val().trim();
+        var confirmAccessCode = $('#confirm_access_code').val().trim();
+        var token = $('meta[name="csrf-token"]').attr('content');
+
+        console.log('Access Code:', accessCode);
+        console.log('Confirm Access Code:', confirmAccessCode);
+
+        // Check if access codes match
+        if (accessCode !== confirmAccessCode) {
+            alert('Access codes do not match!');
+            return;
+        }
+
+        // Show loading spinner
+        $('#loader').show();
+
+        // AJAX request
+        $.ajax({
+            url: '{{ route('emp.createAccessCode') }}',
+            method: 'POST',
+            data: {
+                access_code: accessCode,
+                confirm_access_code: confirmAccessCode,
+                _token: token
+            },
+            success: function(response) {
+                $('#loader').hide();
+                if (response.success) {
+                    alert(response.message); // Success message
+                    $('#access_codes').modal('hide'); // Close the modal
+                    $('#accessCodeForm')[0].reset(); // Reset the form
+                } else {
+                    alert(response.message); // Error message
+                }
+            },
+            error: function() {
+                $('#loader').hide();
+                alert('An error occurred, please try again.');
+            }
+        });
+    });
 </script>
 
 @endsection

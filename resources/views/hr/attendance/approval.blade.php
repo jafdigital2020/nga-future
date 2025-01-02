@@ -1,4 +1,4 @@
-@extends('layouts.master') @section('title', 'Request Attendance')
+@extends('layouts.hrmaster') @section('title', 'Request Attendance')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
 @section('content')
@@ -12,14 +12,9 @@
             <div class="col">
                 <h3 class="page-title">Attendance Certificate</h3>
                 <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url('admin/dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url('hr/dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item active">Attendance Certificate</li>
                 </ul>
-            </div>
-            <div class="col-auto float-right ml-auto">
-                <a href="#" class="btn add-btn" data-toggle="modal" data-target="#attendanceModal"><i
-                        class="fa fa-plus"></i>
-                    Request Attendance</a>
             </div>
         </div>
     </div>
@@ -98,8 +93,6 @@
                                         <i class="fa fa-dot-circle-o text-purple"></i> New
                                         @elseif($req->status_code == 'Pending')
                                         <i class="fa fa-dot-circle-o text-info"></i> Pending
-                                        @elseif($req->status_code == 'Pre-Approved')
-                                        <i class="fa fa-dot-circle-o text-warning"></i> Pre-Approved
                                         @elseif($req->status_code == 'Approved')
                                         <i class="fa fa-dot-circle-o text-success"></i> Approved
                                         @elseif($req->status_code == 'Declined')
@@ -113,7 +106,7 @@
                                             Pending</a>
 
                                         <form id="approve-form-{{ $req->id }}"
-                                            action="{{ route('admin.approveAttendance', $req->id) }}" method="POST"
+                                            action="{{ route('hr.approveAttendance', $req->id) }}" method="POST"
                                             style="display:inline;">
                                             @csrf
                                             <button type="button" class="dropdown-item approve-button"
@@ -122,7 +115,7 @@
                                             </button>
                                         </form>
                                         <form id="decline-form-{{ $req->id }}"
-                                            action="{{ route('admin.declineAttendance', $req->id ) }}" method="POST"
+                                            action="{{ route('hr.declineAttendance', $req->id ) }}" method="POST"
                                             style="display:inline;">
                                             @csrf
                                             <button type="button" class="dropdown-item decline-button"
@@ -179,80 +172,6 @@
         </div>
     </div>
     <!-- /Page Content -->
-
-
-    <!-- Request Attendance Modal -->
-    <div id="attendanceModal" class="modal custom-modal fade" role="dialog">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Request Attendance</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form method="POST" action="{{ route('admin.storeCertificateAttendance') }}"
-                        enctype="multipart/form-data">
-                        @csrf
-                        <input type="hidden" name="is_manual_entry" value="1">
-                        <div class="form-group">
-                            <label>Date</label>
-                            <div class="cal-icon">
-                                <input class="form-control floating datetimepicker" type="text" name="date" id="date"
-                                    required>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label>Clock in Time<span class="text-danger">*</span></label>
-                                    <input class="form-control" type="time" name="start_time" id="start_time" required>
-
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label>End Time <span class="text-danger">*</span></label>
-                                    <input class="form-control" type="time" name="end_time" id="end_time" required>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <div class="form-group">
-                                    <label>Break Hours</label>
-                                    <input type="text" class="form-control" id="break_hours" placeholder="HH:MM:SS"
-                                        pattern="[0-9]{2}:[0-9]{2}:[0-9]{2}">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <div class="form-group">
-                                    <label>Total Hours</label>
-                                    <input type="text" class="form-control" id="total_hours" name="total_hours"
-                                        placeholder="HH:MM:SS" pattern="[0-9]{2}:[0-9]{2}:[0-9]{2}" readonly>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="">Attached File (Proof)</label>
-                            <input type="file" class="form-control" id="file" name="file" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="">Reason</label>
-                            <textarea class="form-control" name="reason" id="reason"></textarea>
-                        </div>
-                        <div class="submit-section">
-                            <button type="submit" class="btn btn-primary submit-btn">Submit</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- /Request Atendance Modal -->
 
     <!-- Edit Attendance Modal -->
     <div id="edit_att" class="modal custom-modal fade" role="dialog">
@@ -395,7 +314,7 @@
                     filePreview.html('<p>No file attached.</p>');
                 }
 
-                $('#editAttForm').attr('action', '/admin/request/attendance/update/' +
+                $('#editAttForm').attr('action', '/hr/attendance/request/update/' +
                     attId);
                 // Show the modal
                 $('#edit_att').modal('show');
@@ -430,7 +349,7 @@
                 // }
 
                 $('#delete_att_id').val(attId);
-                $('#deleteAttForm').attr('action', '/admin/request/attendance/delete/' + attId);
+                $('#deleteAttForm').attr('action', '/hr/attendance/request/delete/' + attId);
                 $('#delete_approve').modal('show');
             });
         });

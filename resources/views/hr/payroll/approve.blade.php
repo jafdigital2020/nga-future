@@ -1,4 +1,4 @@
-@extends('layouts.master') @section('title', 'Approved Timesheet') @section('content')
+@extends('layouts.hrmaster') @section('title', 'Approved Timesheet') @section('content')
 @include('sweetalert::alert')
 
 <!-- Page Content -->
@@ -10,7 +10,7 @@
             <div class="col">
                 <h3 class="page-title">Approved Timesheet</h3>
                 <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url('admin/dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url('hr/dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item active">Approved Timesheet</li>
                 </ul>
             </div>

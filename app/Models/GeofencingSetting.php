@@ -20,6 +20,8 @@ class GeofencingSetting extends Model
         'fencing_radius',
         'created_by',
         'edit_by',
+        'status',
+        'expiration_date',
      ];
 
      public function users()

@@ -1,4 +1,4 @@
-@extends('layouts.master') @section('title', 'Request Attendance')
+@extends('layouts.hrmaster') @section('title', 'Request Attendance')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
 @section('content')
@@ -10,10 +10,10 @@
     <div class="page-header">
         <div class="row align-items-center">
             <div class="col">
-                <h3 class="page-title">Attendance Certificate</h3>
+                <h3 class="page-title">Request Attendance</h3>
                 <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url('admin/dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item active">Attendance Certificate</li>
+                    <li class="breadcrumb-item"><a href="{{ url('hr/dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active"> Request Attendance </li>
                 </ul>
             </div>
             <div class="col-auto float-right ml-auto">
@@ -27,19 +27,25 @@
 
     <!-- attendance Statistics -->
     <div class="row">
-        <div class="col-md-6 col-sm-6 col-lg-6 col-xl-4">
+        <div class="col-md-6 col-sm-6 col-lg-6 col-xl-3">
             <div class="stats-info">
                 <h6>Total Request</h6>
                 <h4>{{ $reqcount ?? 0 }} <span>this month</span></h4>
             </div>
         </div>
-        <div class="col-md-6 col-sm-6 col-lg-6 col-xl-4">
+        <div class="col-md-6 col-sm-6 col-lg-6 col-xl-3">
+            <div class="stats-info">
+                <h6>Remaining Credits</h6>
+                <h4>{{ $remainingCredits ?? 0 }} <span>this month</span></h4>
+            </div>
+        </div>
+        <div class="col-md-6 col-sm-6 col-lg-6 col-xl-3">
             <div class="stats-info">
                 <h6>Pending Request</h6>
                 <h4>{{ $pendingCount ?? 0 }}</h4>
             </div>
         </div>
-        <div class="col-md-6 col-sm-6 col-lg-6 col-xl-4">
+        <div class="col-md-6 col-sm-6 col-lg-6 col-xl-3">
             <div class="stats-info">
                 <h6>Declined</h6>
                 <h4>{{ $decCount ?? 0 }}</h4>
@@ -79,7 +85,7 @@
                                                 asset('images/default.png')
                                             }}" alt="Profile Image" />
                                         @endif</a>
-                                    <a href="{{ url('emp/profile/') }}">{{ $req->user->fName }}
+                                    <a href="{{ url('hr/profile/') }}">{{ $req->user->fName }}
                                         {{ $req->user->lName }}
                                         <span>{{ $req->user->position }}</span></a>
                                 </h2>
@@ -92,45 +98,20 @@
                             <td>{{ $req->created_at->format('Y-m-d') }}</td>
                             <td class="text-center">
                                 <div class="dropdown action-label">
-                                    <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#"
-                                        data-toggle="dropdown" aria-expanded="false">
+                                    <a class="btn btn-white btn-sm btn-rounded " href="#" data-toggle="dropdown"
+                                        aria-expanded="false">
                                         @if($req->status_code == 'New')
                                         <i class="fa fa-dot-circle-o text-purple"></i> New
                                         @elseif($req->status_code == 'Pending')
                                         <i class="fa fa-dot-circle-o text-info"></i> Pending
-                                        @elseif($req->status_code == 'Pre-Approved')
-                                        <i class="fa fa-dot-circle-o text-warning"></i> Pre-Approved
                                         @elseif($req->status_code == 'Approved')
                                         <i class="fa fa-dot-circle-o text-success"></i> Approved
-                                        @elseif($req->status_code == 'Declined')
-                                        <i class="fa fa-dot-circle-o text-danger"></i> Declined
+                                        @elseif($req->status_code == 'Rejected')
+                                        <i class="fa fa-dot-circle-o text-danger"></i> Rejected
                                         @else
                                         <i class="fa fa-dot-circle-o"></i> Unknown
                                         @endif
                                     </a>
-                                    <div class="dropdown-menu dropdown-menu-right">
-                                        <a class="dropdown-item" href="#"><i class="fa fa-dot-circle-o text-info"></i>
-                                            Pending</a>
-
-                                        <form id="approve-form-{{ $req->id }}"
-                                            action="{{ route('admin.approveAttendance', $req->id) }}" method="POST"
-                                            style="display:inline;">
-                                            @csrf
-                                            <button type="button" class="dropdown-item approve-button"
-                                                data-attendance-id="{{ $req->id }}">
-                                                <i class="fa fa-dot-circle-o text-success"></i> Approved
-                                            </button>
-                                        </form>
-                                        <form id="decline-form-{{ $req->id }}"
-                                            action="{{ route('admin.declineAttendance', $req->id ) }}" method="POST"
-                                            style="display:inline;">
-                                            @csrf
-                                            <button type="button" class="dropdown-item decline-button"
-                                                data-attendance-id="{{ $req->id }}">
-                                                <i class="fa fa-dot-circle-o text-danger"></i> Declined
-                                            </button>
-                                        </form>
-                                    </div>
                                 </div>
                             </td>
                             <td>
@@ -163,7 +144,8 @@
                                         <a class="dropdown-item edit-attendance" href="#" data-id="{{ $req->id }}"
                                             data-date="{{ $req->date }}" data-time_in="{{ $req->timeIn }}"
                                             data-time_out="{{ $req->timeOut }}" data-time_total="{{ $req->timeTotal }}"
-                                            data-reason="{{ $req->reason }}" data-file="{{ $req->image_path }}"><i
+                                            data-reason="{{ $req->reason }}" data-file="{{ $req->image_path }}"
+                                            data-status_code="{{ $req->status_code }}"><i
                                                 class="fa fa-pencil m-r-5"></i>
                                             Edit</a>
                                         <a class="dropdown-item delete-att" href="#" data-id="{{ $req->id }}">
@@ -192,7 +174,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form method="POST" action="{{ route('admin.storeCertificateAttendance') }}"
+                    <form method="POST" action="{{ route('hr.hrstoreCertificateAttendance') }}"
                         enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="is_manual_entry" value="1">
@@ -376,6 +358,12 @@
                 var totalHours = $(this).data('time_total');
                 var reason = $(this).data('reason');
                 var filePath = $(this).data('file');
+                var statusCode = $(this).data('status_code');
+
+                if (statusCode === 'Approved') {
+                    alert('This request has already been approved and cannot be edited.');
+                    return;
+                }
 
                 // Populate fields in the modal
                 $('#att_id').val(attId);
@@ -395,7 +383,7 @@
                     filePreview.html('<p>No file attached.</p>');
                 }
 
-                $('#editAttForm').attr('action', '/admin/request/attendance/update/' +
+                $('#editAttForm').attr('action', '/hr/attendance/update/' +
                     attId);
                 // Show the modal
                 $('#edit_att').modal('show');
@@ -422,15 +410,15 @@
             // Delete OT request
             $('.delete-att').on('click', function () {
                 var attId = $(this).data('id');
-                // var status = $(this).data('status');
+                var status = $(this).data('status');
 
-                // if (status === 'Approved') {
-                //     alert('This OT request has already been approved and cannot be deleted.');
-                //     return;
-                // }
+                if (status === 'Approved') {
+                    alert('This attendance request has already been approved and cannot be deleted.');
+                    return;
+                }
 
                 $('#delete_att_id').val(attId);
-                $('#deleteAttForm').attr('action', '/admin/request/attendance/delete/' + attId);
+                $('#deleteAttForm').attr('action', '/hr/attendance/delete/' + attId);
                 $('#delete_approve').modal('show');
             });
         });
@@ -593,8 +581,8 @@
 
             declineButtons.forEach(function (button) {
                 button.addEventListener('click', function () {
-                    var attId = button.getAttribute('data-attendance-id');
-                    confirmDecline(attId);
+                    var otId = button.getAttribute('data-ot-id');
+                    confirmDecline(otId);
                 });
             });
         });
@@ -607,9 +595,9 @@
             }
         }
 
-        function confirmDecline(attId) {
-            var form = document.getElementById('decline-form-' + attId);
-            var confirmAction = confirm("Are you sure you want to decline this request?");
+        function confirmDecline(otId) {
+            var form = document.getElementById('decline-form-' + otId);
+            var confirmAction = confirm("Are you sure you want to decline this OT request?");
             if (confirmAction) {
                 form.submit();
             }

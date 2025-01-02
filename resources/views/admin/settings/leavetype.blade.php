@@ -67,7 +67,8 @@
                                         <a class="dropdown-item edit-leaveType" href="#" data-id="{{ $type->id }}"
                                             data-leave_type="{{ $type->leaveType }}"
                                             data-leave_days="{{ $type->leaveDays }}"
-                                            data-is_paid="{{ $type->is_paid }}"><i class="fa fa-pencil m-r-5"></i>
+                                            data-is_paid="{{ $type->is_paid }}"
+                                            data-restriction_days="{{ $type->restriction_days }}"><i class="fa fa-pencil m-r-5"></i>
                                             Edit</a>
                                         <a class="dropdown-item delete-leaveType" href="#" data-id="{{ $type->id }}"><i
                                                 class="fa fa-trash-o m-r-5"></i>
@@ -151,6 +152,10 @@
                         <input class="form-control" type="text" name="leaveDays" id="leaveDays" required>
                     </div>
                     <div class="form-group">
+                        <label>Restriction Days<span class="text-danger">*</span></label>
+                        <input class="form-control" type="text" name="restriction_days" id="restriction_days" required>
+                    </div>
+                    <div class="form-group">
                         <label>Paid / Unpaid</label>
                         <select name="is_paid" id="is_paid" class="form-control" required>
                             <option value="" disabled selected>Select Type</option>
@@ -210,11 +215,13 @@
         var leaveType = $(this).data('leave_type');
         var leaveDays = $(this).data('leave_days');
         var isPaid = $(this).data('is_paid');
+        var restriction = $(this).data('restriction_days');
 
         $('#leave_type_id').val(leaveTypeId);
         $('#leaveType').val(leaveType);
         $('#leaveDays').val(leaveDays);
         $('#is_paid').val(isPaid);
+        $('#restriction_days').val(restriction);
 
         $('#editLeaveTypeForm').attr('action', '/admin/settings/leavetype/edit/' +
             leaveTypeId);

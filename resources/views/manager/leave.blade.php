@@ -291,7 +291,7 @@
                                         @elseif($leave->status == 'Pending')
                                         <i class="fa fa-dot-circle-o text-info"></i> Pending
                                         @elseif($leave->status == 'Approved')
-                                        <i class="fa fa-dot-circle-o text-success"></i> Approved
+                                        <i class="fa fa-dot-circle-o text-warning"></i> Pre-Approved
                                         @elseif($leave->status == 'Declined')
                                         <i class="fa fa-dot-circle-o text-danger"></i> Declined
                                         @else
@@ -308,7 +308,7 @@
                                             @csrf
                                             <button type="button" class="dropdown-item approve-button"
                                                 data-leave-id="{{ $leave->id }}">
-                                                <i class="fa fa-dot-circle-o text-success"></i> Approved
+                                                <i class="fa fa-dot-circle-o text-warning"></i> Pre-Approved
                                             </button>
                                         </form>
 

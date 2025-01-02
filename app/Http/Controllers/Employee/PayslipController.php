@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Salary;
 use App\Models\Payroll;
+use App\Models\AccessCode;
 use App\Models\EarningList;
 use App\Models\SalaryTable;
 use Illuminate\Http\Request;
@@ -188,5 +189,23 @@ class PayslipController extends Controller
     {
      return view('emp.payslip.pdf');
     }
+
+    // ** Verification Access ** //
+
+    public function validateCode(Request $request)
+    {
+        $request->validate([
+            'access_code' => 'required',
+        ]);
+
+        $accessCode = AccessCode::where('access_code', $request->access_code)->first();
+
+        if ($accessCode) {
+            return response()->json(['success' => true, 'message' => 'Access code valid.']);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Invalid access code.'], 401);
+    }
+
 
 }

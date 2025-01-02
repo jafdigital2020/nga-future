@@ -299,10 +299,39 @@
                                         <option value="Intern">Intern</option>
                                     </select>
                                 </div>
-                                <div class="col-sm-6">
+                                {{-- <div class="col-sm-6">
                                     <label class="fieldlabels">Hourly Rate: *</label> <input type="text"
                                         name="hourly_rate" />
-                                </div>
+                                </div> --}}
+
+                                      <!-- Base on this hide, unhide labels and inputs-->
+                                      <div class="col-sm-6">
+                                        <label class="fieldlabels">Salary Type: *</label>
+                                        <select name="salaryType" required>
+                                            <option value="">-- Select --</option>
+                                            <option value="mSalary">Monthly Fixed Salary</option>
+                                            <option value="hourly_rate">Hourly Rate</option>
+                                            <option value="daily_rate">Daily Rate</option>
+                                        </select>
+                                    </div>
+
+
+                                    <!-- Hide labels and input of monthly, hourly, daily -->
+                                    <div class="col-sm-6 salary-field" style="display: none;">
+                                        <label class="fieldlabels">Monthly Fixed Salary: *</label>
+                                        <input type="text" name="mSalary" />
+                                    </div>
+                                    <div class="col-sm-6 salary-field" style="display: none;">
+                                        <label class="fieldlabels">Hourly Rate: *</label>
+                                        <input type="text" name="hourly_rate" />
+                                    </div>
+                                    <div class="col-sm-6 salary-field" style="display: none;">
+                                        <label class="fieldlabels">Daily Rate: *</label>
+                                        <input type="text" name="daily_rate" />
+                                    </div>
+
+                                    <!-- End hide labels and input of monthly, hourly, daily -->
+
                                 <div class="col-sm-6">
                                     <label class="fieldlabels">Department : *</label> <input type="text"
                                         name="department" />
@@ -622,6 +651,25 @@
         modal.hide();
     });
 
+</script>
+
+<script>
+    // Show the correct salary field based on the selected salary type
+    //if selected is monthly salary, show the monthly salary field
+    $(document).ready(function() {
+        $('select[name="salaryType"]').on('change', function() {
+            var salaryType = $(this).val();
+            $('.salary-field').hide(); // Hide all salary fields
+            //if selected is monthly salary, show the monthly salary field
+            if (salaryType === 'mSalary') {
+                $('input[name="mSalary"]').closest('.col-sm-6').show();
+            } else if (salaryType === 'hourly_rate') {
+                $('input[name="hourly_rate"]').closest('.col-sm-6').show();
+            } else if (salaryType === 'daily_rate') {
+                $('input[name="daily_rate"]').closest('.col-sm-6').show();
+            }
+        }).trigger('change'); // Trigger change event on page load to set initial state
+    });
 </script>
 
 
