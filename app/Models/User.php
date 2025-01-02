@@ -12,6 +12,7 @@ use App\Models\Salary;
 use App\Models\Payroll;
 use App\Models\Location;
 use App\Models\UserAsset;
+use App\Models\AccessCode;
 use Carbon\CarbonInterval;
 use App\Models\LeaveCredit;
 use App\Models\SalaryTable;
@@ -200,8 +201,8 @@ class User extends Authenticatable
     public function devices(): BelongsToMany
     {
         return $this->belongsToMany(BiometricDevice::class, 'user_device')
-                    ->withPivot('biometric_user_id')
-                    ->withTimestamps();
+            ->withPivot('biometric_user_id')
+            ->withTimestamps();
     }
 
     public function employeeAttendance()
@@ -409,6 +410,11 @@ class User extends Authenticatable
         return $this->hasMany(AttendanceEditHistory::class, 'edited_by');
     }
 
+    public function accessCode()
+    {
+        return $this->hasOne(AccessCode::class);
+    }
+
 
     public function checkIn(Request $request)
     {
@@ -551,7 +557,7 @@ class User extends Authenticatable
         $now = Carbon::now('Asia/Manila');
         $dateToday = $now->toDateString();
         $dateYesterday = $now->copy()->subDay()->toDateString();
-    
+
         // Look for the most recent attendance record for today or yesterday that doesn't have a breakIn
         $attendance = $this->employeeAttendance()
             ->whereIn('date', [$dateYesterday, $dateToday])
@@ -559,57 +565,57 @@ class User extends Authenticatable
             ->whereNull('timeOut') // Ensure the user hasn't timed out for this record
             ->latest('date')
             ->first();
-    
+
         if (!$attendance) {
             return back()->with('error', 'You have either already taken a break, timed out, or not timed in yet.');
         }
-    
+
         // If a valid attendance record is found, update with breakIn and breakEnd
         $breakInTime = $now;
         $breakEndTime = $breakInTime->copy()->addHour(); // Calculate break end time
-    
+
         $attendance->update([
             'breakIn' => $breakInTime->format('h:i:s A'), // Use 24-hour format for database storage
             'breakEnd' => $breakEndTime->format('h:i:s A'),
         ]);
-    
+
         return back()->with('success', 'You have successfully started your break.');
     }
-    
+
 
     public function breakOut()
     {
         $now = Carbon::now('Asia/Manila');
         $dateToday = $now->toDateString();
         $dateYesterday = $now->copy()->subDay()->toDateString();
-    
+
         // Look for the most recent attendance record for today or yesterday that doesn't have a timeOut
         $attendance = $this->employeeAttendance()
             ->whereIn('date', [$dateYesterday, $dateToday])
             ->whereNull('timeOut') // Ensure the user hasn't timed out
             ->latest('date')
             ->first();
-    
+
         if (!$attendance) {
             return back()->with('error', 'You have already timed out or have not clocked in yet.');
         }
-    
+
         // Check if a breakOut is possible (i.e., breakIn is logged but breakOut is not)
         $breakout = $this->employeeAttendance()
             ->where('id', $attendance->id) // Ensure it's the same attendance record
             ->whereNotNull('breakIn')
             ->whereNull('breakOut')
             ->first();
-    
+
         if (!$breakout) {
             return back()->with('error', 'You have not taken a break yet or have already returned.');
         }
-    
+
         $breakInTime = Carbon::parse($breakout->breakIn);
         $breakOutTime = $now;
         $diffInMinutes = $breakInTime->diffInMinutes($breakOutTime);
         $breakLateFormat = null;
-    
+
         // Check if break time exceeded 60 minutes
         if ($diffInMinutes > 60) {
             $exceededMinutes = $diffInMinutes - 60;
@@ -618,7 +624,7 @@ class User extends Authenticatable
                 'breakLate' => $breakLateFormat,
             ]);
         }
-    
+
         $breakEndTime = Carbon::parse($breakout->breakEnd);
         if ($breakOutTime->greaterThan($breakEndTime)) {
             $exceededMinutes = $breakOutTime->diffInMinutes($breakEndTime);
@@ -627,77 +633,18 @@ class User extends Authenticatable
                 'breakLate' => $breakLateFormat,
             ]);
         }
-    
+
         $breakout->update([
             'breakOut' => $now->format('h:i:s A'),
         ]);
-    
+
         $message = 'Welcome Back!';
         if ($breakLateFormat) {
             $message .= ' You were late by ' . $breakLateFormat . ' (HH:MM:SS).';
         }
-    
+
         return back()->with('success', $message);
     }
-    
-
-    // public function checkOut()
-    // {
-    //     try {
-    //         $now = Carbon::now('Asia/Manila');
-    //         $dateToday = $now->toDateString();
-    //         $dateYesterday = $now->copy()->subDay()->toDateString();
-
-    //         // Get the user's latest timeIn record within the past 24 hours with no timeOut
-    //         $timeIn = $this->employeeAttendance()
-    //             ->where(function($query) use ($dateToday, $dateYesterday) {
-    //                 $query->whereDate('date', $dateToday)
-    //                     ->orWhereDate('date', $dateYesterday);
-    //             })
-    //             ->whereNull('timeOut')
-    //             ->latest('timeIn')
-    //             ->first();
-
-    //         if (!$timeIn) {
-    //             return back()->with('error', "You don't have a time-in record. Please time in first.");
-    //         }
-
-    //         // Check if the user has already timed out for this shift
-    //         $timeoutExists = $this->employeeAttendance()
-    //             ->where('id', $timeIn->id) // Only check for the same time-in record
-    //             ->whereNotNull('timeOut')
-    //             ->exists();
-
-    //         if ($timeoutExists) {
-    //             return back()->with('error', 'You have already timed out.');
-    //         }
-
-    //         // Check if the user is on a break and hasn't ended it
-    //         $breakOut = $this->employeeAttendance()
-    //             ->where('id', $timeIn->id) // Only check for the same time-in record
-    //             ->whereNotNull('breakIn')
-    //             ->whereNull('breakOut')
-    //             ->exists();
-
-    //         if ($breakOut) {
-    //             return back()->with('error', 'Please end your break first. Thank you!');
-    //         }
-
-    //         // Record the timeOut
-    //         $timeOut = $now->format('h:i:s A');
-
-    //         // Update the attendance record with timeOut
-    //         $timeIn->update([
-    //             'timeOut' => $timeOut,
-    //         ]);
-
-    //         return back()->with('success', 'You have successfully timed out. Thank you for your hard work!');
-
-    //     } catch (Exception $e) {
-    //         Log::error('Check-out Error: ' . $e->getMessage(), ['exception' => $e]);
-    //         return back()->with('error', 'An unexpected error occurred. Please try again later.');
-    //     }
-    // }
 
     public function checkOut()
     {

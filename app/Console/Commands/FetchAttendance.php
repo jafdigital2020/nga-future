@@ -15,71 +15,70 @@ class FetchAttendance extends Command
     protected $signature = 'attendance:fetch';
     protected $description = 'Fetch attendance logs from biometric devices';
 
-public function handle()
-{
-    $devices = BiometricDevice::all();
+    public function handle()
+    {
+        $devices = BiometricDevice::all();
 
-    // Get today's date
-    $today = Carbon::today(); // Current date (without time)
+        // Get today's date
+        $today = Carbon::today(); // Current date (without time)
 
-    foreach ($devices as $device) {
-        $this->info("Connecting to device: {$device->device_name}");
-        Log::info("Attempting to connect to device: {$device->device_name} (IP: {$device->ip_address}, Port: {$device->port})");
+        foreach ($devices as $device) {
+            $this->info("Connecting to device: {$device->device_name}");
+            Log::info("Attempting to connect to device: {$device->device_name} (IP: {$device->ip_address}, Port: {$device->port})");
 
-        try {
-            $zk = new ZKTeco($device->ip_address, $device->port);
+            try {
+                $zk = new ZKTeco($device->ip_address, $device->port);
 
-            if (!$zk->connect()) {
-                $this->warn("Failed to connect to device: {$device->device_name}");
-                Log::error("Failed to connect to device: {$device->device_name} (IP: {$device->ip_address})");
-                continue;
-            }
+                if (!$zk->connect()) {
+                    $this->warn("Failed to connect to device: {$device->device_name}");
+                    Log::error("Failed to connect to device: {$device->device_name} (IP: {$device->ip_address})");
+                    continue;
+                }
 
-            Log::info("Successfully connected to device: {$device->device_name}");
-            $logs = $zk->getAttendance();
-            $zk->disconnect();
+                Log::info("Successfully connected to device: {$device->device_name}");
+                $logs = $zk->getAttendance();
+                $zk->disconnect();
 
-            Log::info("Fetched " . count($logs) . " attendance logs from device: {$device->device_name}");
+                Log::info("Fetched " . count($logs) . " attendance logs from device: {$device->device_name}");
 
-            foreach ($logs as $log) {
-                // Filter logs to only include those from today
-                $logDate = Carbon::parse($log['timestamp'])->toDateString();
+                foreach ($logs as $log) {
+                    // Filter logs to only include those from today
+                    $logDate = Carbon::parse($log['timestamp'])->toDateString();
 
-                if ($logDate === $today->toDateString()) {  // Only process logs for today
-                    Log::debug("Processing log: " . json_encode($log));
+                    if ($logDate === $today->toDateString()) {  // Only process logs for today
+                        Log::debug("Processing log: " . json_encode($log));
 
-                    $user = User::whereHas('devices', function ($query) use ($log, $device) {
-                        $query->where('biometric_user_id', $log['userid'])
-                              ->where('biometric_device_id', $device->id);
-                    })->first();
+                        $user = User::whereHas('devices', function ($query) use ($log, $device) {
+                            $query->where('biometric_user_id', $log['userid'])
+                                ->where('biometric_device_id', $device->id);
+                        })->first();
 
-                    if ($user) {
-                        EmployeeAttendance::updateOrCreate(
-                            [
-                                'users_id' => $user->id,
-                                'date' => $log['timestamp']->format('Y-m-d'),
-                                'biometric_device_id' => $device->id,
-                            ],
-                            [
-                                'timeIn' => $log['timestamp']->format('H:i:s'),
-                            ]
-                        );
-                        $this->info("Attendance saved for {$user->name}");
-                        Log::info("Attendance saved for user: {$user->name} (Biometric ID: {$log['userid']})");
-                    } else {
-                        $this->warn("No matching user for biometric ID {$log['userid']}.");
-                        Log::warning("No matching user found for biometric ID: {$log['userid']} on device: {$device->device_name}");
+                        if ($user) {
+                            EmployeeAttendance::updateOrCreate(
+                                [
+                                    'users_id' => $user->id,
+                                    'date' => $log['timestamp']->format('Y-m-d'),
+                                    'biometric_device_id' => $device->id,
+                                ],
+                                [
+                                    'timeIn' => $log['timestamp']->format('H:i:s'),
+                                ]
+                            );
+                            $this->info("Attendance saved for {$user->name}");
+                            Log::info("Attendance saved for user: {$user->name} (Biometric ID: {$log['userid']})");
+                        } else {
+                            $this->warn("No matching user for biometric ID {$log['userid']}.");
+                            Log::warning("No matching user found for biometric ID: {$log['userid']} on device: {$device->device_name}");
+                        }
                     }
                 }
+            } catch (\Exception $e) {
+                $this->error("Error occurred while processing device: {$device->device_name}");
+                Log::error("Exception on device: {$device->device_name} - " . $e->getMessage());
             }
-        } catch (\Exception $e) {
-            $this->error("Error occurred while processing device: {$device->device_name}");
-            Log::error("Exception on device: {$device->device_name} - " . $e->getMessage());
         }
+
+        $this->info('Attendance fetching completed!');
+        Log::info('Attendance fetching process completed.');
     }
-
-    $this->info('Attendance fetching completed!');
-    Log::info('Attendance fetching process completed.');
-}
-
 }

@@ -364,6 +364,18 @@ class SettingsController extends Controller
         return redirect()->back()->with('success', 'User removed from holiday successfully!');
     }
 
+    public function destroy($id)
+    {
+        // Find the holiday by ID
+        $holiday = SettingsHoliday::findOrFail($id);
+
+        // Delete the holiday
+        $holiday->delete();
+
+        // Redirect with a success message
+        return redirect()->back()->with('success', 'Holiday deleted successfully.');
+    }
+
     
     public function leaveType()
     {
@@ -407,6 +419,7 @@ class SettingsController extends Controller
             $request->validate([
                 'leaveType' => 'required|string|max:255',
                 'leaveDays' => 'required|integer|min:1',
+                'restriction_days' => 'required|integer|min:0',
                 'is_paid' => 'required|boolean',
             ]);
     
@@ -416,6 +429,7 @@ class SettingsController extends Controller
             // Update the leave type details
             $leave->leaveType = $request->input('leaveType');
             $leave->leaveDays = $request->input('leaveDays');
+            $leave->restriction_days = $request->input('restriction_days');
             $leave->is_paid = $request->input('is_paid');
     
             // Save the changes
@@ -490,6 +504,8 @@ class SettingsController extends Controller
             return redirect()->back()->withErrors($validator)->with('error', $errorMessages);
         }
     
+        $status = $request->expiration_date ? 'Active' : 'Expired';
+
         try {
             // Attempt to create a new geofence record
             GeofencingSetting::create([
@@ -499,6 +515,8 @@ class SettingsController extends Controller
                 'longitude' => $request->longitude,
                 'fencing_radius' => $request->fencing_radius,
                 'created_by' => Auth::user()->id,
+                'expiration_date' => $request->expiration_date,
+                'status' => $status,
             ]);
     
             // Redirect back with a success message if creation succeeds
@@ -530,6 +548,8 @@ class SettingsController extends Controller
             'latitude' => $request->latitudee,
             'longitude' => $request->longitudee,
             'fencing_radius' => $request->fencing_radiuse,
+            'expiration_date' => $request->expiration_date,
+            'status'=> $request->status,
             'edit_by' => Auth::user()->id,
         ]);
 
@@ -560,7 +580,7 @@ class SettingsController extends Controller
     public function geofenceAssign(Request $request)
     {
         $users = User::all();
-        $geofences = GeofencingSetting::all();
+        $geofences = GeofencingSetting::whereIn('status', ['Active', 'Never Expired'])->get();
         $departments = User::distinct()->pluck('department');
 
         $data = UserGeofence::with(['user', 'geofenceSetting']);

@@ -143,57 +143,56 @@
                             <th>Month</th>
                             <th>Cut-Off</th>
                             <th>Total Hours</th>
-                            <th>Net Pay</th>
                             <th class="text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($payslip as $pay)
-                        <tr>
-                            <td>
-                                <h2 class="table-avatar">
-                                    <a href="{{ url('emp/profile') }}" class="avatar">
-                                        @if ($pay->user->image)
-                                        <img src="{{ asset('images/' . $pay->user->image) }}" alt="Profile Image" />
-                                        @else
-                                        <img src="{{ asset('images/default.png') }}" alt="Profile Image" />
-                                        @endif
-                                    </a>
-                                    <a href="{{ url('emp/profile') }}">
-                                        @if($pay->user->fName || $pay->user->mName || $pay->user->lName)
-                                        {{ $pay->user->fName ?? '' }}
-                                        {{ $pay->user->mName ?? '' }}
-                                        {{ $pay->user->lName ?? '' }}
-                                        @else
-                                        {{ $pay->user->name }}
-                                        @endif
-                                        <span>{{ $pay->user->position }}</span>
-                                    </a>
-                                </h2>
-                            </td>
+                            <tr>
+                                <td>
+                                    <h2 class="table-avatar">
+                                        <a href="{{ url('manager/profile') }}" class="avatar">
+                                            @if ($pay->user->image)
+                                                <img src="{{ asset('images/' . $pay->user->image) }}"
+                                                    alt="Profile Image" />
+                                            @else
+                                                <img src="{{ asset('images/default.png') }}" alt="Profile Image" />
+                                            @endif
+                                        </a>
+                                        <a href="{{ url('manager/profile') }}">
+                                            @if ($pay->user->fName || $pay->user->mName || $pay->user->lName)
+                                                {{ $pay->user->fName ?? '' }}
+                                                {{ $pay->user->mName ?? '' }}
+                                                {{ $pay->user->lName ?? '' }}
+                                            @else
+                                                {{ $pay->user->name }}
+                                            @endif
+                                            <span>{{ $pay->user->position }}</span>
+                                        </a>
+                                    </h2>
+                                </td>
 
-                            <td>{{ $pay->user->department }}</td>
-                            <td>{{ $pay->start_date }}</td>
-                            <td>{{ $pay->end_date }}</td>
-                            <td>{{ $pay->month }}</td>
-                            <td>{{ $pay->cut_off }}</td>
-                            <td>{{ $pay->total_hours }}</td>
-                            <td>₱{{ number_format($pay->net_pay, 2) }}</td>
-                            <td class="text-right">
-                                <div class="dropdown dropdown-action">
-                                    <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown"
-                                        aria-expanded="false"><i class="material-icons">more_vert</i></a>
-                                    <div class="dropdown-menu dropdown-menu-right">
-                                        <a class="dropdown-item" href="{{ url('emp/payslip/view/'.$pay->id) }}">
-                                            <i class="fa fa-eye m-r-5"></i>View
-                                        </a>
-                                        <a class="dropdown-item edit-attendance" href="#">
-                                            <i class="fa fa-download m-r-5"></i>Download
-                                        </a>
+                                <td>{{ $pay->user->department }}</td>
+                                <td>{{ $pay->start_date }}</td>
+                                <td>{{ $pay->end_date }}</td>
+                                <td>{{ $pay->month }}</td>
+                                <td>{{ $pay->cut_off }}</td>
+                                <td>{{ $pay->total_hours }}</td>
+                                <td class="text-right">
+                                    <div class="dropdown dropdown-action">
+                                        <a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown"
+                                            aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                                        <div class="dropdown-menu dropdown-menu-right">
+                                            <a class="dropdown-item" href="{{ url('emp/payslip/view/' . $pay->id) }}">
+                                                <i class="fa fa-eye m-r-5"></i>View
+                                            </a>
+                                            <a class="dropdown-item edit-attendance" href="#">
+                                                <i class="fa fa-download m-r-5"></i>Download
+                                            </a>
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                            </tr>
                         @endforeach
                     </tbody>
                 </table>

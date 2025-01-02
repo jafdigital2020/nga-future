@@ -287,6 +287,8 @@
                                         <i class="fa fa-dot-circle-o text-purple"></i> New
                                         @elseif($leave->status == 'Pending')
                                         <i class="fa fa-dot-circle-o text-info"></i> Pending
+                                        @elseif($leave->status == 'Pre-Approved')
+                                        <i class="fa fa-dot-circle-o text-warning"></i> Pre-Approved
                                         @elseif($leave->status == 'Approved')
                                         <i class="fa fa-dot-circle-o text-success"></i> Approved
                                         @elseif($leave->status == 'Declined')

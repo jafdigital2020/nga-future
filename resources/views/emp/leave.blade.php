@@ -223,6 +223,8 @@
                                                     <i class="fa fa-dot-circle-o text-purple"></i> New
                                                 @elseif($req->status == 'Pending')
                                                     <i class="fa fa-dot-circle-o text-info"></i> Pending
+                                                @elseif($req->status == 'Pre-Approved')
+                                                    <i class="fa fa-dot-circle-o text-warning"></i> Pre-Approved
                                                 @elseif($req->status == 'Approved')
                                                     <i class="fa fa-dot-circle-o text-success"></i> Approved
                                                 @elseif($req->status == 'Declined')
@@ -495,76 +497,6 @@
         });
     </script>
 
-    {{-- <script>
-        $(document).ready(function() {
-            // Initialize datetime pickers for start and end date fields
-            $('#start_date, #end_date, #start_datee, #end_datee').datetimepicker({
-                format: 'YYYY-MM-DD'
-            });
-
-            $('#start_date, #end_date').on('dp.change', function() {
-                calculateTotalDays('#start_date', '#end_date', '#total_days');
-            });
-
-            $('#start_datee, #end_datee').on('dp.change', function() {
-                calculateTotalDays('#start_datee', '#end_datee', '#dayse');
-            });
-
-            // Function to calculate total days between two dates
-            function calculateTotalDays(startSelector, endSelector, outputSelector) {
-                var startDate = $(startSelector).data('DateTimePicker').date();
-                var endDate = $(endSelector).data('DateTimePicker').date();
-
-                if (startDate && endDate) {
-                    var diffDays = endDate.diff(startDate, 'days') + 1; // Calculate difference in days and add 1
-                    $(outputSelector).val(diffDays);
-                } else {
-                    $(outputSelector).val(''); // Clear the output if dates are not both set
-                }
-            }
-
-            $('.edit-leave').on('click', function() {
-                var leaveId = $(this).data('id');
-                var leaveTypeId = $(this).data('type_id');
-                var startDate = $(this).data('start_date');
-                var endDate = $(this).data('end_date');
-                var days = $(this).data('days');
-                var reason = $(this).data('reason');
-                var status = $(this).data('status');
-
-                if (status === 'Approved') {
-                    alert('This leave request has already been approved and cannot be edited.');
-                    return;
-                }
-
-                $('#leave_id').val(leaveId);
-                $('#typee').val(leaveTypeId);
-                $('#start_datee').val(startDate);
-                $('#end_datee').val(endDate);
-                $('#dayse').val(days);
-                $('#reasone').val(reason);
-
-                $('#editLeaveForm').attr('action', '/emp/leave/' +
-                    leaveId); // Ensure the form action URL is correct
-                $('#edit_leave').modal('show');
-            });
-
-            // Delete leave request
-            $('.delete-leave').on('click', function() {
-                var leaveId = $(this).data('id');
-                var status = $(this).data('status');
-
-                if (status === 'Approved') {
-                    alert('This leave request has already been approved and cannot be deleted.');
-                    return;
-                }
-
-                $('#delete_leave_id').val(leaveId);
-                $('#deleteLeaveForm').attr('action', '/emp/leave/' + leaveId);
-                $('#delete_approve').modal('show');
-            });
-        });
-    </script> --}}
 
     <script>
         $(document).ready(function() {

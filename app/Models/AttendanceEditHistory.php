@@ -20,6 +20,10 @@ class AttendanceEditHistory extends Model
         'edited_by',
     ];
 
+    protected $casts = [
+        'changes' => 'array',
+    ];
+
     /**
      * Relationship to the attendance record.
      */

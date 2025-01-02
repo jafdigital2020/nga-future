@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use App\Models\Memo;
 use App\Models\User;
 use App\Models\LeaveType;
+use App\Models\AccessCode;
 use App\Models\LeaveCredit;
 use Illuminate\Http\Request;
 use App\Models\ShiftSchedule;
@@ -25,12 +26,12 @@ use Illuminate\Validation\ValidationException;
 
 class EmployeeController extends Controller
 {
-    public function index ()
+    public function index()
     {
         $emp = User::where('status', 'active')->get();
         $names = User::select(DB::raw("CONCAT(fName, ' ', lName) as full_name"))
-             ->distinct()
-             ->pluck('full_name');
+            ->distinct()
+            ->pluck('full_name');
         $departments = User::distinct()->pluck('department');
 
         return view('admin.employee.index', compact('emp', 'departments', 'names'));
@@ -44,8 +45,8 @@ class EmployeeController extends Controller
         $department = $request->input('department');
 
         $names = User::select(DB::raw("CONCAT(fName, ' ', lName) as full_name"))
-        ->distinct()
-        ->pluck('full_name');
+            ->distinct()
+            ->pluck('full_name');
 
         // Fetch distinct departments
         $departments = User::distinct()->pluck('department');
@@ -67,12 +68,12 @@ class EmployeeController extends Controller
                     // Handle search for both combined fName and lName
                     $query->where(function ($query) use ($fName, $lName) {
                         $query->whereRaw('LOWER(fName) like ?', ['%' . strtolower($fName) . '%'])
-                              ->whereRaw('LOWER(lName) like ?', ['%' . strtolower($lName) . '%']);
+                            ->whereRaw('LOWER(lName) like ?', ['%' . strtolower($lName) . '%']);
                     });
                 } else {
                     // Single part, search in both fields
                     $query->whereRaw('LOWER(fName) like ?', ['%' . strtolower($name) . '%'])
-                          ->orWhereRaw('LOWER(lName) like ?', ['%' . strtolower($name) . '%']);
+                        ->orWhereRaw('LOWER(lName) like ?', ['%' . strtolower($name) . '%']);
                 }
             });
         }
@@ -101,8 +102,8 @@ class EmployeeController extends Controller
         $department = $request->input('department');
 
         $names = User::select(DB::raw("CONCAT(fName, ' ', lName) as full_name"))
-        ->distinct()
-        ->pluck('full_name');
+            ->distinct()
+            ->pluck('full_name');
 
         // Fetch distinct departments
         $departments = User::distinct()->pluck('department');
@@ -123,12 +124,12 @@ class EmployeeController extends Controller
                     // Handle search for both combined fName and lName
                     $query->where(function ($query) use ($fName, $lName) {
                         $query->whereRaw('LOWER(fName) like ?', ['%' . strtolower($fName) . '%'])
-                              ->whereRaw('LOWER(lName) like ?', ['%' . strtolower($lName) . '%']);
+                            ->whereRaw('LOWER(lName) like ?', ['%' . strtolower($lName) . '%']);
                     });
                 } else {
                     // Single part, search in both fields
                     $query->whereRaw('LOWER(fName) like ?', ['%' . strtolower($name) . '%'])
-                          ->orWhereRaw('LOWER(lName) like ?', ['%' . strtolower($name) . '%']);
+                        ->orWhereRaw('LOWER(lName) like ?', ['%' . strtolower($name) . '%']);
                 }
             });
         }
@@ -352,6 +353,7 @@ class EmployeeController extends Controller
         $user->email = $request->input('email');
         $user->hourly_rate = $request->input('hourly_rate');
         $user->reporting_to = $request->input('reporting_to');
+        $user->allow_multiple_login = $request->has('allow_multiple_login');
 
         if ($request->filled('password')) {
             $user->password = Hash::make($request->input('password'));
@@ -420,14 +422,13 @@ class EmployeeController extends Controller
             }
 
             return redirect()->back()->with('success', 'Leave Updated!');
-
         } catch (\Exception $e) {
             Log::error('Error updating leave credits for user ID ' . $id . ': ' . $e->getMessage());
             return redirect()->back()->with('error', 'Something went wrong while updating leave credits. Please try again.');
         }
     }
 
-    public function government (Request $request, $user_id)
+    public function government(Request $request, $user_id)
     {
         $user = User::findOrFail($user_id);
 
@@ -442,7 +443,7 @@ class EmployeeController extends Controller
         return redirect()->back();
     }
 
-    public function contactStore (Request $request, $user_id)
+    public function contactStore(Request $request, $user_id)
     {
         $user = User::with('contactEmergency')->findOrFail($user_id);
 
@@ -479,13 +480,13 @@ class EmployeeController extends Controller
         return redirect()->back();
     }
 
-    public function bankInfo (Request $request, $user_id)
+    public function bankInfo(Request $request, $user_id)
     {
         $user = User::with('bankInfo')->findOrfail($user_id);
 
         $bank = BankInformation::where('users_id', $user->id)->first();
 
-        if($bank) {
+        if ($bank) {
             $bank->bankName = $request->input('bankName');
             $bank->bankAccName = $request->input('bankAccName');
             $bank->bankAccNumber = $request->input('bankAccNumber');
@@ -493,8 +494,7 @@ class EmployeeController extends Controller
             $bank->save();
 
             Alert::success('Bank Information Updated');
-        }
-        else {
+        } else {
             $bank = new BankInformation();
             $bank->users_id = $user->id;
             $bank->bankName = $request->input('bankName');
@@ -508,14 +508,13 @@ class EmployeeController extends Controller
         return redirect()->back();
     }
 
-    public function personalInfo (Request $request, $user_id)
+    public function personalInfo(Request $request, $user_id)
     {
         $user = User::with('personalInformation')->findOrfail($user_id);
 
         $info = PersonalInformation::where('users_id', $user->id)->first();
 
-        if($info)
-        {
+        if ($info) {
             $info->religion = $request->input('religion');
             $info->age = $request->input('age');
             $info->education = $request->input('education');
@@ -576,7 +575,6 @@ class EmployeeController extends Controller
 
             // Return success response
             return redirect()->back()->with('success', 'Memo created successfully.');
-
         } catch (\Exception $e) {
             // Log and handle errors
             Log::error('Memo creation failed: ' . $e->getMessage());
@@ -763,7 +761,7 @@ class EmployeeController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function validateStep3 (Request $request)
+    public function validateStep3(Request $request)
     {
 
         $validatedData = $request->validate([
@@ -786,7 +784,7 @@ class EmployeeController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function validateStep4 (Request $request)
+    public function validateStep4(Request $request)
     {
         $validatedData = $request->validate([
             'sss' => 'required|string|unique:users,sss',
@@ -961,6 +959,25 @@ class EmployeeController extends Controller
         return redirect()->back()->with('success', 'User activated successfully!');
     }
 
+    public function resetAccessCode(Request $request, $id)
+    {
+        $user = User::with('accessCode')->findOrfail($id);
 
+        $access = AccessCode::where('user_id', $user->id)->first();
 
+        if ($access) {
+            $access->access_code = $request->input('new_access_code');
+            $access->save();
+
+            return redirect()->back()->with('success', 'The access code has been successfully reset.');
+        } else {
+            $access = new AccessCode();
+            $access->access_code = $request->input('new_access_code');
+            $access->save();
+
+            return redirect()->back()->with('success', 'Access code created successfully.');
+        }
+
+        return redirect()->back();
+    }
 }

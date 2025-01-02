@@ -89,6 +89,7 @@
                                         </div>
                                     </div>
                                 </div>
+
                                 <div class="clock-in-info">
                                     <div class="clock-in-content">
                                         <p>Work Time</p>
@@ -195,40 +196,6 @@
                                         </div>
                                     </div>
                                     <!-- Clock Out Modal 1 -->
-
-
-                                    <!--Clock Out Modal -->
-                                    {{-- <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
-                                    aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog" role="document">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="exampleModalLabel">
-                                                    Warning!
-                                                </h5>
-                                                <button type="button" class="close" data-dismiss="modal"
-                                                    aria-label="Close">
-                                                    <span aria-hidden="true">&times;</span>
-                                                </button>
-                                            </div>
-                                            <div class="modal-body">
-                                                Are you sure you want to time out?
-                                            </div>
-                                            <div class="modal-footer">
-                                                <form action="{{ url('emp/dashboard/') }}" method="POST">
-                                                    @csrf @method('PUT')
-                                                    <button type="submit" class="btn btn-primary">
-                                                        Yes
-                                                    </button>
-                                                </form>
-                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                                                    No
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div> --}}
-                                    <!-- Clock Out Modal -->
 
                                     <!-- Clock Out Image Modal -->
                                     <div id="clockOutImageModal" class="modal fade" tabindex="-1" role="dialog"
@@ -659,229 +626,6 @@
 @section('scripts')
 
     <!-- GOOGLE MAP API -->
-    <!-- <script>
-        let videoStream;
-
-        document.getElementById("checkInButton").addEventListener("click", getLocation);
-        let lowAccuracyCheckIn = false;
-        let geofences = [];
-
-        function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(showPosition, showError, {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0,
-                });
-            } else {
-                alert("Geolocation is not supported by this browser.");
-            }
-        }
-
-        function showPosition(position) {
-            const latitude = position.coords.latitude;
-            const longitude = position.coords.longitude;
-            document.getElementById("latitude").value = latitude;
-            document.getElementById("longitude").value = longitude;
-
-            fetch("{{ url('emp/dashboard') }}", {
-                    method: "POST",
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        latitude,
-                        longitude
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        alert(data.message);
-                        window.location.reload();
-                    } else if (data.status === 'low_accuracy') {
-                        alert(data.message);
-                        lowAccuracyCheckIn = true;
-                        $('#imageUploadModal').modal('show');
-                        startCamera();
-                    } else {
-                        alert(data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Check-in error:', error);
-                    alert("Error submitting check-in. Please try again.");
-                });
-        }
-
-        // Start the camera feed
-        function startCamera() {
-            const video = document.getElementById('video');
-            navigator.mediaDevices.getUserMedia({
-                    video: true
-                })
-                .then(stream => {
-                    videoStream = stream;
-                    video.srcObject = stream;
-                })
-                .catch(error => console.error("Camera access error:", error));
-        }
-
-        // Capture the image from the video feed
-        document.getElementById("captureButton").addEventListener("click", function() {
-            const canvas = document.getElementById("canvas");
-            const video = document.getElementById("video");
-            const capturedImage = document.getElementById("capturedImage");
-
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            capturedImage.src = canvas.toDataURL('image/png');
-            capturedImage.style.display = "block";
-            canvas.style.display = "none";
-        });
-
-        // Stop the camera feed
-        function stopCamera() {
-            if (videoStream) {
-                videoStream.getTracks().forEach(track => track.stop());
-            }
-        }
-
-
-        function showError(error) {
-            console.error("Geolocation error:", error);
-            switch (error.code) {
-                case error.PERMISSION_DENIED:
-                    if (confirm("Location access was denied. Would you like to try again?")) {
-                        getLocation();
-                    } else {
-                        alert("Please enable location access in your browser settings.");
-                    }
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    alert("Location information is unavailable.");
-                    break;
-                case error.TIMEOUT:
-                    alert("The request to get user location timed out. Please try again.");
-                    break;
-                case error.UNKNOWN_ERROR:
-                    alert("An unknown error occurred.");
-                    break;
-            }
-        }
-
-        function getAddressFromLatLng(latitude, longitude) {
-            const apiKey = 'AIzaSyCoZSVkyGR645u4B_OOFmepLzrRBB8Hgmc'; // Replace with your actual Google Maps API key
-            const geocodeUrl =
-                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`;
-
-            fetch(geocodeUrl)
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Geocode response:", data); // Debugging line
-                    if (data.status === "OK") {
-                        const address = data.results[0].formatted_address;
-                        document.getElementById("location").value = address;
-
-                        // Submit the form
-                        submitForm();
-                    } else {
-                        alert("Could not fetch address. Please try again.");
-                    }
-                })
-                .catch(error => {
-                    alert("Error fetching address. Please check your connection.");
-                    console.error("Geocoding error:", error);
-                });
-        }
-
-        function submitForm() {
-            const formData = new FormData(document.getElementById("clockInForm"));
-
-            fetch("{{ url('emp/dashboard') }}", {
-                    method: "POST",
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Full check-in response:", data); // Log full response for debugging
-
-                    // Show modal only if the status is explicitly 'low_accuracy'
-                    if (data.status === 'low_accuracy') {
-                        alert(data.message); // Notify user of low accuracy
-                        $('#imageUploadModal').modal('show'); // Show image upload modal
-                    } else if (data.status === 'success') {
-                        alert(data.message); // Success message
-                        window.location.reload(); // Reload page on successful check-in
-                    } else {
-                        alert(data.message); // Any other error messages
-                    }
-                })
-                .catch(error => {
-                    console.error('Check-in error:', error);
-                    alert("Error submitting check-in. Please try again.");
-                });
-        }
-
-
-
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const earthRadius = 6371000;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return earthRadius * c;
-        }
-
-        // Submit captured image
-        document.getElementById("submitImage").addEventListener("click", function() {
-            const capturedImage = document.getElementById("capturedImage").src;
-
-            // Convert base64 image to file for submission
-            fetch(capturedImage)
-                .then(res => res.blob())
-                .then(blob => {
-                    const formData = new FormData(document.getElementById("clockInForm"));
-                    formData.append('image', blob, 'checkin_photo.png');
-                    formData.append('low_accuracy', lowAccuracyCheckIn);
-
-                    fetch("{{ url('emp/dashboard') }}", {
-                            method: "POST",
-                            body: formData,
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log("Image upload response:", data);
-                            if (data.status === 'success') {
-                                stopCamera();
-                                $('#imageUploadModal').modal('hide');
-                                alert('Check-in completed with photo!');
-                                window.location.reload();
-                            } else {
-                                alert(data.message || "Error submitting clock-in. Please try again.");
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Error uploading image:", error);
-                            alert("Error submitting clock-in. Please try again.");
-                        });
-                });
-        });
-
-        // Stop the camera feed when modal is closed
-        $('#imageUploadModal').on('hidden.bs.modal', stopCamera);
-    </script> -->
 
     <!-- CLOCKED IN SCRIPT -->
     <script>
@@ -1583,6 +1327,7 @@
                 calendar.appendChild(totalBox);
             }
 
+
             function checkHoliday(date, holidays) {
                 const formattedDate =
                     `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
@@ -1984,8 +1729,6 @@
         // Set timeout to refresh the page every 30 minutes (1800000 milliseconds)
         setTimeout(refreshPage, 1800000); // 30 minutes = 1800000 milliseconds
     </script>
-
-
 
 
 @endsection

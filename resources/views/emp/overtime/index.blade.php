@@ -62,6 +62,7 @@
                         <tr>
                             <th>Name</th>
                             <th>Date</th>
+                            <th>Offset Date</th>
                             <th>Start Time</th>
                             <th>End Time</th>
                             <th>Total Hours</th>
@@ -91,6 +92,7 @@
                                 </h2>
                             </td>
                             <td>{{ $ot->date }}</td>
+                            <td>{{ $ot->offset_date ?? '-' }}</td>
                             <td>
                                 @if($ot->start_time)
                                 {{ \Carbon\Carbon::parse($ot->start_time)->format('h:i:s A') }}
@@ -124,6 +126,8 @@
                                         <i class="fa fa-dot-circle-o text-purple"></i> New
                                         @elseif($ot->status == 'Pending')
                                         <i class="fa fa-dot-circle-o text-info"></i> Pending
+                                        @elseif($ot->status == 'Pre-Approved')
+                                        <i class="fa fa-dot-circle-o text-warning"></i> Pre-Approved
                                         @elseif($ot->status == 'Approved')
                                         <i class="fa fa-dot-circle-o text-success"></i> Approved
                                         @elseif($ot->status == 'Rejected')
@@ -241,6 +245,12 @@
                         <div class="form-group">
                             <label for="">Reason</label>
                             <textarea class="form-control" name="reason" id="reason"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Offset Date</label>
+                            <div class="cal-icon">
+                                <input class="form-control floating datetimepicker" type="text" name="offset_date" id="offset_date">
+                            </div>
                         </div>
                         <div class="submit-section">
                             <button type="submit" class="btn btn-primary submit-btn">Submit</button>

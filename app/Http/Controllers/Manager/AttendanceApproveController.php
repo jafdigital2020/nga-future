@@ -253,7 +253,7 @@ class AttendanceApproveController extends Controller
         $employeeName = $request->get('employee_name');
         $month = $request->get('month', date('m'));
         $year = $request->get('year', date('Y'));
-        $date = $request->get('date'); // Keep single date search
+        $date = $request->get('date', date('Y-m-d'));
         $startDate = $request->get('start_date'); 
         $endDate = $request->get('end_date'); 
         $department = $request->get('department'); // Ensure this is defined

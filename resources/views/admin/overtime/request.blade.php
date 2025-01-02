@@ -125,6 +125,8 @@
                                         <i class="fa fa-dot-circle-o text-purple"></i> New
                                         @elseif($ot->status == 'Pending')
                                         <i class="fa fa-dot-circle-o text-info"></i> Pending
+                                        @elseif($ot->status == 'Pre-Approved')
+                                        <i class="fa fa-dot-circle-o text-warning"></i> Pre-Approved
                                         @elseif($ot->status == 'Approved')
                                         <i class="fa fa-dot-circle-o text-success"></i> Approved
                                         @elseif($ot->status == 'Rejected')

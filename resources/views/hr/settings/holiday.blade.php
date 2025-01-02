@@ -1,4 +1,4 @@
-@extends('layouts.settings') @section('title', 'Holiday Setting')
+@extends('layouts.hrmaster') @section('title', 'Holiday Setting')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
 <link rel="stylesheet"
@@ -25,7 +25,7 @@
                 <div class="col">
                     <h3 class="page-title">Holidays</h3>
                     <ul class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ url('admin/dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url('hr/dashboard') }}">Dashboard</a></li>
                         <li class="breadcrumb-item active">Holidays</li>
                     </ul>
                 </div>
@@ -122,7 +122,7 @@
                                         <td>{{ $user->fName }} {{ $user->lName }}</td>
                                         <td>
                                             <form
-                                                action="{{ route('settings.removeUserFromHoliday', ['holiday' => $holiday->id, 'user' => $user->id]) }}"
+                                                action="{{ route('hr.removeUserFromHoliday', ['holiday' => $holiday->id, 'user' => $user->id]) }}"
                                                 method="POST">
                                                 @csrf
                                                 @method('DELETE')
@@ -136,8 +136,7 @@
 
                         <!-- Add New Users -->
                         <h6 class="mt-4">Add Users</h6>
-                        <form action="{{ route('settings.addUserToHoliday', ['holiday' => $holiday->id]) }}"
-                            method="POST">
+                        <form action="{{ route('hr.addUserToHoliday', ['holiday' => $holiday->id]) }}" method="POST">
                             @csrf
                             <div class="form-group">
                                 <label for="users_{{ $holiday->id }}">Select Users</label>
@@ -170,7 +169,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{ route('settings.holidayStore') }}" method="POST">
+                    <form action="{{ route('hr.holidayStore') }}" method="POST">
                         @csrf
                         <div class="container p-4 border rounded shadow-sm bg-light">
 
@@ -291,7 +290,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="editHolidayForm" action="{{ route('settings.updateHoliday') }}" method="POST">
+                    <form id="editHolidayForm" action="{{ route('hr.updateHoliday') }}" method="POST">
                         @csrf
                         @method('PUT')
                         <input type="hidden" name="id" id="editHolidayId">
@@ -361,7 +360,8 @@
                                     <button class="btn add-btn" type="submit">Delete</button>
                                 </div>
                                 <div class="col-6">
-                                    <a href="javascript:void(0);" data-dismiss="modal" class="btn add-btn">Cancel</a>
+                                    <a href="javascript:void(0);" data-dismiss="modal"
+                                        class="btn add-btn">Cancel</a>
                                 </div>
                             </div>
                         </div>
@@ -371,6 +371,7 @@
         </div>
     </div>
     <!-- /Delete Holiday Modal -->
+
 
 
 
@@ -418,7 +419,7 @@
                 department
             });
 
-            fetch("{{ route('settings.HolidayfilterEmployees') }}?" + params)
+            fetch("{{ route('hr.HolidayfilterEmployees') }}?" + params)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
@@ -485,17 +486,18 @@
             });
         });
     </script>
-
-    <script>
-        $(document).ready(function() {
-            $('#delete_holiday').on('show.bs.modal', function(e) {
-                var button = $(e.relatedTarget); // Button that triggered the modal
-                var holidayId = button.data('id'); // Extract holiday ID from data-id attribute
-
-                // Update the form action dynamically to match your route
-                var formAction = "/admin/settings/holiday/delete/" + holidayId;
-                $('#deleteHolidayForm').attr('action', formAction);
-            });
+<script>
+    $(document).ready(function () {
+        $('#delete_holiday').on('show.bs.modal', function (e) {
+            var button = $(e.relatedTarget); // Button that triggered the modal
+            var holidayId = button.data('id'); // Extract holiday ID from data-id attribute
+            
+            // Update the form action dynamically to match your route
+            var formAction = "/hr/settings/holiday/delete/" + holidayId;
+            $('#deleteHolidayForm').attr('action', formAction);
         });
-    </script>
+    });
+</script>
+
+
 @endsection

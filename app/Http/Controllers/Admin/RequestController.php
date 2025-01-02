@@ -10,6 +10,7 @@ use App\Models\EmployeeAttendance;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class RequestController extends Controller
 {
@@ -19,22 +20,22 @@ class RequestController extends Controller
         $currentMonth = Carbon::now()->month;
         $currentYear = Carbon::now()->year;
 
-        $reqcount = EmployeeAttendance::whereIn('status_code', ['Pending', 'Approved'])
-        ->whereMonth('date', $currentMonth)
-        ->whereYear('date', $currentYear) 
-        ->count();
+        $reqcount = EmployeeAttendance::whereIn('status_code', ['Pending', 'Approved', 'Pre-Approved'])
+            ->whereMonth('date', $currentMonth)
+            ->whereYear('date', $currentYear)
+            ->count();
 
         $pendingCount = EmployeeAttendance::where('status_code', 'Pending')
-        ->whereMonth('date', $currentMonth)
-        ->whereYear('date', $currentYear)
-        ->count();
+            ->whereMonth('date', $currentMonth)
+            ->whereYear('date', $currentYear)
+            ->count();
 
         $decCount = EmployeeAttendance::where('status_code', 'Declined')
-        ->whereMonth('date', $currentMonth)
-        ->whereYear('date', $currentYear)
-        ->count();
+            ->whereMonth('date', $currentMonth)
+            ->whereYear('date', $currentYear)
+            ->count();
 
-        $pending = EmployeeAttendance::whereIn('status_code', ['Pending', 'Approved', 'Declined'])->get();
+        $pending = EmployeeAttendance::whereIn('status_code', ['Pending', 'Approved', 'Declined', 'Pre-Approved'])->get();
 
         return view('admin.request.attendancerequest', compact('pending', 'pendingCount', 'reqcount', 'decCount'));
     }
@@ -46,29 +47,29 @@ class RequestController extends Controller
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
             'break_hours' => 'nullable|regex:/^\d{2}:\d{2}:\d{2}$/',
-            'file' => 'required|file|mimes:jpg,jpeg,png,pdf,doc,docx', 
+            'file' => 'required|file|mimes:jpg,jpeg,png,pdf,doc,docx',
             'reason' => 'nullable|string|max:255',
             'total_hours' => 'nullable|regex:/^\d{2}:\d{2}:\d{2}$/'
         ]);
-    
+
         $filePath = $request->hasFile('file') ? $request->file('file')->store('attendance_files', 'public') : null;
-    
+
         try {
             // Convert timeIn and timeOut to 12-hour format for database storage
             $timeInFormatted = Carbon::createFromFormat('H:i', $request->start_time)->format('h:i:s A');
             $timeOutFormatted = Carbon::createFromFormat('H:i', $request->end_time)->format('h:i:s A');
-            
+
             // Check for existing attendance with the same date, timeIn, and timeOut
             $existingAttendance = EmployeeAttendance::where('users_id', Auth::id())
                 ->where('date', $request->date)
                 ->where('timeIn', $timeInFormatted)
                 ->where('timeOut', $timeOutFormatted)
                 ->first();
-    
+
             if ($existingAttendance) {
                 return redirect()->back()->with(['error' => 'An attendance record with the same date and time already exists.']);
             }
-    
+
             // Create new attendance record
             $attendance = new EmployeeAttendance();
             $attendance->users_id = Auth::id();
@@ -78,7 +79,7 @@ class RequestController extends Controller
             $attendance->image_path = $filePath;
             $attendance->reason = $request->reason;
             $attendance->status_code = 'Pending';
-    
+
             // Check for manual entry or calculate total hours
             $isManualEntry = $request->has('is_manual_entry') && $request->is_manual_entry == 1;
             if ($isManualEntry && $request->total_hours) {
@@ -86,10 +87,10 @@ class RequestController extends Controller
             } else {
                 $attendance->manualTimeTotal = $this->calculateTotalHours($request->start_time, $request->end_time, $request->break_hours);
             }
-    
+
             // Save the attendance record
             $attendance->save();
-    
+
             Log::info("Attendance record saved with ID: " . $attendance->id);
             return redirect()->back()->with('success', 'Attendance record saved successfully!');
         } catch (\Exception $e) {
@@ -108,22 +109,22 @@ class RequestController extends Controller
             'reasone' => 'nullable|string|max:255',
             'total_hourse' => 'nullable|regex:/^\d{2}:\d{2}:\d{2}$/'
         ]);
-    
+
         try {
             $attendance = EmployeeAttendance::findOrFail($id);
-    
+
             // Update attendance fields
             $attendance->date = $request->datee;
             $attendance->timeIn = Carbon::createFromFormat('H:i', $request->start_timee)->format('h:i:s A');
             $attendance->timeOut = Carbon::createFromFormat('H:i', $request->end_timee)->format('h:i:s A');
             $attendance->reason = $request->reasone;
-    
+
             // Check if a new file is uploaded
             if ($request->hasFile('filee')) {
                 $filePath = $request->file('filee')->store('attendance_files', 'public');
                 $attendance->image_path = $filePath; // Update with new file path
             }
-    
+
             // Determine if manual entry of total hours is provided
             $isManualEntry = $request->has('is_manual_entry') && $request->is_manual_entry == 1;
             if ($isManualEntry && $request->total_hourse) {
@@ -135,10 +136,10 @@ class RequestController extends Controller
                     $request->end_timee,
                 );
             }
-    
+
             // Save the updated attendance record
             $attendance->save();
-    
+
             Log::info("Attendance record updated with ID: " . $attendance->id);
             return redirect()->back()->with('success', 'Attendance record updated successfully!');
         } catch (\Exception $e) {
@@ -146,7 +147,7 @@ class RequestController extends Controller
             return redirect()->back()->withErrors(['error' => 'Failed to update attendance record. Please try again.']);
         }
     }
-        
+
     protected function calculateTotalHours($startTime, $endTime, $breakHours = null)
     {
         $start = Carbon::createFromFormat('H:i', $startTime);
@@ -203,7 +204,6 @@ class RequestController extends Controller
 
             // Success message
             return redirect()->back()->with('success', 'Attendance approved and one attendance credit deducted successfully!');
-            
         } catch (ModelNotFoundException $e) {
             // Handle the case where attendance record is not found
             return redirect()->back()->with('error', 'Attendance record not found.');
@@ -218,25 +218,25 @@ class RequestController extends Controller
         try {
             $attendance = EmployeeAttendance::findOrFail($id);
             $authUser = Auth::user();
-    
+
             // Check if attendance was previously approved
             if ($attendance->status_code === 'Approved') {
                 $attendanceCredits = AttendanceCredit::where('user_id', $attendance->user->id)->first();
-    
+
                 if (!$attendanceCredits) {
                     return redirect()->back()->with('error', 'No attendance credits for this employee.');
                 }
-    
+
                 // Restore one attendance credit
                 $attendanceCredits->attendanceCredits += 1;
                 $attendanceCredits->save();
             }
-    
+
             // Update status to Declined
             $attendance->status_code = 'Declined';
             $attendance->approved_by = $authUser->id;
             $attendance->save();
-    
+
             return redirect()->back()->with('success', 'Request Declined, and attendance credit restored if previously deducted.');
         } catch (ModelNotFoundException $e) {
             return redirect()->back()->with('error', 'Request not found.');
@@ -259,5 +259,4 @@ class RequestController extends Controller
 
         return redirect()->back()->with('warning', 'Deleted Successfully!');
     }
-
 }

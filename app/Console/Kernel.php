@@ -29,6 +29,9 @@ class Kernel extends ConsoleKernel
         // Run the 'credits:add' command on the 10th and 25th of every month at midnight
         $schedule->command('credits:add')->monthlyOn(10, '00:00');
         $schedule->command('credits:add')->monthlyOn(25, '00:00');
+        
+        // Geofencing Expiration Command
+        $schedule->command('geofencing:update-expired')->everyMinute(); 
     }
 
     /**

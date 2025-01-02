@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Hr;
 
+use Exception;
 use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -9,6 +10,7 @@ use App\Models\OvertimeRequest;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\OvertimeRequestStatusUpdated;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class OvertimeController extends Controller
 {

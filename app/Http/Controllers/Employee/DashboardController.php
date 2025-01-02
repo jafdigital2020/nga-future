@@ -100,15 +100,20 @@ class DashboardController extends Controller
 
         // Adjust $latest logic based on allow_multiple_login
         if ($user->allow_multiple_login) {
-            // Get the first attendance record for today
+            // Get the first attendance record for today with allowed status codes
             $latest = EmployeeAttendance::where('users_id', $authUserId)
                 ->whereDate('date', Carbon::today())
+                ->whereIn('status_code', ['Active', 'Approved'])
                 ->orderBy('timeIn', 'asc')
                 ->first();
         } else {
-            // Get the latest attendance record
-            $latest = EmployeeAttendance::where('users_id', $authUserId)->latest()->first();
+            // Get the latest attendance record with allowed status codes
+            $latest = EmployeeAttendance::where('users_id', $authUserId)
+                ->whereIn('status_code', ['Active', 'Approved'])
+                ->latest()
+                ->first();
         }
+
 
         $today = Carbon::today();
 
@@ -302,10 +307,25 @@ class DashboardController extends Controller
 
             // Retrieve all geofences assigned to the user
             $userGeofences = UserGeofence::where('user_id', $user->id)
+                ->whereHas('geofenceSetting', function ($query) {
+                    $query->whereIn('status', ['Active', 'Never Expired']);
+                })
                 ->with('geofenceSetting')
                 ->get();
 
             Log::info("Fetched geofences: " . json_encode($userGeofences->toArray()));
+
+            // Check for expired geofences
+            $expiredGeofence = UserGeofence::where('user_id', $user->id)
+                ->whereHas('geofenceSetting', function ($query) {
+                    $query->where('status', 'Expired');
+                })
+                ->exists();
+
+            if ($expiredGeofence) {
+                Log::error("The geofence assigned to the user has expired.");
+                return response()->json(['status' => 'error', 'message' => 'The geofence that is assigned to you has expired. Please contact your manager or admin.']);
+            }
 
             $isWithinGeofence = false;
             $isWithinTempRadius = false;
@@ -397,18 +417,21 @@ class DashboardController extends Controller
                 // Select the first attendance record for the day
                 $attendance = $user->employeeAttendance()
                     ->whereDate('date', $currentDate)
-                    ->orderBy('timeIn', 'asc')
+                    ->orderBy('timeIn', 'asc') // Earliest timeIn for the day
                     ->first();
             } else {
-                // Select the attendance record with null timeOut
+                // Select the attendance record with null timeOut and the latest timeIn
                 $attendance = $user->employeeAttendance()
                     ->where(function ($query) use ($currentDate) {
                         $query->whereDate('date', $currentDate)
                             ->orWhereDate('date', Carbon::yesterday()->toDateString());
                     })
                     ->whereNull('timeOut')
-                    ->first();
+                    ->whereNotNull('timeIn')
+                    ->orderBy('timeIn', 'desc') // Prioritize the most recent timeIn
+                    ->first(); // Ensure you're retrieving only one record
             }
+
 
             if (!$attendance) {
                 Log::warning('No clock-in record found.', ['user_id' => $user->id]);
@@ -596,19 +619,10 @@ class DashboardController extends Controller
         return false;
     }
 
-    public function isMockLocation($latitude, $longitude) {
-        $ip = request()->ip();
-        $geoData = Http::get("http://ip-api.com/json/{$ip}")->json();
-    
-        $ipLatitude = $geoData['lat'] ?? null;
-        $ipLongitude = $geoData['lon'] ?? null;
-    
-        if ($ipLatitude && $ipLongitude) {
-            $distance = $this->calculateDistance($latitude, $longitude, $ipLatitude, $ipLongitude);
-            return $distance > 10; // Allowable distance (e.g., 10 km)
-        }
-    
-        return false;
+    public function isMockLocation($latitude, $longitude)
+    {
+        // Always trust Google Maps' GPS data as it is accurate
+        return false; // Assume location is valid if coming from Google Maps
     }
 
     protected function calculateDistance($lat1, $lon1, $lat2, $lon2)

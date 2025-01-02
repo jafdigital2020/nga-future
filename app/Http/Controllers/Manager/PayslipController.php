@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Salary;
 use App\Models\Payroll;
 use App\Models\EarningList;
+use App\Models\SalaryTable;
 use Illuminate\Http\Request;
 use App\Models\EmployeeSalary;
 use App\Models\ApprovedAttendance;
@@ -146,7 +147,7 @@ class PayslipController extends Controller
 
     public function viewPayslip($id)
     {
-        $view = Payroll::findOrFail($id);
+        $view = SalaryTable::findOrFail($id);
 
         // Decode JSON columns
         $earnings = json_decode($view->earnings, true);
