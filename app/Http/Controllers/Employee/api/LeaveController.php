@@ -11,24 +11,69 @@ use App\Models\LeaveRequest;
 use App\Http\Controllers\Controller;
 use App\Notifications\LeaveRequestNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LeaveController extends Controller
 {
+    public function getLeaveCredits(Request $request){
+
+        try{
+
+            $user = auth()->user();
+
+            $data = LeaveCredit::where('user_id', $user->id)->with('leaveType')->get();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $data
+            ], 200);
+
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred while fetching leave credits: ' . $e->getMessage()
+            ], 500);
+        }
+
+    }
+
+
+
     public function getLeaveRequest(Request $request){
+        try{
 
-        $userId = $request->input('user_id');
-        $data = LeaveRequest::where('users_id', $userId)->get();
+            $user = auth()->user();
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $data
-        ], 200);
+            $data = LeaveRequest::where('users_id', $user->id)->get();
+
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'No leave request record found.'
+                ], 200);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $data
+            ], 200);
+
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred while fetching leave request: ' . $e->getMessage()
+            ], 500);
+        }
 
     }
 
 
     public function createLeaveRequest(Request $request)
     {
+        $user = auth()->user();
+
         $userId = $request->input('user_id');
         $leaveTypeId = $request->input('type');
         $requestedDays = $request->input('total_days');
@@ -36,8 +81,6 @@ class LeaveController extends Controller
         $endDate = Carbon::parse($request->input('end_date'));
         $today = Carbon::now('Asia/Manila');
 
-
-        $user = User::find($userId);
 
         if (!$user) {
             return response()->json([
@@ -201,6 +244,9 @@ class LeaveController extends Controller
 
     public function updateLeaveRequest(Request $request, $id){
     try {
+
+        $user = auth()->user();
+
         // Validate the request inputs
         $request->validate([
             'type' => 'required|exists:leave_types,id', // Ensure leave type ID exists in the leave_types table
@@ -220,14 +266,13 @@ class LeaveController extends Controller
             ], 422);
         }
 
-        $userId = $request->input('user_id');
         $leaveTypeId = $request->input('type');
         $requestedDays = $request->input('total_days');
         $startDate = Carbon::parse($request->input('start_date'));
         $endDate = Carbon::parse($request->input('end_date'));
         $today = Carbon::now('Asia/Manila');
 
-        $user = User::find($userId);
+
         if (!$user) {
             return response()->json([
                 'status' => 'error',
@@ -325,21 +370,29 @@ class LeaveController extends Controller
 
     public function deleteLeaveRequest($id)
     {
-        $leave = LeaveRequest::findOrFail($id);
+        try {
+            $user = auth()->user();
+            $leave = LeaveRequest::where('users_id', $user->id)->findOrFail($id);
 
-        if ($leave->status == 'Approved') {
+            if ($leave->status == 'Approved') {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'This leave request has already been approved and cannot be deleted.'
+                ], 422);
+            }
+
+            $leave->delete();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Leave request deleted successfully.'
+            ], 200);
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'This leave request has already been approved and cannot be deleted.'
-            ], 422);
+                'message' => 'An error occurred while deleting the leave request: ' . $e->getMessage()
+            ], 500);
         }
-
-        $leave->delete();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Leave request deleted successfully.'
-        ], 200);
     }
 
 
