@@ -8,7 +8,11 @@ use App\Http\Controllers\Employee\api\InformationController;
 use App\Http\Controllers\Employee\api\DashboardController;
 use App\Http\Controllers\Employee\api\BankController;
 use App\Http\Controllers\Employee\api\LeaveController;
+use App\Http\Controllers\Employee\api\OvertimeController;
+use App\Http\Controllers\Employee\api\RequestAttendanceController;
 use App\Http\Controllers\Employee\api\EmegencyContactController;
+use App\Http\Controllers\Employee\api\PayslipController;
+use App\Http\Controllers\Employee\api\ShiftScheduleController;
 
 
 /*
@@ -57,6 +61,12 @@ Route::middleware(['auth:sanctum'])->prefix('attendance')->group(function () {
     //monthly
     Route::get('/monthly', [AttendanceController::class, 'getMonthlyAttendance']);
 
+    // Request Attendance
+    Route::get('/request', [RequestAttendanceController::class, 'reqattendance']);
+    Route::post('/request', [RequestAttendanceController::class, 'storeCertificateAttendance']);
+    Route::put('/request/{id}', [RequestAttendanceController::class, 'updateCertificateAttendance']);
+    Route::delete('/request/{id}', [RequestAttendanceController::class, 'deleteCertificateAttendance']);
+
 });
 
 Route::middleware(['auth:sanctum'])->prefix('leave')->group(function () {
@@ -100,27 +110,31 @@ Route::middleware(['auth:sanctum'])->prefix('info')->group(function () {
 });
 
 
+Route::middleware(['auth:sanctum'])->prefix('overtime')->group(function () {
+
+    //Overtime request
+    Route::get('/request', [OvertimeController::class, 'overtimeIndex']);
+    Route::post('/request', [OvertimeController::class, 'createOvertimeRequest']);
+    Route::put('/request/{id}', [OvertimeController::class, 'updateOT']);
+    Route::delete('/request/{id}', [OvertimeController::class, 'deleteOT']);
+
+});
 
 
+Route::middleware(['auth:sanctum'])->prefix('payslip')->group(function () {
 
-//profileInformation
-//Route::get('/profileinfomation/{id}', [InformationController::class, 'getProfileInformation']);
+    //payslip
+    Route::get('/request', [PayslipController::class, 'payslipView']);
 
-
-
-
-//Addtional Info
-//Route::get('/additionalinformation/{id}', [InformationController::class, 'getAdditionalInformation']);
-//Route::post('/additionalinformation/{id}', [InformationController::class, 'createupdateAdditionalInformation']);
-
-// //bankinformation
-// Route::get('/bankinformation/{id}', [BankController::class, 'getBankInformation']);
-// Route::post('/bankinformation/{id}', [BankController::class, 'createupdateBankInformation']);
+});
 
 
-// //emergency Contact
-// Route::get('/emergencycontact/{id}', [EmegencyContactController::class, 'getEmegencyContact']);
-// Route::post('/emergencycontact/{id}', [EmegencyContactController::class, 'createupdateEmegencyContact']);
+Route::middleware(['auth:sanctum'])->prefix('shift')->group(function () {
+
+    //shift schedule
+    Route::get('/request', [ShiftScheduleController::class, 'shiftDaily']);
+
+});
 
 
 

@@ -11,17 +11,13 @@ class PayslipController extends Controller
 {
     public function payslipView(Request $request)
     {
-
-        $user = auth()->user();
-
-        $cutoffPeriod = $request->input('cutoff_period');
-        $selectedYear = $request->input('year', now()->year);
+        $cutoffPeriod = $request->input('cutoffPeriod');
+        $selectedYear = $request->input('selectedYear', now()->year);
 
         $data = SalaryTable::query();
 
         // Filter by authenticated user
-        $data->where('users_id', $user->id);
-
+        $data->where('users_id', auth()->id());
 
         // Add filter for year if provided
         if (!empty($selectedYear)) {
@@ -38,11 +34,11 @@ class PayslipController extends Controller
 
         $payslip = $data->get();
 
-
         return response()->json([
             'payslip' => $payslip,
             'cutoffPeriod' => $cutoffPeriod,
-            'selectedYear' => $selectedYear,
+            'selectedYear' => $selectedYear
         ]);
     }
+
 }
