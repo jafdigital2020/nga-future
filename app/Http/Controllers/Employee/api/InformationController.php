@@ -3,12 +3,18 @@
 namespace App\Http\Controllers\Employee\api;
 
 use Exception;
+use App\Models\Policy;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\SettingsHoliday;
 use App\Models\User;
 use App\Models\PersonalInformation;
 use App\Models\GeofencingSetting;
+use App\Models\ShiftSchedule;
 use App\Models\UserGeofence;
+use App\Models\Announcement;
 use Illuminate\Support\Facades\Auth;
 
 class InformationController extends Controller
@@ -22,7 +28,21 @@ class InformationController extends Controller
 
             $data = User::where('id', $user->id)->first();
 
+            $today = Carbon::today();
 
+            // get the nearest upcoming holiday
+            $upcomingHoliday = SettingsHoliday::where('holidayDate', '>=', $today)
+            ->orderBy('holidayDate', 'asc')
+            ->first();
+
+            // get the latest announcement
+            $latestAnnouncement = Announcement::latest()->first();
+
+            // get the company policies
+            $companyPolicies = Policy::all();
+
+            // get the today shift schedule
+            $todayShiftSchedule = $user->shiftSchedule()->whereDate('date', $today)->get();
 
             $reporting_to = User::where('id', $user->reporting_to)->pluck('name')->first();
 
@@ -42,7 +62,11 @@ class InformationController extends Controller
                     'status' => 'success',
                     'reporting_to' => $reporting_to,
                     'data' => $data,
+                    'todayShiftSchedule' => $todayShiftSchedule,
+                    'upcomingHoliday' => $upcomingHoliday,
+                    'latestAnnouncement' => $latestAnnouncement,
                     'geofences' => 'User has no geofence location assign',
+                    'companyPolicies' => $companyPolicies,
                 ], 200);
             }
 
@@ -50,7 +74,11 @@ class InformationController extends Controller
                 'status' => 'success',
                 'reporting_to' => $reporting_to,
                 'data' => $data,
+                'todayShiftSchedule' => $todayShiftSchedule,
+                'upcomingHoliday' => $upcomingHoliday,
+                'latestAnnouncement' => $latestAnnouncement,
                 'geofences' => $geofences,
+                'companyPolicies' => $companyPolicies,
             ], 200);
 
         } catch (Exception $e) {

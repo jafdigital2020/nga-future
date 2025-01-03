@@ -168,6 +168,14 @@ class AttendanceController extends Controller
                 ], 404);
             }
 
+            // Check if the user has already timed out
+            if ($attendance->timeOut !== null) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You cannot take a 15-minute break after clocking out.'
+                ], 400);
+            }
+
             // Get the max number of breaks allowed from settings
             $maxBreaks = BreakSettings::first()->max_breaks;
 
@@ -211,56 +219,6 @@ class AttendanceController extends Controller
         }
     }
 
-    public function startBreak(Request $request)
-    {
-        try {
-            $user = auth()->user();
-            $currentDate = Carbon::now('Asia/Manila')->toDateString();
-
-            // Get the attendance record for today
-            $attendance = EmployeeAttendance::where('users_id', $user->id)
-                ->where('date', $currentDate)
-                ->first();
-
-            if (!$attendance) {
-                return redirect()->back()->with('error', 'Attendance record not found for today.');
-            }
-
-            // Check if the user has already timed out
-            if ($attendance->timeOut !== null) {
-                return redirect()->back()->with('error', 'You cannot take a 15-minute break after clocking out.');
-            }
-
-            // Get the max number of breaks allowed from settings
-            $maxBreaks = BreakSettings::first()->max_breaks;
-
-            // Decode the current breaks array or initialize it
-            $breaks = $attendance->breaks ? json_decode($attendance->breaks, true) : [];
-
-            // Check if there's an ongoing break (end is null)
-            foreach ($breaks as $break) {
-                if ($break['end'] === null) {
-                    return redirect()->back()->with('error', 'You already have an ongoing 15-minute break.');
-                }
-            }
-
-            // Check if the max number of breaks is already reached
-            if (count($breaks) >= $maxBreaks) {
-                return redirect()->back()->with('error', 'You have reached the maximum number of 15-minute breaks for today.');
-            }
-
-            // Add a new break with the start time in hh:mm:ss AM/PM format and no end time
-            $breaks[] = ['start' => Carbon::now('Asia/Manila')->format('h:i:s A'), 'end' => null];
-            $attendance->breaks = json_encode($breaks);
-            $attendance->save();
-
-            return redirect()->back()->with('success', '15-minute break started.');
-        } catch (\Exception $e) {
-            Log::error('Start Break Error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'An error occurred while starting the break.');
-        }
-    }
-
 
     public function endBreak15m(Request $request)
     {
@@ -297,7 +255,7 @@ class AttendanceController extends Controller
             if (!$breakEnded) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'No active 15-mins break to end.'
+                    'message' => 'No active 15-minute break to end.'
                 ], 400);
             }
 
@@ -320,135 +278,131 @@ class AttendanceController extends Controller
     }
 
 
-
-
-    public function startBreak1h(Request $request)
+    public function startBreak1h()
     {
-        //start break 1h
+        try {
+            $now = Carbon::now('Asia/Manila');
+            $dateToday = $now->toDateString();
+            $dateYesterday = $now->copy()->subDay()->toDateString();
 
-        $now = Carbon::now('Asia/Manila');
-        $dateToday = $now->toDateString();
-        $dateYesterday = $now->copy()->subDay()->toDateString();
+            // Look for the most recent attendance record for today or yesterday that doesn't have a breakIn
+            $attendance = EmployeeAttendance::where('users_id', auth()->user()->id)
+                ->whereIn('date', [$dateYesterday, $dateToday])
+                ->whereNull('breakIn') // Ensure breakIn hasn't already been logged
+                ->whereNull('timeOut') // Ensure the user hasn't timed out for this record
+                ->latest('date')
+                ->first();
 
-        // Look for attendance records that may have started yesterday and continued into today
-        $breakin = EmployeeAttendance::where('users_id', auth()->user()->id)
-            ->whereIn('date', [$dateYesterday, $dateToday])
-            ->whereNull('breakIn')
-            ->latest('date')
-            ->first();
+            if (!$attendance) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You have either already taken a break, timed out, or not timed in yet.'
+                ], 400);
+            }
 
-        if (!$breakin) {
+            // If a valid attendance record is found, update with breakIn and breakEnd
+            $breakInTime = $now;
+            $breakEndTime = $breakInTime->copy()->addHour(); // Calculate break end time
+
+            $attendance->update([
+                'breakIn' => $breakInTime->format('h:i:s A'), // Use 24-hour format for database storage
+                'breakEnd' => $breakEndTime->format('h:i:s A'),
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'You have successfully started your break.',
+                'data' => $attendance
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Start 1-hour Break Error: ' . $e->getMessage());
             return response()->json([
                 'status' => 'error',
-                'message' => 'You have already taken a break or have not timed in yet.'
-            ], 400);
+                'message' => 'An error occurred while starting the break.'
+            ], 500);
         }
-
-        // Check if the user has already timed out
-        $timeout = EmployeeAttendance::where('users_id', auth()->user()->id)
-            ->whereIn('date', [$dateYesterday, $dateToday])
-            ->whereNotNull('timeOut')
-            ->latest('date')
-            ->first();
-
-        if ($timeout) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'You have already timed out.'
-            ], 400);
-        }
-
-        $breakInTime = $now;
-        $breakEndTime = $breakInTime->copy()->addHour(); // Add 1 hour to calculate break end time
-
-        $breakin->update([
-            'breakIn' => $breakInTime->format('h:i:s A'),
-            'breakEnd' => $breakEndTime->format('h:i:s A'),
-        ]);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'You have successfully started your break.',
-            'data' => $breakin
-        ], 200);
     }
 
 
     public function endBreak1h(Request $request)
     {
+        try {
+            $user = auth()->user();
+            $now = Carbon::now('Asia/Manila');
+            $dateToday = $now->toDateString();
+            $dateYesterday = $now->copy()->subDay()->toDateString();
 
-        $now = Carbon::now('Asia/Manila');
-        $dateToday = $now->toDateString();
-        $dateYesterday = $now->copy()->subDay()->toDateString();
+            // Look for the most recent attendance record for today or yesterday that doesn't have a timeOut
+            $attendance = EmployeeAttendance::where('users_id', $user->id)
+                ->whereIn('date', [$dateYesterday, $dateToday])
+                ->whereNull('timeOut') // Ensure the user hasn't timed out
+                ->latest('date')
+                ->first();
 
-        // Check if the user has already timed out
-        $timeout = EmployeeAttendance::where('users_id', auth()->user()->id)
-            ->whereIn('date', [$dateYesterday, $dateToday])
-            ->whereNotNull('timeOut')
-            ->latest('date')
-            ->first();
+            if (!$attendance) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You have already timed out or have not clocked in yet.'
+                ], 400);
+            }
 
-        if ($timeout) {
+            // Check if a breakOut is possible (i.e., breakIn is logged but breakOut is not)
+            $breakout = EmployeeAttendance::where('id', $attendance->id) // Ensure it's the same attendance record
+                ->whereNotNull('breakIn')
+                ->whereNull('breakOut')
+                ->first();
+
+            if (!$breakout) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You have not taken a break yet or have already returned.'
+                ], 400);
+            }
+
+            $breakInTime = Carbon::parse($breakout->breakIn);
+            $breakOutTime = $now;
+            $diffInMinutes = $breakInTime->diffInMinutes($breakOutTime);
+            $breakLateFormat = null;
+
+            // Check if break time exceeded 60 minutes
+            if ($diffInMinutes > 60) {
+                $exceededMinutes = $diffInMinutes - 60;
+                $breakLateFormat = CarbonInterval::minutes($exceededMinutes)->cascade()->format('%H:%I:%S');
+                $breakout->update([
+                    'breakLate' => $breakLateFormat,
+                ]);
+            }
+
+            $breakEndTime = Carbon::parse($breakout->breakEnd);
+            if ($breakOutTime->greaterThan($breakEndTime)) {
+                $exceededMinutes = $breakOutTime->diffInMinutes($breakEndTime);
+                $breakLateFormat = CarbonInterval::minutes($exceededMinutes)->cascade()->format('%H:%I:%S');
+                $breakout->update([
+                    'breakLate' => $breakLateFormat,
+                ]);
+            }
+
+            $breakout->update([
+                'breakOut' => $now->format('h:i:s A'),
+            ]);
+
+            $message = 'Welcome Back!';
+            if ($breakLateFormat) {
+                $message .= ' You were late by ' . $breakLateFormat . ' (HH:MM:SS).';
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => $message,
+                'data' => $breakout
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Break Out Error: ' . $e->getMessage());
             return response()->json([
                 'status' => 'error',
-                'message' => 'You have already timed out.'
-            ], 400);
+                'message' => 'An error occurred while ending the break.'
+            ], 500);
         }
-
-        $breakout = EmployeeAttendance::where('users_id', auth()->user()->id)
-            ->whereIn('date', [$dateYesterday, $dateToday])
-            ->whereNotNull('breakIn')
-            ->whereNull('breakOut')
-            ->latest('date')
-            ->first();
-
-        if (!$breakout) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'You have not taken a break yet or have already returned.'
-            ], 400);
-        }
-
-        $breakInTime = Carbon::parse($breakout->breakIn);
-        $breakOutTime = $now;
-        $diffInMinutes = $breakInTime->diffInMinutes($breakOutTime);
-        $breakLateFormat = null;
-
-        // Check if break time exceeded 60 minutes
-        if ($diffInMinutes > 60) {
-            $exceededMinutes = $diffInMinutes - 60;
-            $breakLateFormat = CarbonInterval::minutes($exceededMinutes)->cascade()->format('%H:%I:%S');
-            $breakout->update([
-                'breakLate' => $breakLateFormat,
-            ]);
-        }
-
-        $breakEndTime = Carbon::parse($breakout->breakEnd);
-        if ($breakOutTime->greaterThan($breakEndTime)) {
-            $exceededMinutes = $breakOutTime->diffInMinutes($breakEndTime);
-            $breakLateFormat = CarbonInterval::minutes($exceededMinutes)->cascade()->format('%H:%I:%S');
-            $breakout->update([
-                'breakLate' => $breakLateFormat,
-            ]);
-        }
-
-        $breakout->update([
-            'breakOut' => $now->format('h:i:s A'),
-        ]);
-
-        $message = 'Welcome Back!';
-        if ($breakLateFormat) {
-            $message .= ' You were late by ' . $breakLateFormat . ' (HH:MM:SS).';
-        }
-
-
-
-        return response()->json([
-            'status' => 'success',
-            'message' => '1-hour break ended successfully.',
-            'data' => $breakout
-        ], 200);
-
     }
 
 

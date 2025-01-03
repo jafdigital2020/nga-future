@@ -40,4 +40,58 @@ class ShiftScheduleController extends Controller
         ]);
     }
 
+
+    public function getUserShiftSchedule(Request $request)
+    {
+
+        $user = auth()->user();
+
+        // Default to the current week if no custom date is selected
+        $startDate = $request->input('startDate') ? Carbon::parse($request->input('startDate')) : Carbon::now()->startOfWeek();
+        $endDate = $request->input('endDate') ? Carbon::parse($request->input('endDate')) : $startDate->copy()->endOfWeek(); // Show 1 week default
+
+        // Check if the user exists
+        if (!$user) {
+            return response()->json(['error' => 'User not found.'], 404);
+        }
+
+        // Fetch the shift schedule for the specific user within the given date range
+        $shiftSchedule = $user->shiftSchedule()->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])->get();
+
+        // Return the user's shift schedule as JSON response
+        return response()->json([
+            'startDate' => $startDate->format('Y-m-d'),
+            'endDate' => $endDate->format('Y-m-d'),
+            'shiftSchedule' => $shiftSchedule,
+        ]);
+    }
+
+
+    // public function getUserShiftSchedule(Request $request, $userId)
+    // {
+    //     // Default to the current week if no custom date is selected
+    //     $startDate = $request->input('startDate') ? Carbon::parse($request->input('startDate')) : Carbon::now()->startOfWeek();
+    //     $endDate = $request->input('endDate') ? Carbon::parse($request->input('endDate')) : $startDate->copy()->endOfWeek(); // Show 1 week default
+
+    //     // Fetch the specific user by their ID
+    //     $user = User::find($userId);
+
+    //     // Check if the user exists
+    //     if (!$user) {
+    //         return response()->json(['error' => 'User not found.'], 404);
+    //     }
+
+    //     // Fetch the shift schedule for the specific user within the given date range
+    //     $shiftSchedule = $user->shiftSchedule()->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])->get();
+
+    //     // Return the user's shift schedule as JSON response
+    //     return response()->json([
+    //         'user' => $user,
+    //         'shiftSchedule' => $shiftSchedule,
+    //         'startDate' => $startDate->format('Y-m-d'),
+    //         'endDate' => $endDate->format('Y-m-d')
+    //     ]);
+    // }
+
+
 }

@@ -132,7 +132,7 @@ Route::middleware(['auth:sanctum'])->prefix('payslip')->group(function () {
 Route::middleware(['auth:sanctum'])->prefix('shift')->group(function () {
 
     //shift schedule
-    Route::get('/request', [ShiftScheduleController::class, 'shiftDaily']);
+    Route::get('/request', [ShiftScheduleController::class, 'getUserShiftSchedule']);
 
 });
 
