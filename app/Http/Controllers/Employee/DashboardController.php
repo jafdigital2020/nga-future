@@ -885,4 +885,110 @@ class DashboardController extends Controller
 
         return response()->json($holidays);
     }
+
+
+    public function startOvertime(Request $request)
+    {
+        try {
+           
+            $user = Auth::user();
+
+            $currentDate = Carbon::now('Asia/Manila')->toDateString();
+
+            // Get the attendance record for today
+            $attendance = EmployeeAttendance::where('users_id', $user->id)
+                ->where('date', $currentDate)
+                ->first();
+
+            if (!$attendance) {
+                return redirect()->back()->with('error', 'Attendance record not found for today.');
+            }
+
+            // Check if the user has already timed out
+            if ($attendance->timeOut !== null) {
+                return redirect()->back()->with('error', 'You cannot start overtime after clocking out.');
+            }
+
+            $overtime = OvertimeRequest::where('users_id', $user->id)
+                ->where('date', $currentDate)
+                ->first();
+
+            if ($overtime->start_time !== null) {
+                return redirect()->back()->with('error', 'You already have an ongoing overtime or already started overtime for this day.');
+            }
+
+
+            // Save the overtime request
+            $overtime = new OvertimeRequest();
+            $overtime->users_id = $user->id;
+            $overtime->date = $currentDate;
+            $overtime->start_time = Carbon::now('Asia/Manila')->format('h:i:s A');
+            $overtime->end_time = null;
+            $overtime->total_hours = null;
+            $overtime->reason = null;
+
+
+            $overtime->save();
+
+            return redirect()->back()->with('success', 'Overtime started successfully.');
+
+            
+
+        } catch (\Exception $e) {
+            Log::error('Start Overtime Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while starting the overtime.');
+        }
+
+    }
+
+    public function endOvertime(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            $currentDate = Carbon::now('Asia/Manila')->toDateString();
+
+            // Get the attendance record for today
+            $attendance = EmployeeAttendance::where('users_id', $user->id)
+                ->where('date', $currentDate)
+                ->first();
+
+            if (!$attendance) {
+                return redirect()->back()->with('error', 'Attendance record not found for today.');
+            }
+
+            // Check if the user has already timed out
+            if ($attendance->timeOut !== null) {
+                return redirect()->back()->with('error', 'You cannot end overtime after clocking out.');
+            }
+
+            $overtime = OvertimeRequest::where('users_id', $user->id)
+                ->where('date', $currentDate)
+                ->first();
+
+
+            if ($overtime->end_time !== null) {
+                return redirect()->back()->with('error', 'You have already ended overtime for this day.');
+            }
+
+            // Set the end time for the overtime request
+            $overtime->end_time = Carbon::now('Asia/Manila')->format('h:i:s A');
+
+            // Calculate the total hours for the overtime request
+            $start = Carbon::parse($overtime->start_time, 'Asia/Manila');
+            $end = Carbon::parse($overtime->end_time, 'Asia/Manila');
+            $totalHours = $end->diff($start)->format('%H:%I:%S');
+
+            $overtime->total_hours = $totalHours;
+
+            $overtime->save();
+
+            return redirect()->back()->with('success', 'Overtime ended successfully.');
+        } catch (\Exception $e) {
+            Log::error('End Overtime Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while ending the overtime.');
+        }
+    }
+
+
 }

@@ -286,6 +286,37 @@
                                     </ul>
                                 </div>
 
+
+                                <div class="clock-in-info">
+                                    <div class="clock-in-content">
+                                        <p>Overtime</p>
+                                        <h4>
+                                            @if ($latest && $latest->date === now()->format('Y-m-d'))
+                                                <span>{{ $latest->timeTotal }}</span>
+                                            @else
+                                                <span>00:00:00</span>
+                                            @endif
+                                        </h4>
+                                    </div>
+                                    <div class="clock-in-btn">
+                                        <form id="clockInForm" action="{{ url('emp/dashboard') }}" method="POST"
+                                            enctype="multipart/form-data">
+                                            @csrf
+                                            <button type="button" class="btn btn-warning"
+                                                id="checkInButton">Overtime-In</button>
+                                        </form>
+                                    </div>
+
+                                    <div class="clock-in-btn">
+                                        <button type="submit" class="btn btn-outline-warning" data-toggle="modal"
+                                            data-target="#exampleModal">
+                                            Overtime-Out
+                                        </button>
+                                    </div>
+
+                                    
+                                </div>
+
                                 <div class="view-attendance">
                                     <a href="#">
                                         View Attendance <i class="fa-solid fa-arrow-right"></i>
@@ -302,7 +333,7 @@
                                     <div class="dropdown statistic-dropdown">
                                         <a class="dropdown-toggle" data-bs-toggle="dropdown" href="javascript:void(0);"
                                             aria-expanded="false">
-                                            2024
+                                            2025
                                         </a>
                                         <div class="dropdown-menu dropdown-menu-end" style="">
                                             <a href="javascript:void(0);" class="dropdown-item">
