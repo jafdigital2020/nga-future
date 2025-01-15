@@ -290,6 +290,11 @@ Route::prefix('emp')->middleware(['auth', 'isEmployee', 'sessionTimeout'])->grou
     Route::put('dashboard/breakout', [App\Http\Controllers\Employee\DashboardController::class, 'breakOut']);
     Route::post('dashboard/startbreak', [App\Http\Controllers\Employee\DashboardController::class, 'startBreak'])->name('emp.startBreak');
     Route::post('dashboard/endbreak', [App\Http\Controllers\Employee\DashboardController::class, 'endBreak'])->name('emp.endBreak');
+    
+    //overtime dashboard
+    Route::post('dashboard/overtime', [App\Http\Controllers\Employee\DashboardController::class, 'startOvertime'])->name('emp.startOvertime');
+    Route::put('dashboard/overtime', [App\Http\Controllers\Employee\DashboardController::class, 'endOvertime'])->name('emp.endOvertime');
+
     Route::get('attendance/report', [App\Http\Controllers\Employee\DashboardController::class, 'report'])->name('report.index');
 
     // Profile
@@ -355,6 +360,10 @@ Route::prefix('hr')->middleware(['auth', 'isHr', 'sessionTimeout'])->group(funct
     Route::post('dashboard/startbreak', [App\Http\Controllers\Hr\DashboardController::class, 'startBreak'])->name('hr.startBreak');
     Route::post('dashboard/endbreak', [App\Http\Controllers\Hr\DashboardController::class, 'endBreak'])->name('hr.endBreak');
     Route::get('/dashboard/holidays', [App\Http\Controllers\Hr\DashboardController::class, 'getHolidays'])->name('holidays.getr');
+
+    //overtime dashboard
+    Route::post('dashboard/overtime', [App\Http\Controllers\Hr\DashboardController::class, 'startOvertime'])->name('hr.startOvertime');
+    Route::put('dashboard/overtime', [App\Http\Controllers\Hr\DashboardController::class, 'endOvertime'])->name('hr.endOvertime');
 
     //** EMPLOYEE  **/
     Route::get('employee-grid', [App\Http\Controllers\Hr\EmployeeController::class, 'gridView'])->name('hr.employeegrid');
@@ -550,6 +559,11 @@ Route::prefix('manager')->middleware(['auth', 'isManager', 'sessionTimeout'])->g
     Route::put('dashboard/breakout', [App\Http\Controllers\Manager\DashboardController::class, 'breakOut']);
     Route::post('dashboard/startbreak', [App\Http\Controllers\Manager\DashboardController::class, 'startBreak'])->name('manager.startBreak');
     Route::post('dashboard/endbreak', [App\Http\Controllers\Manager\DashboardController::class, 'endBreak'])->name('manager.endBreak');
+    
+    //overtime dashboard
+    Route::post('dashboard/overtime', [App\Http\Controllers\Manager\DashboardController::class, 'startOvertime'])->name('manager.startOvertime');
+    Route::put('dashboard/overtime', [App\Http\Controllers\Manager\DashboardController::class, 'endOvertime'])->name('manager.endOvertime');
+    
     // Department
     Route::get('/department-employee', [App\Http\Controllers\Manager\DepartmentController::class, 'index']);
     Route::get('/department-record/{user_id}', [\App\Http\Controllers\Manager\DepartmentController::class, 'edit']);

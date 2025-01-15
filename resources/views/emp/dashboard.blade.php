@@ -299,22 +299,20 @@
                                         </h4>
                                     </div>
                                     <div class="clock-in-btn">
-                                        <form id="clockInForm" action="{{ url('emp/dashboard') }}" method="POST"
-                                            enctype="multipart/form-data">
+                                        <form id="overtimeInForm" action="{{ url('emp/dashboard/overtime') }}" method="POST" enctype="multipart/form-data">
                                             @csrf
-                                            <button type="button" class="btn btn-warning"
-                                                id="checkInButton">Overtime-In</button>
+                                            <button type="button" class="btn btn-warning" id="overtimeInButton">Overtime-In</button>
                                         </form>
                                     </div>
 
                                     <div class="clock-in-btn">
-                                        <button type="submit" class="btn btn-outline-warning" data-toggle="modal"
-                                            data-target="#exampleModal">
-                                            Overtime-Out
-                                        </button>
+                                        <form id="overtimeOutForm" action="{{ url('emp/dashboard/overtime') }}" method="POST" enctype="multipart/form-data">
+                                            @csrf
+                                            <button type="button" class="btn btn-outline-warning" id="overtimeOutButton">Overtime-Out</button>
+                                        </form>
                                     </div>
-
                                     
+
                                 </div>
 
                                 <div class="view-attendance">
@@ -464,6 +462,24 @@
                                                 <p class="res-activity-time">
                                                     <i class="fa fa-clock-o"></i>
                                                     {{ $latest->breakOut }}
+                                                </p>
+                                            </li>
+                                            @endif
+                                            @if ($latestOvertime  && $latestOvertime->start_time !==null)
+                                            <li>
+                                                <p class="mb-0">Overtime Start at</p>
+                                                <p class="res-activity-time">
+                                                    <i class="fa fa-clock-o"></i>
+                                                    {{ $latestOvertime->start_time  }}
+                                                </p>
+                                            </li>
+                                            @endif
+                                            @if ($latestOvertime  && $latestOvertime->end_time !==null)
+                                            <li>
+                                                <p class="mb-0">Overtime Ended at</p>
+                                                <p class="res-activity-time">
+                                                    <i class="fa fa-clock-o"></i>
+                                                    {{ $latestOvertime->end_time  }}
                                                 </p>
                                             </li>
                                             @endif @if ($latest->timeOut)
@@ -1079,6 +1095,43 @@
             $('#clockOutImageModal').on('hidden.bs.modal', function() {
                 stopOutCamera();
             });
+        });
+    </script>
+
+    <!-- Overtime IN Script -->
+    <script>
+        // Listen for the Overtime-In button click
+        document.getElementById("overtimeInButton").addEventListener("click", function() {
+            // Confirm with the user before proceeding
+            if (confirm("Are you sure you want to start overtime?")) {
+                // Get the overtime form
+                const form = document.getElementById("overtimeInForm");
+
+                // Submit the form
+                form.submit();
+            }
+        });
+    </script>
+
+    <!-- Overtime Out Script -->
+    <script>
+        // Listen for the Overtime-Out button click
+        document.getElementById("overtimeOutButton").addEventListener("click", function() {
+            // Confirm with the user before proceeding
+            if (confirm("Are you sure you want to end overtime?")) {
+                // Get the overtime form
+                const form = document.getElementById("overtimeOutForm");
+
+                // Add a hidden _method input to simulate PUT
+                const methodInput = document.createElement("input");
+                methodInput.type = "hidden";
+                methodInput.name = "_method";
+                methodInput.value = "PUT";
+                form.appendChild(methodInput);
+
+                // Submit the form
+                form.submit();
+            }
         });
     </script>
 

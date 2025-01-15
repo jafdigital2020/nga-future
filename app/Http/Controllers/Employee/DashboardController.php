@@ -115,6 +115,14 @@ class DashboardController extends Controller
         }
 
 
+        $overtime = OvertimeRequest::where('users_id', $user->id)->get();
+        // Get the latest overtime request for the user
+        $latestOvertime = OvertimeRequest::where('users_id', $user->id)
+            ->whereDate('date', Carbon::today())
+            ->first();
+
+
+
         $today = Carbon::today();
 
         // Get the nearest holiday after or equal to today
@@ -130,6 +138,7 @@ class DashboardController extends Controller
             'all',
             'total',
             'latest',
+            'latestOvertime',
             'filteredData',
             'supervisor',
             'record',
@@ -890,34 +899,35 @@ class DashboardController extends Controller
     public function startOvertime(Request $request)
     {
         try {
-           
             $user = Auth::user();
-
             $currentDate = Carbon::now('Asia/Manila')->toDateString();
-
+    
             // Get the attendance record for today
             $attendance = EmployeeAttendance::where('users_id', $user->id)
                 ->where('date', $currentDate)
                 ->first();
-
+    
             if (!$attendance) {
                 return redirect()->back()->with('error', 'Attendance record not found for today.');
             }
-
+    
             // Check if the user has already timed out
             if ($attendance->timeOut !== null) {
                 return redirect()->back()->with('error', 'You cannot start overtime after clocking out.');
             }
-
+    
+            // Check if there is already an ongoing overtime request
             $overtime = OvertimeRequest::where('users_id', $user->id)
                 ->where('date', $currentDate)
                 ->first();
-
-            if ($overtime->start_time !== null) {
-                return redirect()->back()->with('error', 'You already have an ongoing overtime or already started overtime for this day.');
+    
+            if ($overtime) {
+                // If overtime already exists and has started, show an error
+                if ($overtime->start_time !== null) {
+                    return redirect()->back()->with('error', 'You already have an ongoing overtime or already started overtime for this day.');
+                }
             }
-
-
+    
             // Save the overtime request
             $overtime = new OvertimeRequest();
             $overtime->users_id = $user->id;
@@ -926,19 +936,14 @@ class DashboardController extends Controller
             $overtime->end_time = null;
             $overtime->total_hours = null;
             $overtime->reason = null;
-
-
             $overtime->save();
-
+    
             return redirect()->back()->with('success', 'Overtime started successfully.');
-
-            
-
+    
         } catch (\Exception $e) {
             Log::error('Start Overtime Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'An error occurred while starting the overtime.');
         }
-
     }
 
     public function endOvertime(Request $request)
