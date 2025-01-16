@@ -503,7 +503,7 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">₱</span>
                                 </div>
-                                <input type="text" class="form-control" id="basic_pay" id="basic_pay" readonly>
+                                <input type="text" class="form-control" id="basic_pay" name="basic_pay" readonly>
                             </div>
                         </div>
                         <div class="col-md-2 mb-3">

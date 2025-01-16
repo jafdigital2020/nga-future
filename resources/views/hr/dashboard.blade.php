@@ -1460,103 +1460,104 @@
                 let startDate, endDate;
 
                 switch (monthIndex) {
-                    case 0: // December 25 (previous year) to January 9
-                        startDate = new Date(Date.UTC(year - 1, 11, 25));
-                        endDate = new Date(Date.UTC(year, 0, 9));
+                    case 0: // December 21 to January 5
+                        startDate = new Date(Date.UTC(year - 1, 11, 21));
+                        endDate = new Date(Date.UTC(year, 0, 5));
                         break;
-                    case 1: // January 10 to January 24
-                        startDate = new Date(Date.UTC(year, 0, 10));
-                        endDate = new Date(Date.UTC(year, 0, 24));
+                    case 1: // January 6 to January 20
+                        startDate = new Date(Date.UTC(year, 0, 6));
+                        endDate = new Date(Date.UTC(year, 0, 20));
                         break;
-                    case 2: // January 25 to February 9
-                        startDate = new Date(Date.UTC(year, 0, 25));
-                        endDate = new Date(Date.UTC(year, 1, 9));
+                    case 2: // January 21 to February 5
+                        startDate = new Date(Date.UTC(year, 0, 21));
+                        endDate = new Date(Date.UTC(year, 1, 5));
                         break;
-                    case 3: // February 10 to February 24
-                        startDate = new Date(Date.UTC(year, 1, 10));
-                        endDate = new Date(Date.UTC(year, 1, 24));
+                    case 3: // February 6 to February 20
+                        startDate = new Date(Date.UTC(year, 1, 6));
+                        endDate = new Date(Date.UTC(year, 1, 20));
                         break;
-                    case 4: // February 25 to March 9
-                        startDate = new Date(Date.UTC(year, 1, 25));
-                        endDate = new Date(Date.UTC(year, 2, 9));
+                    case 4: // February 21 to March 5
+                        startDate = new Date(Date.UTC(year, 1, 21));
+                        endDate = new Date(Date.UTC(year, 2, 5));
                         break;
-                    case 5: // March 10 to March 24
-                        startDate = new Date(Date.UTC(year, 2, 10));
-                        endDate = new Date(Date.UTC(year, 2, 24));
+                    case 5: // March 6 to March 20
+                        startDate = new Date(Date.UTC(year, 2, 6));
+                        endDate = new Date(Date.UTC(year, 2, 20));
                         break;
-                    case 6: // March 25 to April 9
-                        startDate = new Date(Date.UTC(year, 2, 25));
-                        endDate = new Date(Date.UTC(year, 3, 9));
+                    case 6: // March 21 to April 5
+                        startDate = new Date(Date.UTC(year, 2, 21));
+                        endDate = new Date(Date.UTC(year, 3, 5));
                         break;
-                    case 7: // April 10 to April 24
-                        startDate = new Date(Date.UTC(year, 3, 10));
-                        endDate = new Date(Date.UTC(year, 3, 24));
+                    case 7: // April 6 to April 20
+                        startDate = new Date(Date.UTC(year, 3, 6));
+                        endDate = new Date(Date.UTC(year, 3, 20));
                         break;
-                    case 8: // April 25 to May 9
-                        startDate = new Date(Date.UTC(year, 3, 25));
-                        endDate = new Date(Date.UTC(year, 4, 9));
+                    case 8: // April 21 to May 5
+                        startDate = new Date(Date.UTC(year, 3, 21));
+                        endDate = new Date(Date.UTC(year, 4, 5));
                         break;
-                    case 9: // May 10 to May 24
-                        startDate = new Date(Date.UTC(year, 4, 10));
-                        endDate = new Date(Date.UTC(year, 4, 24));
+                    case 9: // May 6 to May 20
+                        startDate = new Date(Date.UTC(year, 4, 6));
+                        endDate = new Date(Date.UTC(year, 4, 20));
                         break;
-                    case 10: // May 25 to June 9
-                        startDate = new Date(Date.UTC(year, 4, 25));
-                        endDate = new Date(Date.UTC(year, 5, 9));
+                    case 10: // May 21 to June 5
+                        startDate = new Date(Date.UTC(year, 4, 21));
+                        endDate = new Date(Date.UTC(year, 5, 5));
                         break;
-                    case 11: // June 10 to June 24
-                        startDate = new Date(Date.UTC(year, 5, 10));
-                        endDate = new Date(Date.UTC(year, 5, 24));
+                    case 11: // June 6 to June 20
+                        startDate = new Date(Date.UTC(year, 5, 6));
+                        endDate = new Date(Date.UTC(year, 5, 20));
                         break;
-                    case 12: // June 25 to July 9
-                        startDate = new Date(Date.UTC(year, 5, 25));
-                        endDate = new Date(Date.UTC(year, 6, 9));
+                    case 12: // June 21 to July 5
+                        startDate = new Date(Date.UTC(year, 5, 21));
+                        endDate = new Date(Date.UTC(year, 6, 5));
                         break;
-                    case 13: // July 10 to July 24
-                        startDate = new Date(Date.UTC(year, 6, 10));
-                        endDate = new Date(Date.UTC(year, 6, 24));
+                    case 13: // July 6 to July 20
+                        startDate = new Date(Date.UTC(year, 6, 6));
+                        endDate = new Date(Date.UTC(year, 6, 20));
                         break;
-                    case 14: // July 25 to August 9
-                        startDate = new Date(Date.UTC(year, 6, 25));
-                        endDate = new Date(Date.UTC(year, 7, 9));
+                    case 14: // July 21 to August 5
+                        startDate = new Date(Date.UTC(year, 6, 21));
+                        endDate = new Date(Date.UTC(year, 7, 5));
                         break;
-                    case 15: // August 10 to August 24
-                        startDate = new Date(Date.UTC(year, 7, 10));
-                        endDate = new Date(Date.UTC(year, 7, 24));
+                    case 15: // August 6 to August 20
+                        startDate = new Date(Date.UTC(year, 7, 6));
+                        endDate = new Date(Date.UTC(year, 7, 20));
                         break;
-                    case 16: // August 25 to September 9
-                        startDate = new Date(Date.UTC(year, 7, 25));
-                        endDate = new Date(Date.UTC(year, 8, 9));
+                    case 16: // August 21 to September 5
+                        startDate = new Date(Date.UTC(year, 7, 21));
+                        endDate = new Date(Date.UTC(year, 8, 5));
                         break;
-                    case 17: // September 10 to September 24
-                        startDate = new Date(Date.UTC(year, 8, 10));
-                        endDate = new Date(Date.UTC(year, 8, 24));
+                    case 17: // September 6 to September 20
+                        startDate = new Date(Date.UTC(year, 8, 6));
+                        endDate = new Date(Date.UTC(year, 8, 20));
                         break;
-                    case 18: // September 25 to October 9
-                        startDate = new Date(Date.UTC(year, 8, 25));
-                        endDate = new Date(Date.UTC(year, 9, 9));
+                    case 18: // September 21 to October 5
+                        startDate = new Date(Date.UTC(year, 8, 21));
+                        endDate = new Date(Date.UTC(year, 9, 5));
                         break;
-                    case 19: // October 10 to October 24
-                        startDate = new Date(Date.UTC(year, 9, 10));
-                        endDate = new Date(Date.UTC(year, 9, 24));
+                    case 19: // October 6 to October 20
+                        startDate = new Date(Date.UTC(year, 9, 6));
+                        endDate = new Date(Date.UTC(year, 9, 20));
                         break;
-                    case 20: // October 25 to November 9
-                        startDate = new Date(Date.UTC(year, 9, 25));
-                        endDate = new Date(Date.UTC(year, 10, 9));
+                    case 20: // October 21 to November 5
+                        startDate = new Date(Date.UTC(year, 9, 21));
+                        endDate = new Date(Date.UTC(year, 10, 5));
                         break;
-                    case 21: // November 10 to November 24
-                        startDate = new Date(Date.UTC(year, 10, 10));
-                        endDate = new Date(Date.UTC(year, 10, 24));
+                    case 21: // November 6 to November 20
+                        startDate = new Date(Date.UTC(year, 10, 6));
+                        endDate = new Date(Date.UTC(year, 10, 20));
                         break;
-                    case 22: // November 25 to December 9
-                        startDate = new Date(Date.UTC(year, 10, 25));
-                        endDate = new Date(Date.UTC(year, 11, 9));
+                    case 22: // November 21 to December 5
+                        startDate = new Date(Date.UTC(year, 10, 21));
+                        endDate = new Date(Date.UTC(year, 11, 5));
                         break;
-                    case 23: // December 10 to December 24
-                        startDate = new Date(Date.UTC(year, 11, 10));
-                        endDate = new Date(Date.UTC(year, 11, 24));
+                    case 23: // December 6 to December 20
+                        startDate = new Date(Date.UTC(year, 11, 6));
+                        endDate = new Date(Date.UTC(year, 11, 20));
                         break;
                 }
+
                 return {
                     startDate,
                     endDate
